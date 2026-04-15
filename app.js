@@ -146,6 +146,25 @@ function renderUserStep(step) {
     div.className = 'bubble assistant';
     div.innerHTML = formatBubble(step.content);
     chatEl.appendChild(div);
+  } else if (step.type === 'assistant-stream') {
+    removeTyping();
+    const div = document.createElement('div');
+    div.className = 'bubble assistant';
+    chatEl.appendChild(div);
+    const tokens = step.content.split(/(\s+)/);
+    let i = 0;
+    const speed = parseFloat(speedSel.value);
+    const tick = () => {
+      if (i < tokens.length) {
+        div.innerHTML = formatBubble(tokens.slice(0, i + 1).join('')) + '<span class="cursor">▍</span>';
+        i++;
+        scrollBottom(chatEl);
+        setTimeout(tick, (step.tokenDelay || 60) * speed);
+      } else {
+        div.innerHTML = formatBubble(step.content);
+      }
+    };
+    tick();
   }
   scrollBottom(chatEl);
 }

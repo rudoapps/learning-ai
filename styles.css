@@ -130,6 +130,13 @@ body {
 .bubble p + p { margin-top: 8px; }
 .bubble > *:first-child { margin-top: 0; }
 .bubble > *:last-child { margin-bottom: 0; }
+.cursor {
+  display: inline-block;
+  color: var(--accent);
+  animation: blink 1s infinite;
+  margin-left: 1px;
+}
+@keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
 
 .bubble.user {
   align-self: flex-end;

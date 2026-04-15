@@ -862,5 +862,371 @@ const SCENARIOS = {
       content: '💸 Cada subagente es una llamada completa al modelo, con su propio input y output. El total de tokens se multiplica. Usa subagentes cuando el paralelismo y el aislamiento de contexto compensen — no para todo.',
       delay: 2200
     }
+  ],
+
+  temperature: [
+    {
+      side: 'tech', type: 'info', label: '¿Qué es la temperatura?',
+      tag: 'parámetro clave',
+      content: '🌡  La "temperatura" es un número (típicamente 0–2) que controla lo creativa que es la IA al elegir cada palabra.\n\n• Baja (0–0.3): elige siempre la palabra más probable. Respuestas consistentes, predecibles, repetibles.\n• Media (0.7): mezcla. Estándar para chat.\n• Alta (1–2): se permite palabras raras. Respuestas creativas pero a veces disparatadas.',
+      delay: 300
+    },
+    {
+      side: 'tech', type: 'info', label: 'Cómo funciona por dentro',
+      content: '🎲 El modelo, para cada palabra, calcula probabilidades para TODAS las palabras posibles del vocabulario (~100k). Con T=0 coge siempre la #1. Con T alto aplana la curva y da más opción a palabras menos probables. Es literalmente aleatoriedad controlada.',
+      delay: 2000
+    },
+    {
+      side: 'tech', type: 'system', label: 'System prompt',
+      inTokens: 22,
+      content: 'Eres un escritor creativo. Responde en una frase.',
+      delay: 700
+    },
+    {
+      side: 'user', type: 'user-message',
+      content: 'Escríbeme el comienzo de un cuento sobre un dragón.',
+      delay: 1300
+    },
+    {
+      side: 'tech', type: 'input', label: 'Entrada del usuario',
+      inTokens: 14,
+      content: '"Escríbeme el comienzo de un cuento sobre un dragón."',
+      delay: 500
+    },
+    {
+      side: 'tech', type: 'info', label: '🧪 Probamos 3 temperaturas con la misma pregunta',
+      content: 'Mismo modelo, mismo prompt, mismos tokens de entrada. Solo cambia T.',
+      delay: 1400
+    },
+    {
+      side: 'tech', type: 'input', label: 'T = 0.0  (determinista)',
+      tag: 'aburrido pero predecible',
+      outTokens: 22,
+      content: 'Había una vez un dragón que vivía en una montaña.',
+      delay: 1500
+    },
+    {
+      side: 'user', type: 'assistant-message',
+      content: 'Había una vez un dragón que vivía en una montaña.',
+      delay: 200
+    },
+    {
+      side: 'tech', type: 'input', label: 'T = 0.7  (equilibrado)',
+      tag: 'lo que suele usar ChatGPT por defecto',
+      outTokens: 28,
+      content: 'En las cumbres heladas del norte dormía un dragón rojo que soñaba con olvidar su propio nombre.',
+      delay: 1500
+    },
+    {
+      side: 'user', type: 'assistant-message',
+      content: 'En las cumbres heladas del norte dormía un dragón rojo que soñaba con olvidar su propio nombre.',
+      delay: 200
+    },
+    {
+      side: 'tech', type: 'input', label: 'T = 1.5  (alta creatividad)',
+      tag: 'original... o caótico',
+      outTokens: 32,
+      content: 'Aquel martes nublado, el dragón descubrió que sus escamas sabían a mermelada de higos y decidió, por fin, jubilarse.',
+      delay: 1500
+    },
+    {
+      side: 'user', type: 'assistant-message',
+      content: 'Aquel martes nublado, el dragón descubrió que sus escamas sabían a mermelada de higos y decidió, por fin, jubilarse.',
+      delay: 200
+    },
+    {
+      side: 'tech', type: 'info', label: '🎯 Cuándo usar qué',
+      content: '• T = 0 → extracción de datos, clasificación, SQL, tool calling, código. Necesitas consistencia.\n• T ≈ 0.7 → chat, explicaciones, emails. Suena natural sin ser imprevisible.\n• T > 1 → brainstorming, nombres de producto, poesía, ideación. Asume que habrá basura.',
+      delay: 2400
+    },
+    {
+      side: 'tech', type: 'info', label: '⚠️  No es "inteligencia"',
+      content: 'Bajar la temperatura NO hace a la IA más lista, solo más repetible. Y subirla no la hace más creativa en sentido humano: solo más dispuesta a elegir palabras raras. La calidad la pone el modelo, T solo afecta la selección.',
+      delay: 2200
+    }
+  ],
+
+  memory: [
+    {
+      side: 'tech', type: 'info', label: 'Contexto vs Memoria',
+      tag: 'confusión muy común',
+      content: '🧠 La gente dice que la IA "recuerda". En realidad hay DOS cosas distintas:\n\n• CONTEXTO: lo que está en la conversación activa. La IA lo ve entero cada turno.\n• MEMORIA: lo que guardas fuera de la conversación para re-inyectar en futuros chats.\n\nSin memoria explícita, la IA empieza de cero en cada conversación nueva.',
+      delay: 300
+    },
+    {
+      side: 'tech', type: 'info', label: '📋 Conversación 1 — LUNES',
+      content: 'El usuario habla con la IA por primera vez.',
+      delay: 1500
+    },
+    {
+      side: 'user', type: 'user-message',
+      content: 'Hola, me llamo Fernando y soy alérgico a los frutos secos. ¿Me recomiendas un postre?',
+      delay: 1300
+    },
+    {
+      side: 'tech', type: 'input', label: 'Contexto de esta conversación',
+      tag: 'solo este turno',
+      inTokens: 30,
+      content: '[mensaje del usuario]',
+      delay: 800
+    },
+    {
+      side: 'tech', type: 'output', label: 'Respuesta',
+      outTokens: 26,
+      content: 'Encantado, Fernando. Un flan casero te va genial: dulce, sin frutos secos, fácil de digerir.',
+      delay: 1400
+    },
+    {
+      side: 'user', type: 'assistant-message',
+      content: 'Encantado, Fernando. Un flan casero te va genial: dulce, sin frutos secos, fácil de digerir.',
+      delay: 200
+    },
+    {
+      side: 'user', type: 'user-message',
+      content: '¿Y qué bebo con él?',
+      delay: 1400
+    },
+    {
+      side: 'tech', type: 'input', label: 'Contexto ahora',
+      tag: 'incluye los mensajes anteriores',
+      inTokens: 85,
+      content: 'Msg 1 usuario: "...me llamo Fernando, alergia frutos secos..."\nMsg 1 IA: "Encantado, Fernando. Un flan..."\nMsg 2 usuario: "¿Y qué bebo con él?"',
+      delay: 1400
+    },
+    {
+      side: 'tech', type: 'thinking', label: 'Razonamiento',
+      outTokens: 22,
+      content: 'Dentro del mismo contexto sé quién es y qué come. Puedo responder personalizado.',
+      delay: 1500
+    },
+    {
+      side: 'tech', type: 'output', label: 'Respuesta',
+      outTokens: 22,
+      content: 'Con un flan queda muy bien un café solo o un moscatel si te apetece algo dulce.',
+      delay: 1300
+    },
+    {
+      side: 'user', type: 'assistant-message',
+      content: 'Con un flan queda muy bien un café solo o un moscatel si te apetece algo dulce.',
+      delay: 200
+    },
+    {
+      side: 'tech', type: 'info', label: '⏳ Pasa una semana. El usuario cierra y abre una conversación nueva.',
+      content: '🧹 TODO el contexto anterior se pierde. La IA empieza de cero.',
+      delay: 1800
+    },
+    {
+      side: 'tech', type: 'info', label: '📋 Conversación 2 — LUNES SIGUIENTE (sin memoria)',
+      content: 'Nueva sesión. Contexto VACÍO.',
+      delay: 1500
+    },
+    {
+      side: 'user', type: 'user-message',
+      content: 'Recomiéndame una tarta para mi cumple.',
+      delay: 1400
+    },
+    {
+      side: 'tech', type: 'input', label: 'Contexto',
+      tag: 'no sabe NADA de Fernando',
+      inTokens: 12,
+      content: '"Recomiéndame una tarta para mi cumple."',
+      delay: 1000
+    },
+    {
+      side: 'tech', type: 'output', label: 'Respuesta',
+      tag: 'genérica',
+      outTokens: 32,
+      content: 'Una tarta Sacher nunca falla: chocolate intenso, mermelada de albaricoque y avellanas tostadas por encima.',
+      delay: 1400
+    },
+    {
+      side: 'user', type: 'assistant-message',
+      content: 'Una tarta Sacher nunca falla: chocolate intenso, mermelada de albaricoque y avellanas tostadas por encima.',
+      delay: 200
+    },
+    {
+      side: 'tech', type: 'danger', label: '💥 Problema',
+      content: 'La IA recomendó una tarta CON AVELLANAS. El usuario es alérgico a los frutos secos. Esa info existió... en otra conversación. Aquí no llegó.',
+      delay: 2000
+    },
+    {
+      side: 'tech', type: 'info', label: '💾 Solución: memoria explícita',
+      content: 'Los productos tipo ChatGPT con "memoria" hacen esto por detrás:\n\n1. Al terminar una conversación, un proceso extrae hechos estables del usuario ("es alérgico a frutos secos", "le gusta el café solo").\n2. Los guarda en una BBDD externa ligada a tu cuenta.\n3. Al empezar una conversación nueva, esos hechos se INYECTAN en el system prompt.\n\nPara la IA siguen siendo "contexto" — solo que viene precargado de fuera.',
+      delay: 2400
+    },
+    {
+      side: 'tech', type: 'info', label: '📋 Conversación 2 — CON memoria activada',
+      content: 'Mismo mensaje, pero ahora el sistema inyecta hechos guardados.',
+      delay: 1600
+    },
+    {
+      side: 'tech', type: 'system', label: 'System prompt (aumentado con memoria)',
+      tag: 'esto cuesta tokens en CADA turno',
+      inTokens: 48,
+      content: 'Eres un asistente. Hechos sobre el usuario:\n• Nombre: Fernando.\n• Alergia: frutos secos (evitar avellanas, nueces, almendras, etc.).\n• Preferencia: café solo.',
+      delay: 1400
+    },
+    {
+      side: 'tech', type: 'output', label: 'Respuesta',
+      outTokens: 34,
+      content: 'Fernando, te recomiendo una tarta de queso al horno: cremosa, sin frutos secos y fácil de combinar con un café solo como te gusta.',
+      delay: 1300
+    },
+    {
+      side: 'user', type: 'assistant-message',
+      content: 'Fernando, te recomiendo una tarta de queso al horno: cremosa, sin frutos secos y fácil de combinar con un café solo como te gusta.',
+      delay: 200
+    },
+    {
+      side: 'tech', type: 'info', label: '🔑 Lección',
+      content: 'La IA no tiene memoria nativa. Lo que parece "memoria" es un ingeniero pegando hechos al system prompt antes de cada turno. La "memoria" que muestra ChatGPT en su UI es exactamente esto: una lista editable de hechos que se inyecta al principio de cada conversación.',
+      delay: 2400
+    }
+  ],
+
+  training: [
+    {
+      side: 'tech', type: 'info', label: 'Tres formas de enseñarle algo a la IA',
+      tag: 'decisión típica de producto',
+      content: '🎓 Tienes conocimiento específico (tus docs, tu tono, tu dominio) y quieres que la IA lo use. Hay tres caminos. No son alternativos — a veces se combinan.\n\n1. PROMPTING → metérselo en el prompt.\n2. RAG → buscarlo dinámicamente y adjuntarlo.\n3. FINE-TUNING → modificar los pesos del modelo.',
+      delay: 300
+    },
+    {
+      side: 'tech', type: 'input', label: 'Caso de uso de ejemplo',
+      content: '💼 Empresa: bufete de abogados. Quiere un asistente que:\n  • Conozca sus 2.000 contratos históricos.\n  • Responda con el tono formal de la casa.\n  • Use jerga legal española.',
+      delay: 2000
+    },
+    {
+      side: 'tech', type: 'info', label: '1️⃣  PROMPTING',
+      content: 'Le explicas lo que quieres EN el prompt, cada turno.',
+      delay: 1500
+    },
+    {
+      side: 'tech', type: 'system', label: 'System prompt con instrucciones detalladas',
+      inTokens: 180,
+      content: 'Eres el asistente legal de Bufete Martínez. Usa siempre tono formal, "usted", terminología jurídica española. Estructura tus respuestas en: (1) planteamiento, (2) fundamento legal, (3) recomendación. Cita siempre los artículos del Código Civil cuando apliquen.',
+      delay: 1400
+    },
+    {
+      side: 'tech', type: 'info', label: '✅ Ventajas / ❌ Límites',
+      content: '✅ Inmediato. Barato. No toca los pesos del modelo.\n✅ Cambiar instrucciones = editar el prompt.\n❌ No escala si tienes MUCHO conocimiento (los 2.000 contratos no caben).\n❌ Cada turno paga esos tokens.',
+      delay: 1900
+    },
+    {
+      side: 'tech', type: 'info', label: '2️⃣  RAG  (Retrieval-Augmented Generation)',
+      content: 'Indexas tus docs en una base vectorial. Por cada pregunta, recuperas los 3-5 fragmentos relevantes y los metes en el prompt.',
+      delay: 1600
+    },
+    {
+      side: 'tech', type: 'input', label: 'Prompt final (system + chunks recuperados + pregunta)',
+      inTokens: 420,
+      content: '[system corto: 40 tokens]\n\n[CONTEXTO — 3 fragmentos recuperados de los contratos]\n--- Contrato 847 (2019, §4.2) ---\nLa parte arrendadora se reserva...\n--- Contrato 1201 (2021, §7) ---\nEn caso de incumplimiento...\n--- Contrato 1893 (2024, anexo I) ---\n...\n\n[PREGUNTA]\n¿Qué cláusula de penalización usamos habitualmente en arrendamientos?',
+      delay: 1700
+    },
+    {
+      side: 'tech', type: 'info', label: '✅ Ventajas / ❌ Límites',
+      content: '✅ Escala a millones de documentos.\n✅ Actualizable al instante: cambias un PDF y listo.\n✅ La IA cita fuente, se puede verificar.\n❌ Calidad depende del retrieval. Si recupera mal, responde mal.\n❌ No cambia cómo HABLA la IA, solo lo que SABE.',
+      delay: 2200
+    },
+    {
+      side: 'tech', type: 'info', label: '3️⃣  FINE-TUNING',
+      content: 'Coges un modelo base (GPT-4o-mini, Llama, etc.) y le re-entrenas parcialmente con miles de ejemplos "pregunta-respuesta ideal". Los PESOS del modelo cambian.',
+      delay: 1700
+    },
+    {
+      side: 'tech', type: 'input', label: 'Dataset de entrenamiento (ejemplo)',
+      content: '[\n  { "input": "Consulta sobre impago alquiler", "output": "Estimado cliente, en relación con su consulta, conforme al art. 1.124 del Código Civil..." },\n  { "input": "Cláusula de no-competencia", "output": "Estimado cliente, procede aplicar..." },\n  ... 5.000 ejemplos más ...\n]',
+      delay: 1800
+    },
+    {
+      side: 'tech', type: 'info', label: 'Lo que ocurre al entrenar',
+      content: '⚙️  Durante horas o días, el modelo ve miles de pares y ajusta sus pesos para que sus respuestas se parezcan a las de los ejemplos. Ya no hace falta explicarle el tono: lo ha "interiorizado".',
+      delay: 2000
+    },
+    {
+      side: 'tech', type: 'input', label: 'Prompt en producción (cortísimo)',
+      inTokens: 20,
+      content: '"Consulta sobre impago de alquiler."',
+      delay: 1200
+    },
+    {
+      side: 'tech', type: 'output', label: 'Respuesta del modelo fine-tuneado',
+      outTokens: 60,
+      content: 'Estimado cliente, en relación con su consulta sobre el impago de rentas, conforme al art. 1.124 del Código Civil procede resolver el contrato de arrendamiento y exigir indemnización...',
+      delay: 1500
+    },
+    {
+      side: 'tech', type: 'info', label: '✅ Ventajas / ❌ Límites',
+      content: '✅ Respuestas en tu estilo SIN instrucciones largas → ahorras tokens por siempre.\n✅ Puede aprender patrones complejos que son difíciles de explicar con palabras.\n❌ Caro y lento (horas/días, $$$).\n❌ Cambiar un dato = re-entrenar. No sirve para conocimiento que cambia.\n❌ No recomendado para "hechos": para eso usa RAG.',
+      delay: 2400
+    },
+    {
+      side: 'tech', type: 'info', label: '🎯 Regla mental',
+      content: '• ¿Quieres enseñarle el TONO, el ESTILO o un FORMATO consistente? → Fine-tuning (o prompting si cambia poco).\n• ¿Quieres que RESPONDA sobre TUS datos concretos y actualizados? → RAG.\n• ¿Es algo pequeño y fijo? → Prompting.\n\nProducción real = RAG + prompting bien afinados. El fine-tuning es la herramienta menos usada y más sobrevalorada.',
+      delay: 2600
+    }
+  ],
+
+  streaming: [
+    {
+      side: 'tech', type: 'info', label: '¿Qué es el streaming?',
+      tag: 'por qué ChatGPT se ve "escribir"',
+      content: '⚡ Los modelos generan UN TOKEN a la vez. Cada token tarda unos ms. Una respuesta de 300 tokens puede tardar 5-10 segundos EN TOTAL.\n\nHay dos formas de entregarlo:\n  • Sin streaming: esperas callado → recibes TODO al final.\n  • Con streaming: te van llegando los tokens según se generan → la UI los va pintando.',
+      delay: 300
+    },
+    {
+      side: 'tech', type: 'system', label: 'System prompt',
+      inTokens: 18,
+      content: 'Eres un asistente útil. Responde en una frase clara.',
+      delay: 700
+    },
+    {
+      side: 'user', type: 'user-message',
+      content: 'Explícame en 2 líneas por qué el cielo es azul.',
+      delay: 1300
+    },
+    {
+      side: 'tech', type: 'input', label: 'Entrada',
+      inTokens: 14,
+      content: '"Explícame en 2 líneas por qué el cielo es azul."',
+      delay: 500
+    },
+    {
+      side: 'user', type: 'typing',
+      delay: 400
+    },
+    {
+      side: 'tech', type: 'info', label: '🎬 El modelo empieza a generar',
+      content: 'Servidor → cliente: flujo de eventos Server-Sent Events (SSE).\n\ndata: {"token": "El"}\ndata: {"token": " cielo"}\ndata: {"token": " es"}\ndata: {"token": " azul"}\ndata: {"token": " porque"}\n... (continúa)',
+      delay: 1400
+    },
+    {
+      side: 'user', type: 'assistant-stream',
+      content: 'El cielo es azul porque la atmósfera dispersa la luz azul del Sol más que otros colores (fenómeno conocido como dispersión de Rayleigh).',
+      tokenDelay: 80,
+      delay: 600
+    },
+    {
+      side: 'tech', type: 'output', label: 'Respuesta completa',
+      tag: 'mismo texto, llegó troceado',
+      outTokens: 34,
+      content: 'El cielo es azul porque la atmósfera dispersa la luz azul del Sol más que otros colores (fenómeno conocido como dispersión de Rayleigh).',
+      delay: 3000
+    },
+    {
+      side: 'tech', type: 'info', label: '🤔 ¿Por qué molestarse en streaming?',
+      content: '👁  PERCEPCIÓN: el usuario ve respuesta "al instante" aunque el total tarde lo mismo. Reduce la sensación de espera.\n⏹  CANCELABLE: puedes parar a mitad si ves que va mal. Ahorras tokens.\n🔄 UI viva: se pueden ir ejecutando acciones mientras llega (scroll, formato progresivo).',
+      delay: 2400
+    },
+    {
+      side: 'tech', type: 'info', label: '⚠️  Qué NO cambia',
+      content: '• El coste total es el mismo (mismos tokens output).\n• La latencia total también (desde que pides hasta que acaba).\n• Las tool calls NO se pueden streamear igual: la IA tiene que generar el JSON completo antes de ejecutarlo. Por eso los agentes "se paran" entre tool calls.',
+      delay: 2200
+    },
+    {
+      side: 'tech', type: 'info', label: '🔑 Métrica clave: TTFT',
+      content: '⏱  "Time To First Token" — cuánto tardas en ver la primera letra. Con streaming suele ser 200-500ms. Sin streaming, segundos. Es la métrica de UX más importante en una app con LLM.',
+      delay: 2000
+    }
   ]
 };
