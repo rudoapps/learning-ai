@@ -67,12 +67,72 @@ function scrollBottom(el) {
   el.scrollTop = el.scrollHeight;
 }
 
+function escapeHtml(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function formatBubble(text) {
+  const lines = escapeHtml(text).split('\n');
+  const out = [];
+  let listType = null;
+
+  const closeList = () => {
+    if (listType) { out.push(`</${listType}>`); listType = null; }
+  };
+
+  for (const raw of lines) {
+    const line = raw.trimEnd();
+    const ol = line.match(/^\s*(\d+)[\.\)]\s+(.*)$/);
+    const ul = line.match(/^\s*[•\-\*]\s+(.*)$/);
+    if (ol) {
+      if (listType !== 'ol') { closeList(); out.push('<ol>'); listType = 'ol'; }
+      out.push(`<li>${ol[2]}</li>`);
+    } else if (ul) {
+      if (listType !== 'ul') { closeList(); out.push('<ul>'); listType = 'ul'; }
+      out.push(`<li>${ul[1]}</li>`);
+    } else if (line === '') {
+      closeList();
+      out.push('');
+    } else {
+      closeList();
+      out.push(line);
+    }
+  }
+  closeList();
+
+  // join non-list lines with <br>, keep blank lines as paragraph break
+  let html = '';
+  let buf = [];
+  const flush = () => {
+    if (buf.length) { html += `<p>${buf.join('<br>')}</p>`; buf = []; }
+  };
+  for (const part of out) {
+    if (part.startsWith('<ol>') || part.startsWith('<ul>') || part.startsWith('<li>') || part.startsWith('</ol>') || part.startsWith('</ul>')) {
+      flush();
+      html += part;
+    } else if (part === '') {
+      flush();
+    } else {
+      buf.push(part);
+    }
+  }
+  flush();
+
+  // inline: **bold**, *italic*, `code`
+  html = html
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[\s(])\*([^*\n]+)\*/g, '$1<em>$2</em>');
+
+  return html;
+}
+
 function renderUserStep(step) {
   if (step.type === 'user-message') {
     removeTyping();
     const div = document.createElement('div');
     div.className = 'bubble user';
-    div.textContent = step.content;
+    div.innerHTML = formatBubble(step.content);
     chatEl.appendChild(div);
   } else if (step.type === 'typing') {
     removeTyping();
@@ -84,7 +144,7 @@ function renderUserStep(step) {
     removeTyping();
     const div = document.createElement('div');
     div.className = 'bubble assistant';
-    div.textContent = step.content;
+    div.innerHTML = formatBubble(step.content);
     chatEl.appendChild(div);
   }
   scrollBottom(chatEl);

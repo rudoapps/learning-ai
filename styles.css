@@ -107,7 +107,29 @@ body {
   font-size: 14px;
   line-height: 1.5;
   animation: slideIn 0.3s ease-out;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
+
+.bubble strong { font-weight: 600; }
+.bubble em { font-style: italic; }
+.bubble code {
+  font-family: 'SF Mono', Menlo, monospace;
+  font-size: 12.5px;
+  background: rgba(255, 255, 255, 0.12);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+.bubble.assistant code { background: rgba(255, 255, 255, 0.05); }
+.bubble ul, .bubble ol {
+  margin: 6px 0 2px 20px;
+  padding: 0;
+}
+.bubble li { margin: 2px 0; }
+.bubble p { margin: 0; }
+.bubble p + p { margin-top: 8px; }
+.bubble > *:first-child { margin-top: 0; }
+.bubble > *:last-child { margin-bottom: 0; }
 
 .bubble.user {
   align-self: flex-end;
@@ -298,6 +320,10 @@ body {
 .tech-block.danger { border-color: #f85149; }
 .tech-block.danger .label { color: #f85149; background: rgba(248, 81, 73, 0.08); }
 .tech-block.danger .body { color: #ffb4b0; }
+.tech-block.agent { border-color: var(--purple); }
+.tech-block.agent .label { color: var(--purple); background: rgba(188, 140, 255, 0.08); }
+.tech-block.orchestrator { border-color: var(--accent); }
+.tech-block.orchestrator .label { color: var(--accent); background: rgba(88, 166, 255, 0.08); }
 
 .tech-block .body .json-key { color: var(--accent); }
 .tech-block .body .json-str { color: var(--green); }

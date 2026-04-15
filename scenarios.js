@@ -640,5 +640,227 @@ const SCENARIOS = {
       content: '👉 Para la IA, no existe diferencia nativa entre "lo que dice mi usuario" y "lo que pone en un email que estoy leyendo". Todo es texto. Por eso cualquier sistema que deje que la IA actúe sobre contenido externo (web, email, PDFs, resultados de búsqueda, tickets...) tiene que diseñar defensas EXPLÍCITAS. Es el equivalente actual a SQL injection en los 2000.',
       delay: 2400
     }
+  ],
+
+  agents: [
+    {
+      side: 'tech', type: 'info', label: '¿Qué es un agente?',
+      tag: 'contexto previo',
+      content: '🤖 Un "agente" es una IA en un BUCLE: piensa → actúa (usa una herramienta) → mira el resultado → vuelve a pensar, hasta terminar la tarea. Un chat normal responde una vez y ya. Un agente puede dar muchos pasos seguidos por su cuenta con un solo encargo del usuario.',
+      delay: 300
+    },
+    {
+      side: 'tech', type: 'info', label: 'Chat normal vs agente',
+      content: '💬 Chat: usuario pregunta → IA responde → FIN.\n\n🔁 Agente: usuario encarga algo → la IA da varios pasos sola (busca, decide, actúa, vuelve a mirar, ajusta) → al final informa del resultado.',
+      delay: 2000
+    },
+    {
+      side: 'tech', type: 'system', label: 'System prompt',
+      inTokens: 55,
+      content: 'Eres un asistente personal. Puedes usar: search_restaurants, check_availability, make_reservation. Ayuda al usuario a cenar fuera. Al terminar, responde con el resultado final.',
+      delay: 800
+    },
+    {
+      side: 'user', type: 'user-message',
+      content: 'Resérvame una cena italiana este sábado a las 21h para 4 personas en Madrid.',
+      delay: 1400
+    },
+    {
+      side: 'tech', type: 'input', label: 'Encargo del usuario',
+      inTokens: 22,
+      content: '"Resérvame una cena italiana este sábado a las 21h para 4 personas en Madrid."',
+      delay: 500
+    },
+    {
+      side: 'user', type: 'typing',
+      delay: 300
+    },
+    {
+      side: 'tech', type: 'orchestrator', label: '🔁 Iteración 1 — pensar',
+      outTokens: 38,
+      content: 'El usuario quiere una reserva. No tengo restaurantes todavía. Primer paso: buscar italianos en Madrid.',
+      delay: 1700
+    },
+    {
+      side: 'tech', type: 'orchestrator', label: '🔁 Iteración 1 — actuar',
+      outTokens: 18,
+      content: '{ "tool": "search_restaurants", "args": { "city": "Madrid", "type": "italiano" } }',
+      delay: 1100
+    },
+    {
+      side: 'tech', type: 'orchestrator', label: '🔁 Iteración 1 — observar',
+      inTokens: 85,
+      content: '[\n  { "name": "Trattoria Sant\'Arcangelo", "rating": 4.6 },\n  { "name": "Noi Madrid", "rating": 4.4 },\n  { "name": "La Tagliatella Gran Vía", "rating": 4.1 }\n]',
+      delay: 1400
+    },
+    {
+      side: 'tech', type: 'orchestrator', label: '🔁 Iteración 2 — pensar',
+      tag: 'misma IA, otro giro del bucle',
+      outTokens: 35,
+      content: 'Tengo 3 candidatos. Pruebo con el mejor valorado primero: Trattoria Sant\'Arcangelo.',
+      delay: 1600
+    },
+    {
+      side: 'tech', type: 'orchestrator', label: '🔁 Iteración 2 — actuar',
+      outTokens: 28,
+      content: '{ "tool": "check_availability", "args": { "restaurant": "Trattoria Sant\'Arcangelo", "datetime": "sábado 21:00", "people": 4 } }',
+      delay: 1100
+    },
+    {
+      side: 'tech', type: 'orchestrator', label: '🔁 Iteración 2 — observar',
+      tag: 'oops',
+      inTokens: 20,
+      content: '{ "available": false, "reason": "completo" }',
+      delay: 1200
+    },
+    {
+      side: 'tech', type: 'orchestrator', label: '🔁 Iteración 3 — pensar',
+      tag: 'aquí brilla el agente: se adapta',
+      outTokens: 40,
+      content: 'El primero está lleno. Un chat normal aquí se habría rendido. Yo sigo: pruebo con el segundo, Noi Madrid.',
+      delay: 1800
+    },
+    {
+      side: 'tech', type: 'orchestrator', label: '🔁 Iteración 3 — actuar',
+      outTokens: 24,
+      content: '{ "tool": "check_availability", "args": { "restaurant": "Noi Madrid", "datetime": "sábado 21:00", "people": 4 } }',
+      delay: 1100
+    },
+    {
+      side: 'tech', type: 'orchestrator', label: '🔁 Iteración 3 — observar',
+      inTokens: 14,
+      content: '{ "available": true }',
+      delay: 1000
+    },
+    {
+      side: 'tech', type: 'orchestrator', label: '🔁 Iteración 4 — actuar',
+      tag: 'último paso: reservar',
+      outTokens: 28,
+      content: '{ "tool": "make_reservation", "args": { "restaurant": "Noi Madrid", "datetime": "sábado 21:00", "people": 4 } }',
+      delay: 1300
+    },
+    {
+      side: 'tech', type: 'orchestrator', label: '🔁 Iteración 4 — observar',
+      inTokens: 22,
+      content: '{ "confirmed": true, "code": "NOI-8842" }',
+      delay: 1000
+    },
+    {
+      side: 'tech', type: 'orchestrator', label: '✅ Fin del bucle — responder',
+      tag: 'la IA decide que ya ha terminado',
+      outTokens: 48,
+      content: 'Listo. Reserva confirmada en Noi Madrid, sábado a las 21:00 para 4 personas. Código NOI-8842. (La Trattoria Sant\'Arcangelo estaba llena, por eso elegí la segunda opción mejor valorada.)',
+      delay: 1400
+    },
+    {
+      side: 'user', type: 'assistant-message',
+      content: 'Listo. Reserva confirmada en Noi Madrid, sábado a las 21:00 para 4 personas. Código NOI-8842. (La Trattoria Sant\'Arcangelo estaba llena, por eso elegí la segunda opción mejor valorada.)',
+      delay: 200
+    },
+    {
+      side: 'tech', type: 'info', label: '🔑 Lo que hace "agente" a esto',
+      content: '1️⃣ Un solo encargo del usuario dispara 4 iteraciones del bucle.\n2️⃣ La IA eligió qué herramienta usar en cada paso (no se lo dijo el usuario).\n3️⃣ Se adaptó cuando el primer restaurante falló, sin preguntar.\n4️⃣ Decidió por sí misma cuándo parar (cuando tuvo la confirmación).',
+      delay: 2200
+    },
+    {
+      side: 'tech', type: 'info', label: '⚠️  Cuidados',
+      content: '🚧 Un agente puede:\n  • Entrar en bucles infinitos → se le pone un tope de iteraciones.\n  • Gastar mucho → cada iteración es una llamada completa al LLM.\n  • Tomar acciones irreversibles (enviar, pagar, borrar) → conviene pedir confirmación humana antes.',
+      delay: 2200
+    }
+  ],
+
+  subagents: [
+    {
+      side: 'tech', type: 'info', label: '¿Por qué subagentes?',
+      tag: 'contexto previo',
+      content: '🧑‍💼 Imagina a un jefe de proyecto con 3 becarios. En vez de hacerlo todo él, reparte tareas independientes y cada uno trabaja en paralelo. Cuando terminan, el jefe junta los resultados.\n\nAquí el "jefe" es un agente ORQUESTADOR y los "becarios" son subagentes. Cada uno tiene su propio contexto (no ven lo que hacen los demás).',
+      delay: 300
+    },
+    {
+      side: 'tech', type: 'system', label: 'System prompt (orquestador)',
+      inTokens: 58,
+      content: 'Eres un agente coordinador. Si una tarea tiene partes independientes, delega cada una a un subagente con la herramienta spawn_agent (puedes lanzar varios en paralelo). Al final, junta sus resultados en una respuesta única.',
+      delay: 800
+    },
+    {
+      side: 'user', type: 'user-message',
+      content: 'Ayúdame a planificar un finde en Lisboa el próximo mes: vuelo, hotel y 3 planes para hacer.',
+      delay: 1400
+    },
+    {
+      side: 'tech', type: 'input', label: 'Encargo del usuario',
+      inTokens: 26,
+      content: '"Ayúdame a planificar un finde en Lisboa el próximo mes: vuelo, hotel y 3 planes para hacer."',
+      delay: 500
+    },
+    {
+      side: 'user', type: 'typing',
+      delay: 300
+    },
+    {
+      side: 'tech', type: 'orchestrator', label: '🧠 Orquestador — plan',
+      outTokens: 58,
+      content: 'Tres tareas independientes: vuelos, hotel, actividades. No dependen entre sí. Lanzo 3 subagentes en paralelo. Cuando vuelvan sus informes los uno.',
+      delay: 1800
+    },
+    {
+      side: 'tech', type: 'orchestrator', label: '🚀 spawn_agent  ×3 (en paralelo)',
+      tag: 'delegación',
+      outTokens: 95,
+      content: '[\n  { "tool": "spawn_agent", "task": "Busca vuelos Madrid→Lisboa finde del mes que viene. Devuelve 1 opción." },\n  { "tool": "spawn_agent", "task": "Busca hotel céntrico en Lisboa esas fechas, 2 noches. Devuelve 1 opción." },\n  { "tool": "spawn_agent", "task": "Sugiere 3 planes típicos en Lisboa para un finde." }\n]',
+      delay: 1500
+    },
+    {
+      side: 'tech', type: 'info', label: '⚡ Tres subagentes trabajando a la vez',
+      content: 'Cada uno recibe solo SU tarea. No saben nada de los otros dos ni del usuario. Tienen su propio pequeño contexto.',
+      delay: 1600
+    },
+    {
+      side: 'tech', type: 'agent', label: '🤖 Subagente A (vuelos) — informe',
+      tag: 'su bucle interno no lo vemos',
+      inTokens: 42,
+      content: 'Vuelo recomendado: TAP TP1023, Madrid→Lisboa, vie 18:40 → 19:10. Vuelta dom 20:15. 118€ ida+vuelta.',
+      delay: 1600
+    },
+    {
+      side: 'tech', type: 'agent', label: '🤖 Subagente B (hotel) — informe',
+      inTokens: 40,
+      content: 'Hotel recomendado: Lisboa Prata Boutique Hotel, Baixa. 2 noches, 165€ total. Valoración 8.9.',
+      delay: 1400
+    },
+    {
+      side: 'tech', type: 'agent', label: '🤖 Subagente C (planes) — informe',
+      inTokens: 52,
+      content: 'Planes propuestos:\n1. Tranvía 28 + miradores del Alfama.\n2. Pastéis de Belém + monasterio de los Jerónimos.\n3. Cena de fado en el Barrio Alto.',
+      delay: 1500
+    },
+    {
+      side: 'tech', type: 'orchestrator', label: '🧠 Orquestador — juntar',
+      tag: 'solo ve los 3 informes finales',
+      outTokens: 40,
+      content: 'Los tres subagentes me devolvieron algo usable. Monto la respuesta en 3 bloques claros y la envío al usuario.',
+      delay: 1600
+    },
+    {
+      side: 'tech', type: 'orchestrator', label: 'Respuesta final',
+      outTokens: 130,
+      content: 'Plan de finde en Lisboa:\n\n✈️ Vuelo: TAP TP1023, viernes 18:40 → Lisboa 19:10. Vuelta domingo 20:15. 118€ i/v.\n\n🏨 Hotel: Prata Boutique Hotel (Baixa). 2 noches, 165€. Valoración 8.9.\n\n🗺 Planes:\n  1. Tranvía 28 + miradores de Alfama.\n  2. Pastéis de Belém + Monasterio de los Jerónimos.\n  3. Cena con fado en el Barrio Alto.',
+      delay: 1400
+    },
+    {
+      side: 'user', type: 'assistant-message',
+      content: 'Plan de finde en Lisboa:\n\n✈️ Vuelo: TAP TP1023, viernes 18:40 → Lisboa 19:10. Vuelta domingo 20:15. 118€ i/v.\n\n🏨 Hotel: Prata Boutique Hotel (Baixa). 2 noches, 165€. Valoración 8.9.\n\n🗺 Planes:\n  1. Tranvía 28 + miradores de Alfama.\n  2. Pastéis de Belém + Monasterio de los Jerónimos.\n  3. Cena con fado en el Barrio Alto.',
+      delay: 200
+    },
+    {
+      side: 'tech', type: 'info', label: '🔑 Ventajas de usar subagentes',
+      content: '⚡ Paralelismo: 3 cosas a la vez en lugar de una detrás de otra.\n🧼 Contexto limpio: el orquestador NO carga con las búsquedas intermedias de cada subagente. Solo guarda sus informes (el resumen).\n🎯 Especialización: a cada subagente se le puede dar un system prompt distinto ("eres experto en vuelos", "eres crítico gastronómico"...).',
+      delay: 2400
+    },
+    {
+      side: 'tech', type: 'info', label: '⚠️  Coste',
+      content: '💸 Cada subagente es una llamada completa al modelo, con su propio input y output. El total de tokens se multiplica. Usa subagentes cuando el paralelismo y el aislamiento de contexto compensen — no para todo.',
+      delay: 2200
+    }
   ]
 };
