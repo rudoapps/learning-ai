@@ -1,5 +1,72 @@
 // Cada step: { side: 'user'|'tech', type, content, delay (ms antes de ejecutarlo) }
 const SCENARIOS = {
+  basic: [
+    {
+      side: 'tech', type: 'info', label: 'Lo más básico: IA sin herramientas',
+      tag: 'empieza por aquí',
+      content: '💬 Este es el caso más sencillo y el que hace todo lo demás posible. Sin internet, sin BBDD, sin calculadora. Solo:\n\n  texto de entrada → MODELO → texto de salida\n\nEl modelo es una red neuronal gigante entrenada con miles de millones de textos. Ha "comprimido" en sus pesos patrones del lenguaje y mucho conocimiento general.',
+      delay: 300
+    },
+    {
+      side: 'tech', type: 'system', label: 'System prompt',
+      tag: 'lo escribe el desarrollador, no el usuario',
+      inTokens: 18,
+      content: 'Eres un asistente útil. Responde en español, de forma clara y breve.',
+      delay: 800
+    },
+    {
+      side: 'user', type: 'user-message',
+      content: '¿Cuál es la capital de Australia?',
+      delay: 1300
+    },
+    {
+      side: 'tech', type: 'input', label: 'Mensaje del usuario',
+      inTokens: 10,
+      content: '"¿Cuál es la capital de Australia?"',
+      delay: 600
+    },
+    {
+      side: 'tech', type: 'info', label: '🧩 Paso 1 — Tokenización',
+      content: 'La IA no lee letras ni palabras. Trocea el texto en "tokens" (fragmentos de ~3-4 caracteres).\n\n"¿Cuál es la capital de Australia?"\n  ↓\n["¿", "Cuál", " es", " la", " capital", " de", " Australia", "?"]\n\nCada token se convierte en un número — es lo único que el modelo procesa.',
+      delay: 2000
+    },
+    {
+      side: 'user', type: 'typing',
+      delay: 400
+    },
+    {
+      side: 'tech', type: 'info', label: '🧠 Paso 2 — El modelo predice el siguiente token',
+      content: 'La IA no "sabe" cosas como una BBDD. Dado todo el contexto hasta ahora, calcula probabilidades para el SIGUIENTE token entre ~100.000 posibles:\n\n  " La"       → 71%\n  " Canberra" → 18%\n  " Es"       →  4%\n  " Sidney"   →  2%\n  ... resto   →  5%\n\nElige uno (con aleatoriedad controlada por la temperatura).',
+      delay: 2400
+    },
+    {
+      side: 'tech', type: 'info', label: '🔁 Paso 3 — Se repite una y otra vez',
+      content: 'El token elegido se añade al contexto. Vuelve a predecir el siguiente. Y otro. Y otro. Hasta que elige el token especial de "fin".\n\n"La"  →  "La capital"  →  "La capital de"  →  "La capital de Australia"  →  "La capital de Australia es"  →  "La capital de Australia es Canberra"  →  "La capital de Australia es Canberra."  →  [FIN]',
+      delay: 2400
+    },
+    {
+      side: 'tech', type: 'output', label: 'Respuesta generada',
+      outTokens: 14,
+      content: 'La capital de Australia es Canberra.',
+      delay: 1200
+    },
+    {
+      side: 'user', type: 'assistant-message',
+      content: 'La capital de Australia es Canberra.',
+      delay: 200
+    },
+    {
+      side: 'tech', type: 'info', label: '🔑 Lo que acabas de ver',
+      content: 'TODA la IA moderna conversacional es esto repetido millones de veces:\n\n  tokenizar → predecir siguiente token → repetir\n\nTodo lo demás (herramientas, RAG, agentes, MCP) son CAPAS encima para compensar tres límites de este proceso base.',
+      delay: 2400
+    },
+    {
+      side: 'tech', type: 'info', label: '⚠️  Tres límites del modelo "puro"',
+      content: '1. 📅 FECHA DE CORTE: solo sabe lo que vio al entrenarse (p.ej. hasta enero 2025). No conoce lo de después → por eso necesita búsqueda web.\n\n2. 🏢 NO SABE DE TI: nunca vio tus documentos internos → por eso se usa RAG.\n\n3. 🤯 ALUCINACIONES: si no sabe algo, no dice "no lo sé"; predice el token más probable, y a veces suena convincente pero es falso. No hay "fuente de verdad" detrás, solo estadística → por eso se combina con herramientas que aportan hechos verificables.',
+      delay: 2800
+    }
+  ],
+
   weather: [
     {
       side: 'tech', type: 'system', label: 'System prompt (instrucciones iniciales)',
