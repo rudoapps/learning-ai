@@ -295,6 +295,9 @@ body {
 .tech-block.tool-result .label { color: var(--green); }
 .tech-block.output .label { color: var(--accent); }
 .tech-block.info .label { color: var(--muted); }
+.tech-block.danger { border-color: #f85149; }
+.tech-block.danger .label { color: #f85149; background: rgba(248, 81, 73, 0.08); }
+.tech-block.danger .body { color: #ffb4b0; }
 
 .tech-block .body .json-key { color: var(--accent); }
 .tech-block .body .json-str { color: var(--green); }
