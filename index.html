@@ -2,95 +2,10 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cómo funciona una IA — Demo</title>
-<link rel="stylesheet" href="styles.css">
+<meta http-equiv="refresh" content="0;url=demo/index.html">
+<title>IA — Redirigiendo...</title>
 </head>
 <body>
-  <header class="topbar">
-    <h1>¿Qué pasa realmente cuando hablas con una IA?</h1>
-    <div class="controls">
-      <select id="scenario">
-        <optgroup label="📚 Básicos">
-          <option value="basic">1. Conversación pura (sin herramientas)</option>
-          <option value="streaming">2. Streaming (token a token)</option>
-          <option value="temperature">3. Temperatura (creatividad)</option>
-          <option value="memory">4. Contexto vs memoria</option>
-        </optgroup>
-        <optgroup label="🔧 Herramientas y datos">
-          <option value="weather">Uso de herramientas: el tiempo</option>
-          <option value="math">Uso de herramientas: calculadora</option>
-          <option value="search">Uso de herramientas: búsqueda web</option>
-          <option value="rag">RAG (buscar en tus documentos)</option>
-          <option value="training">Fine-tuning vs RAG vs Prompting</option>
-        </optgroup>
-        <optgroup label="🤖 Agentes y orquestación">
-          <option value="agents">Agente (bucle piensa-actúa)</option>
-          <option value="subagents">Agente con subagentes</option>
-          <option value="mcp">MCP (servidor externo)</option>
-        </optgroup>
-        <optgroup label="⚙️ Internals y seguridad">
-          <option value="compaction">Compactación de contexto</option>
-          <option value="injection">Prompt Injection (ataque)</option>
-        </optgroup>
-      </select>
-      <button id="play">▶ Reproducir</button>
-      <button id="reset">↺ Reiniciar</button>
-      <label>Velocidad
-        <select id="speed">
-          <option value="1.5">Lenta</option>
-          <option value="1" selected>Normal</option>
-          <option value="0.5">Rápida</option>
-          <option value="0.2">Muy rápida</option>
-        </select>
-      </label>
-    </div>
-  </header>
-
-  <main class="stage">
-    <section class="pane user-pane">
-      <div class="pane-header">
-        <span class="dot green"></span>
-        <h2>Lo que ve el usuario</h2>
-      </div>
-      <div id="chat" class="chat"></div>
-      <div class="composer">
-        <input type="text" placeholder="Escribe un mensaje..." disabled>
-        <button disabled>Enviar</button>
-      </div>
-    </section>
-
-    <section class="pane tech-pane">
-      <div class="pane-header">
-        <span class="dot orange"></span>
-        <h2>Lo que ocurre por dentro</h2>
-      </div>
-      <div class="token-meter" id="meter">
-        <div class="meter-row">
-          <div class="meter-item in">
-            <span class="meter-label">↓ Input</span>
-            <span class="meter-value" id="inTokens">0</span>
-            <span class="meter-unit">tokens</span>
-          </div>
-          <div class="meter-item out">
-            <span class="meter-label">↑ Output</span>
-            <span class="meter-value" id="outTokens">0</span>
-            <span class="meter-unit">tokens</span>
-          </div>
-          <div class="meter-item cost">
-            <span class="meter-label">≈ Coste</span>
-            <span class="meter-value" id="cost">$0.0000</span>
-          </div>
-        </div>
-        <div class="meter-explain">
-          Input = todo lo que la IA <b>lee</b> (system prompt, historial, resultados de herramientas). Output = lo que la IA <b>genera</b>. El output suele costar 3-5× más por token.
-        </div>
-      </div>
-      <div id="tech" class="tech"></div>
-    </section>
-  </main>
-
-  <script src="scenarios.js"></script>
-  <script src="app.js"></script>
+<p><a href="demo/index.html">Ir a la demo interactiva</a></p>
 </body>
 </html>
