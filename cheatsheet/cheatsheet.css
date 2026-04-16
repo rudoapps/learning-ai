@@ -78,17 +78,18 @@
 }
 .card.has-anim { cursor: pointer; position: relative; }
 .card.has-anim:hover { border-color: var(--purple); box-shadow: 0 8px 24px rgba(188,140,255,0.15); }
+.play-row {
+  margin: -4px 0 -2px;
+}
 .play-badge {
-  position: absolute;
-  top: 12px; right: 12px;
-  background: var(--purple);
-  color: white;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  display: inline-block;
+  background: rgba(188,140,255,0.12);
+  color: var(--purple);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.3px;
 }
 
 .card-head {

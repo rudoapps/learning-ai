@@ -28,7 +28,6 @@ function renderCards() {
     const hasAnimation = ['llm','tokens','temperature','tools','skills','agent','orchestrator','subagents','mcp','context_window','memory','compaction','rag','embeddings','fine_tuning','system_prompt','prompt','streaming','cot','function_calling','multimodal','hallucination','guardrails','prompt_injection','alignment','vector_db'].includes(c.id);
     return `
       <article class="card ${hasAnimation ? 'has-anim' : ''}" ${hasAnimation ? `onclick="location.href='../concepts/${c.id}/index.html'"` : ''}>
-        ${hasAnimation ? '<span class="play-badge">▶ Ver animación</span>' : ''}
         <div class="card-head">
           <div class="card-icon">${c.icon}</div>
           <div class="card-title">
@@ -37,6 +36,7 @@ function renderCards() {
           </div>
           <span class="category-badge ${cat.cls}">${cat.label}</span>
         </div>
+        ${hasAnimation ? '<div class="play-row"><span class="play-badge">▶ Ver animación interactiva</span></div>' : ''}
         <div class="analogy">${c.analogy}</div>
         <div class="definition">${c.definition}</div>
         <div class="compare">
