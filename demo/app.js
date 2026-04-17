@@ -8,6 +8,15 @@ const inTokensEl = document.getElementById('inTokens');
 const outTokensEl = document.getElementById('outTokens');
 const costEl = document.getElementById('cost');
 
+// Mapa escenario → concepto deep dive
+const CONCEPT_LINKS = {
+  basic: 'llm', streaming: 'streaming', temperature: 'temperature', memory: 'memory',
+  weather: 'tools', math: 'tools', search: 'tools',
+  rag: 'rag', training: 'fine_tuning',
+  agents: 'agent', subagents: 'subagents', mcp: 'mcp',
+  compaction: 'compaction', injection: 'prompt_injection'
+};
+
 // Precio ilustrativo tipo Claude Sonnet: $3/M input, $15/M output
 const PRICE_IN = 3 / 1_000_000;
 const PRICE_OUT = 15 / 1_000_000;
@@ -190,9 +199,22 @@ function renderTechStep(step) {
   scrollBottom(techEl);
 }
 
+function showLearnMore() {
+  const scenarioId = scenarioSel.value;
+  const conceptId = CONCEPT_LINKS[scenarioId];
+  if (!conceptId) return;
+  const link = document.createElement('div');
+  link.className = 'tech-block info';
+  link.innerHTML = `<div class="label"><span>🔬 Aprende más</span></div><div class="body"><a href="../concepts/${conceptId}/index.html" style="color:var(--accent);text-decoration:none;font-weight:600;">Ver animación interactiva y explicación detallada →</a></div>`;
+  link.style.animation = 'slideIn 0.3s ease-out';
+  techEl.appendChild(link);
+  scrollBottom(techEl);
+}
+
 function playStep() {
   if (currentIndex >= currentSteps.length) {
     stop();
+    showLearnMore();
     return;
   }
   const step = currentSteps[currentIndex];
