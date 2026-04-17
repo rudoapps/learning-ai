@@ -506,6 +506,38 @@
 }
 .concept-nav a.next { text-align: right; }
 
+/* ====== QUIZ LINK ====== */
+.quiz-link-section { margin-bottom: 20px; }
+.quiz-link-card {
+  display: block; background: rgba(63,185,80,0.06); border: 1px solid rgba(63,185,80,0.3);
+  border-radius: 10px; padding: 14px 18px; text-decoration: none;
+  color: var(--text); font-size: 14px; transition: all 0.15s; text-align: center;
+}
+.quiz-link-card:hover { background: rgba(63,185,80,0.12); border-color: var(--green); }
+.quiz-link-card strong { color: var(--green); }
+
+/* ====== RELATED CONCEPTS ====== */
+.related-concepts { margin-bottom: 20px; }
+.related-concepts h3 {
+  font-size: 14px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+.related-grid {
+  display: flex; gap: 10px; flex-wrap: wrap;
+}
+.related-card {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 14px;
+  text-decoration: none; color: var(--text);
+  transition: all 0.15s; font-size: 13px;
+}
+.related-card:hover { border-color: var(--accent); background: var(--surface-2); }
+.rc-icon { font-size: 20px; }
+.rc-name { font-weight: 600; }
+.rc-tag { color: var(--muted); font-size: 11px; }
+
 /* ====== TOKEN ANIMATION ====== */
 .token-demo { display: flex; flex-direction: column; gap: 18px; }
 .token-input-row {
