@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz — ¿Cuánto sabes de IA?</title>
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="quiz.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+</head>
+<body>
+  <script src="../nav.js"></script>
+  <div class="quiz-page">
+    <header class="quiz-header">
+      <h1>🧪 Quiz de IA</h1>
+      <p>65 preguntas sobre 26 conceptos. Responde y comprueba lo que sabes.</p>
+      <div class="quiz-modes">
+        <button class="qm-btn active" data-mode="all">Todos los conceptos</button>
+        <button class="qm-btn" data-mode="category">Por categoría</button>
+        <button class="qm-btn" data-mode="random">10 preguntas aleatorias</button>
+      </div>
+      <div class="quiz-cat-filter" id="catFilter" style="display:none;"></div>
+    </header>
+
+    <div class="quiz-progress-bar">
+      <div class="qpb-fill" id="qpbFill"></div>
+    </div>
+    <div class="quiz-progress-text" id="qpbText">0 / 0</div>
+
+    <div id="quizContainer"></div>
+
+    <div class="quiz-final" id="quizFinal" style="display:none;"></div>
+  </div>
+
+  <script src="../cheatsheet/cheatsheet-data.js"></script>
+  <script src="../quiz-data.js"></script>
+  <script src="quiz-app.js"></script>
+</body>
+</html>
