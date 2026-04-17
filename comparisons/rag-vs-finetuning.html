@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAG vs Fine-tuning vs Prompting — IA</title>
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="comparisons.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+</head>
+<body>
+  <script src="../nav.js"></script>
+  <div class="comp-page">
+    <header class="comp-header">
+      <h1>👁 RAG vs 🎓 Fine-tuning vs 📋 Prompting</h1>
+      <p>Tres formas de enseñarle algo a la IA. No son alternativas — a veces se combinan.</p>
+    </header>
+
+    <div class="comp-content">
+      <div class="comp-table-wrap">
+        <table class="comp-table">
+          <tr>
+            <th></th>
+            <th>📋 Prompting</th>
+            <th>👁 RAG</th>
+            <th>🎓 Fine-tuning</th>
+          </tr>
+          <tr>
+            <td><strong>Qué es</strong></td>
+            <td>Instrucciones en el prompt</td>
+            <td>Buscar en tus docs y pegarlos al prompt</td>
+            <td>Re-entrenar parcialmente los pesos del modelo</td>
+          </tr>
+          <tr>
+            <td><strong>Coste setup</strong></td>
+            <td>$0 — solo escribir</td>
+            <td>Bajo — indexar docs + base vectorial</td>
+            <td>Alto — dataset + horas de GPU ($200+)</td>
+          </tr>
+          <tr>
+            <td><strong>Tiempo setup</strong></td>
+            <td>Minutos</td>
+            <td>Horas</td>
+            <td>Días</td>
+          </tr>
+          <tr>
+            <td><strong>Actualizable</strong></td>
+            <td>Inmediato (editas el prompt)</td>
+            <td>Inmediato (cambias el doc, se reindexa)</td>
+            <td>Lento (hay que re-entrenar)</td>
+          </tr>
+          <tr>
+            <td><strong>Escala</strong></td>
+            <td>No — limitado por context window</td>
+            <td>Sí — millones de documentos</td>
+            <td>No — para estilo, no datos</td>
+          </tr>
+          <tr>
+            <td><strong>Enseña hechos</strong></td>
+            <td>Sí (pocos, en el prompt)</td>
+            <td>Sí (muchos, con citas)</td>
+            <td>No (solo estilo/formato)</td>
+          </tr>
+          <tr>
+            <td><strong>Enseña estilo</strong></td>
+            <td>Parcial (instrucciones)</td>
+            <td>No (solo datos)</td>
+            <td>Sí (interioriza patrones)</td>
+          </tr>
+          <tr>
+            <td><strong>Cita fuentes</strong></td>
+            <td>No</td>
+            <td>Sí</td>
+            <td>No</td>
+          </tr>
+          <tr>
+            <td><strong>Coste por turno</strong></td>
+            <td>Bajo (solo el prompt)</td>
+            <td>Medio (prompt + chunks)</td>
+            <td>Bajo (prompt corto) pero modelo más caro</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="comp-section">
+        <h2>🌳 Árbol de decisión</h2>
+        <div class="decision-tree">
+          <div class="dt-node dt-question">❓ ¿Quieres que la IA <strong>sepa cosas</strong> (hechos, documentos) o que <strong>hable de cierta forma</strong> (tono, formato)?</div>
+          <div class="dt-node dt-answer">📚 <strong>Saber cosas</strong> → ¿cuántos documentos?</div>
+          <div class="dt-node dt-answer" style="margin-left:48px">Pocos (< 10 páginas) → <strong>Prompting</strong> (mételos en el prompt directamente)</div>
+          <div class="dt-node dt-answer" style="margin-left:48px">Muchos (100+) → <strong>RAG</strong> (indexa y busca dinámicamente)</div>
+          <div class="dt-node dt-answer alt">🎨 <strong>Hablar de cierta forma</strong> → ¿puedes describirlo con palabras?</div>
+          <div class="dt-node dt-answer alt" style="margin-left:48px">Sí → <strong>Prompting</strong> (instrucciones detalladas + few-shot)</div>
+          <div class="dt-node dt-answer alt" style="margin-left:48px">No, es un patrón sutil → <strong>Fine-tuning</strong> (miles de ejemplos)</div>
+          <div class="dt-node dt-answer warn">⚠️ ¿Quieres AMBAS cosas? → <strong>RAG + Prompting</strong> (lo más común en producción)</div>
+        </div>
+      </div>
+
+      <div class="comp-section">
+        <h2>🏢 Ejemplo: bufete de abogados</h2>
+        <h3>Necesidad 1: responder sobre contratos del bufete</h3>
+        <p>→ <strong>RAG</strong>. Indexas 2.000 contratos, el asistente busca los relevantes por cada consulta y cita fuentes.</p>
+        <h3>Necesidad 2: tono legal formal español</h3>
+        <p>→ <strong>Prompting</strong> primero ("usa tono formal, cita artículos del CC"). Si no basta → <strong>Fine-tuning</strong> con 5.000 ejemplos de respuestas ideales.</p>
+        <h3>Necesidad 3: reglas fijas del bufete</h3>
+        <p>→ <strong>Prompting</strong>. "Nunca prometas resultados judiciales. Siempre recomienda consulta presencial para casos penales."</p>
+        <div class="comp-verdict">
+          <strong>En producción real</strong>: RAG + prompting afinados cubren el 90% de los casos. El fine-tuning es la herramienta menos usada y más sobrevalorada — solo para estilo muy específico que no se puede describir con instrucciones.
+        </div>
+      </div>
+
+      <div class="comp-links">
+        <a href="../concepts/rag/index.html">👁 Deep dive: RAG</a>
+        <a href="../concepts/fine_tuning/index.html">🎓 Deep dive: Fine-tuning</a>
+        <a href="../concepts/prompt/index.html">📋 Deep dive: Prompt</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

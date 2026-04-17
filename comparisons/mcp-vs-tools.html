@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCP vs Tools custom — IA</title>
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="comparisons.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+</head>
+<body>
+  <script src="../nav.js"></script>
+  <div class="comp-page">
+    <header class="comp-header">
+      <h1>🔌 MCP vs 🔧 Tools custom</h1>
+      <p>¿Estándar abierto o implementación a medida? Depende de tu contexto.</p>
+    </header>
+
+    <div class="comp-content">
+      <div class="comp-section">
+        <h2>🔌 La analogía USB</h2>
+        <p>Antes de USB, cada periférico tenía su conector: impresoras con puerto paralelo, ratones con PS/2, cámaras con FireWire. Cada fabricante hacía su driver. <strong>N periféricos × M ordenadores = N×M adaptadores.</strong></p>
+        <p>USB unificó: un estándar, todos los dispositivos. <strong>N + M implementaciones.</strong></p>
+        <p>MCP hace lo mismo para IA: un protocolo estándar para conectar cualquier herramienta a cualquier modelo.</p>
+      </div>
+
+      <div class="comp-table-wrap">
+        <table class="comp-table">
+          <tr>
+            <th></th>
+            <th>🔧 Tools custom (función nativa)</th>
+            <th>🔌 MCP (protocolo estándar)</th>
+          </tr>
+          <tr>
+            <td><strong>Implementación</strong></td>
+            <td>Escribes la función directamente en tu backend</td>
+            <td>Usas un servidor MCP que expone tools via JSON-RPC</td>
+          </tr>
+          <tr>
+            <td><strong>Portabilidad</strong></td>
+            <td>Atada a tu stack y a un proveedor de LLM</td>
+            <td>Funciona con cualquier cliente MCP (Claude, GPT, Gemini...)</td>
+          </tr>
+          <tr>
+            <td><strong>Ecosistema</strong></td>
+            <td>Solo lo que tú escribes</td>
+            <td>Cientos de servidores MCP open-source (postgres, github, slack, filesystem...)</td>
+          </tr>
+          <tr>
+            <td><strong>Setup</strong></td>
+            <td>Más simple para 1-2 tools</td>
+            <td>Requiere arrancar servidores MCP y configurar transporte</td>
+          </tr>
+          <tr>
+            <td><strong>Mantenimiento</strong></td>
+            <td>Tú mantienes todo</td>
+            <td>La comunidad mantiene los servidores populares</td>
+          </tr>
+          <tr>
+            <td><strong>Control</strong></td>
+            <td>Total — es tu código</td>
+            <td>Delegas la ejecución al servidor MCP</td>
+          </tr>
+          <tr>
+            <td><strong>Latencia</strong></td>
+            <td>Directa (in-process o HTTP local)</td>
+            <td>Un hop más (stdio/HTTP al servidor MCP)</td>
+          </tr>
+          <tr>
+            <td><strong>Seguridad</strong></td>
+            <td>Tú controlas permisos y sandbox</td>
+            <td>El servidor MCP gestiona sus propios permisos</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="comp-section">
+        <h2>🌳 Árbol de decisión</h2>
+        <div class="decision-tree">
+          <div class="dt-node dt-question">❓ ¿Cuántas integraciones necesitas?</div>
+          <div class="dt-node dt-answer">1-2 integraciones simples → <strong>Tools custom</strong> (más rápido de montar)</div>
+          <div class="dt-node dt-question" style="margin-left:24px">❓ ¿Existe un servidor MCP oficial para lo que necesitas?</div>
+          <div class="dt-node dt-answer" style="margin-left:48px">Sí (postgres, github, slack...) → <strong>MCP</strong> (ya está hecho, solo configuras)</div>
+          <div class="dt-node dt-question" style="margin-left:48px">❓ ¿Cambiarás de proveedor de LLM en el futuro?</div>
+          <div class="dt-node dt-answer alt" style="margin-left:72px">Probablemente → <strong>MCP</strong> (no reescribes las integraciones al cambiar de modelo)</div>
+          <div class="dt-node dt-answer" style="margin-left:72px">No, estoy atado a uno → <strong>Tools custom</strong> (más simple, menos abstracción)</div>
+          <div class="dt-node dt-answer warn" style="margin-left:24px">¿Tu integración es muy específica/propietaria? → <strong>Tools custom</strong> (envuelve tu lógica directamente)</div>
+        </div>
+      </div>
+
+      <div class="comp-section">
+        <h2>🏢 Escenarios reales</h2>
+        <h3>Startup con 1 bot simple</h3>
+        <p>Bot que consulta tu API y responde en Slack. → <strong>Tools custom</strong>. Más rápido, menos infraestructura.</p>
+        <h3>Empresa con 5 sistemas internos</h3>
+        <p>Conectar a Postgres + GitHub + Slack + Drive + Jira. → <strong>MCP</strong>. Ya existen servidores para todos. Una configuración, todo conectado.</p>
+        <h3>Plataforma multi-modelo</h3>
+        <p>Quieres que el usuario elija Claude o GPT y que las herramientas funcionen igual. → <strong>MCP</strong>. Las tools se definen una vez, funcionan con cualquier LLM compatible.</p>
+        <div class="comp-verdict">
+          <strong>Tendencia</strong>: MCP es joven (2024-2025) pero creciendo rápido. Si empiezas un proyecto nuevo con múltiples integraciones, MCP es la apuesta segura. Para una tool puntual, custom sigue siendo más pragmático.
+        </div>
+      </div>
+
+      <div class="comp-links">
+        <a href="../concepts/mcp/index.html">🔌 Deep dive: MCP</a>
+        <a href="../concepts/tools/index.html">🖐️ Deep dive: Tools</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

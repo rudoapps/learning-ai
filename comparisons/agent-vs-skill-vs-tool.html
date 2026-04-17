@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent vs Skill vs Tool — IA</title>
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="comparisons.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+</head>
+<body>
+  <script src="../nav.js"></script>
+  <div class="comp-page">
+    <header class="comp-header">
+      <h1>🤖 Agent vs 🎯 Skill vs 🖐️ Tool</h1>
+      <p>Ladrillos, recetas y cocineros. La analogía perfecta para entender los tres niveles.</p>
+    </header>
+
+    <div class="comp-content">
+      <div class="comp-section">
+        <h2>🧱 La analogía de la cocina</h2>
+        <p><strong>Tool = un utensilio</strong>. Un cuchillo, un horno, una sartén. Hace UNA cosa.</p>
+        <p><strong>Skill = una receta</strong>. Combina varios utensilios en un orden concreto para lograr un plato. Es reutilizable.</p>
+        <p><strong>Agent = un cocinero</strong>. Conoce recetas, tiene utensilios, pero además improvisa: si falta un ingrediente, busca un sustituto. Si algo se quema, ajusta. Decide por sí mismo qué hacer.</p>
+      </div>
+
+      <div class="comp-table-wrap">
+        <table class="comp-table">
+          <tr>
+            <th></th>
+            <th>🖐️ Tool</th>
+            <th>🎯 Skill</th>
+            <th>🤖 Agent</th>
+          </tr>
+          <tr>
+            <td><strong>Qué es</strong></td>
+            <td>Una función atómica</td>
+            <td>Prompt + cadena de tools</td>
+            <td>LLM + tools + bucle de decisión</td>
+          </tr>
+          <tr>
+            <td><strong>Ejemplo</strong></td>
+            <td><code>send_email()</code></td>
+            <td>"Analizar factura" (OCR → extraer → clasificar)</td>
+            <td>"Reserva cena italiana" (busca, comprueba, se adapta, reserva)</td>
+          </tr>
+          <tr>
+            <td><strong>Decide qué hacer</strong></td>
+            <td>No — le dicen qué ejecutar</td>
+            <td>No — sigue un guion fijo</td>
+            <td>Sí — decide en cada paso</td>
+          </tr>
+          <tr>
+            <td><strong>Se adapta a fallos</strong></td>
+            <td>No</td>
+            <td>No (o con lógica hardcoded)</td>
+            <td>Sí — reintenta, cambia de estrategia</td>
+          </tr>
+          <tr>
+            <td><strong>Coste</strong></td>
+            <td>1 llamada al LLM</td>
+            <td>N llamadas (una por paso)</td>
+            <td>Variable (depende de iteraciones)</td>
+          </tr>
+          <tr>
+            <td><strong>Predecibilidad</strong></td>
+            <td>Alta</td>
+            <td>Alta</td>
+            <td>Baja — puede sorprender</td>
+          </tr>
+          <tr>
+            <td><strong>Complejidad</strong></td>
+            <td>Mínima</td>
+            <td>Media</td>
+            <td>Alta — depuración difícil</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="comp-section">
+        <h2>🌳 Árbol de decisión</h2>
+        <div class="decision-tree">
+          <div class="dt-node dt-question">❓ ¿La tarea requiere <strong>un solo paso</strong> o <strong>varios</strong>?</div>
+          <div class="dt-node dt-answer">Un solo paso → <strong>Tool</strong> (get_weather, send_email, query_db)</div>
+          <div class="dt-node dt-question" style="margin-left:24px">❓ ¿Los pasos son siempre los mismos?</div>
+          <div class="dt-node dt-answer" style="margin-left:48px">Sí, siempre → <strong>Skill</strong> (cadena fija, predecible, más barata)</div>
+          <div class="dt-node dt-question" style="margin-left:48px">❓ ¿Pueden surgir imprevistos o ramificaciones?</div>
+          <div class="dt-node dt-answer alt" style="margin-left:72px">Sí → <strong>Agent</strong> (se adapta, pero pon guardrails)</div>
+          <div class="dt-node dt-answer warn" style="margin-left:72px">No estoy seguro → empieza con <strong>Skill</strong> y escala a Agent si se queda corto</div>
+        </div>
+      </div>
+
+      <div class="comp-section">
+        <h2>🏢 Ejemplo: gestión de tickets de soporte</h2>
+        <h3>Con Tool</h3>
+        <p><code>classify_ticket(text)</code> → devuelve categoría y urgencia. Una sola llamada. Para catalogar.</p>
+        <h3>Con Skill</h3>
+        <p>"Atender ticket": <code>read_ticket</code> → <code>classify</code> → <code>draft_reply</code>. Siempre los mismos 3 pasos. Para 80% de tickets estándar.</p>
+        <h3>Con Agent</h3>
+        <p>"Resuelve este ticket": lee el ticket → busca en la FAQ → si no encuentra, busca en JIRA → si es crítico, escala a un humano → si tiene solución, la aplica. Para tickets complejos que no siguen un guion fijo.</p>
+        <div class="comp-verdict">
+          <strong>Heurística</strong>: si puedes escribir un script determinista para la tarea, no necesitas un agente. Empieza siempre por la opción más simple que funcione.
+        </div>
+      </div>
+
+      <div class="comp-links">
+        <a href="../concepts/tools/index.html">🖐️ Deep dive: Tools</a>
+        <a href="../concepts/skills/index.html">🎯 Deep dive: Skills</a>
+        <a href="../concepts/agent/index.html">🤖 Deep dive: Agent</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
