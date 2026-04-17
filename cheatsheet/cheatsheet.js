@@ -27,7 +27,7 @@ function renderCards() {
     const cat = CATEGORIES[c.category];
     const hasAnimation = ['llm','tokens','temperature','tools','skills','agent','orchestrator','subagents','mcp','context_window','memory','compaction','rag','embeddings','fine_tuning','system_prompt','prompt','streaming','cot','function_calling','multimodal','hallucination','guardrails','prompt_injection','alignment','vector_db'].includes(c.id);
     return `
-      <article class="card ${hasAnimation ? 'has-anim' : ''}" ${hasAnimation ? `onclick="location.href='../concepts/${c.id}/index.html'"` : ''}>
+      <article class="card ${hasAnimation ? 'has-anim' : ''}" data-id="${c.id}" ${hasAnimation ? `onclick="location.href='../concepts/${c.id}/index.html'"` : ''}>
         <div class="card-head">
           <div class="card-icon">${c.icon}</div>
           <div class="card-title">
@@ -47,6 +47,8 @@ function renderCards() {
       </article>
     `;
   }).join('');
+  // Mark seen cards
+  if (typeof PROGRESS !== 'undefined') PROGRESS.updateUI();
 }
 
 renderFilters();

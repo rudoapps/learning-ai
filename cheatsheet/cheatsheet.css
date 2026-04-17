@@ -76,6 +76,12 @@
   transform: translateY(-2px);
   border-color: var(--accent);
 }
+.card.seen::after {
+  content: '✓ Visto';
+  position: absolute; top: 10px; left: 10px;
+  font-size: 10px; font-weight: 600; color: var(--green);
+  background: rgba(63,185,80,0.1); padding: 2px 8px; border-radius: 8px;
+}
 .card.has-anim { cursor: pointer; position: relative; }
 .card.has-anim:hover { border-color: var(--purple); box-shadow: 0 8px 24px rgba(188,140,255,0.15); }
 .play-row {
