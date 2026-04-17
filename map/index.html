@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapa de conceptos — IA</title>
+<link rel="stylesheet" href="../styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+<style>
+.map-body { display: block; overflow: hidden; }
+.map-header { padding: 16px 24px; background: var(--surface); border-bottom: 1px solid var(--border); }
+.map-header h1 { font-size: 18px; font-weight: 700; }
+.map-header p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.map-canvas {
+  position: relative; width: 100%; height: calc(100vh - 100px);
+  overflow: auto; cursor: grab;
+}
+.map-canvas:active { cursor: grabbing; }
+.map-inner { position: relative; width: 1400px; height: 900px; margin: 20px auto; }
+.map-line {
+  position: absolute; height: 2px; background: var(--border);
+  transform-origin: 0 50%; z-index: 0; opacity: 0.4;
+  transition: opacity 0.3s;
+}
+.map-node {
+  position: absolute; transform: translate(-50%, -50%);
+  background: var(--surface); border: 2px solid var(--border);
+  border-radius: 12px; padding: 8px 14px;
+  text-decoration: none; color: var(--text); z-index: 1;
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 600; white-space: nowrap;
+  transition: all 0.2s; cursor: pointer;
+}
+.map-node:hover { transform: translate(-50%, -50%) scale(1.1); z-index: 10; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+.map-node .mn-icon { font-size: 20px; }
+.map-node.cat-foundations { border-color: var(--accent); }
+.map-node.cat-action { border-color: var(--orange); }
+.map-node.cat-memory { border-color: var(--purple); }
+.map-node.cat-scaling { border-color: var(--green); }
+.map-node.cat-safety { border-color: var(--yellow); }
+.map-node.highlighted { box-shadow: 0 0 20px rgba(88,166,255,0.5); z-index: 10; }
+.map-line.highlighted { opacity: 1; background: var(--accent); height: 3px; }
+
+.map-legend {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 16px; background: var(--surface); border: 1px solid var(--border);
+  padding: 8px 16px; border-radius: 10px; font-size: 12px; z-index: 20;
+}
+.map-legend span { display: flex; align-items: center; gap: 5px; }
+.map-legend .dot { width: 10px; height: 10px; border-radius: 50%; }
+</style>
+</head>
+<body class="map-body">
+  <script src="../nav.js"></script>
+  <header class="map-header">
+    <h1>Mapa de conceptos de IA</h1>
+    <p>Haz clic en un concepto para ver sus conexiones. Haz doble clic para ir a su página.</p>
+  </header>
+  <div class="map-canvas"><div class="map-inner" id="mapInner"></div></div>
+  <div class="map-legend">
+    <span><div class="dot" style="background:var(--accent)"></div> Fundamentos</span>
+    <span><div class="dot" style="background:var(--orange)"></div> Acción</span>
+    <span><div class="dot" style="background:var(--purple)"></div> Memoria y datos</span>
+    <span><div class="dot" style="background:var(--green)"></div> Arquitectura</span>
+    <span><div class="dot" style="background:var(--yellow)"></div> Seguridad</span>
+  </div>
+  <script src="../cheatsheet/cheatsheet-data.js"></script>
+  <script>
+  const positions = {
+    llm: [700,80], tokens: [540,80], prompt: [860,80],
+    system_prompt: [860,170], temperature: [540,170], streaming: [700,170],
+    context_window: [380,170], cot: [1020,80], multimodal: [1020,170],
+    tools: [320,320], function_calling: [480,320], skills: [480,410],
+    embeddings: [700,320], vector_db: [700,410], rag: [860,320],
+    memory: [540,500], compaction: [380,500], fine_tuning: [1020,320],
+    agent: [200,500], orchestrator: [200,600], subagents: [340,600],
+    mcp: [120,410],
+    hallucination: [860,500], guardrails: [1020,500],
+    prompt_injection: [1020,600], alignment: [860,600],
+  };
+
+  const connections = [
+    ['llm','tokens'],['llm','temperature'],['llm','context_window'],['llm','streaming'],
+    ['llm','prompt'],['llm','cot'],['llm','multimodal'],['llm','hallucination'],
+    ['tokens','context_window'],['tokens','compaction'],['tokens','streaming'],
+    ['prompt','system_prompt'],['prompt','cot'],['prompt','fine_tuning'],
+    ['system_prompt','tools'],['system_prompt','memory'],['system_prompt','guardrails'],
+    ['tools','function_calling'],['tools','skills'],['tools','agent'],['tools','mcp'],
+    ['function_calling','skills'],
+    ['embeddings','vector_db'],['embeddings','rag'],
+    ['vector_db','rag'],
+    ['rag','context_window'],['rag','hallucination'],
+    ['memory','context_window'],['memory','compaction'],
+    ['agent','orchestrator'],['agent','subagents'],['agent','skills'],
+    ['orchestrator','subagents'],
+    ['hallucination','guardrails'],['hallucination','alignment'],
+    ['guardrails','prompt_injection'],['guardrails','alignment'],
+    ['prompt_injection','alignment'],
+    ['fine_tuning','rag'],
+  ];
+
+  const catCls = { foundations:'cat-foundations', action:'cat-action', memory:'cat-memory', scaling:'cat-scaling', safety:'cat-safety' };
+  const inner = document.getElementById('mapInner');
+  let activeNode = null;
+
+  // Draw lines
+  connections.forEach(([a, b], i) => {
+    const pa = positions[a], pb = positions[b];
+    if (!pa || !pb) return;
+    const dx = pb[0]-pa[0], dy = pb[1]-pa[1];
+    const len = Math.sqrt(dx*dx+dy*dy);
+    const ang = Math.atan2(dy,dx)*180/Math.PI;
+    const line = document.createElement('div');
+    line.className = 'map-line';
+    line.dataset.from = a; line.dataset.to = b;
+    line.style.cssText = `left:${pa[0]}px;top:${pa[1]}px;width:${len}px;transform:rotate(${ang}deg);`;
+    inner.appendChild(line);
+  });
+
+  // Draw nodes
+  CONCEPTS.forEach(c => {
+    const pos = positions[c.id];
+    if (!pos) return;
+    const node = document.createElement('a');
+    node.className = `map-node ${catCls[c.category] || ''}`;
+    node.href = `../concepts/${c.id}/index.html`;
+    node.dataset.id = c.id;
+    node.style.cssText = `left:${pos[0]}px;top:${pos[1]}px;`;
+    node.innerHTML = `<span class="mn-icon">${c.icon}</span>${c.title}`;
+
+    node.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (activeNode === c.id) { location.href = node.href; return; }
+      activeNode = c.id;
+      // Reset all
+      inner.querySelectorAll('.map-node').forEach(n => n.classList.remove('highlighted'));
+      inner.querySelectorAll('.map-line').forEach(l => l.classList.remove('highlighted'));
+      // Highlight this + connected
+      node.classList.add('highlighted');
+      inner.querySelectorAll('.map-line').forEach(l => {
+        if (l.dataset.from === c.id || l.dataset.to === c.id) {
+          l.classList.add('highlighted');
+          const otherId = l.dataset.from === c.id ? l.dataset.to : l.dataset.from;
+          const otherNode = inner.querySelector(`.map-node[data-id="${otherId}"]`);
+          if (otherNode) otherNode.classList.add('highlighted');
+        }
+      });
+    });
+
+    node.addEventListener('dblclick', () => { location.href = node.href; });
+    inner.appendChild(node);
+  });
+  </script>
+</body>
+</html>
