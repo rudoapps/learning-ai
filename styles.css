@@ -23,6 +23,67 @@ body {
   flex-direction: column;
 }
 
+/* Global nav */
+.gnav {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 24px; background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  font-size: 13px; flex-shrink: 0;
+}
+.gnav .gnav-brand { font-weight: 700; color: var(--text); text-decoration: none; margin-right: 12px; }
+.gnav a {
+  color: var(--muted); text-decoration: none; padding: 5px 10px;
+  border-radius: 6px; transition: all 0.15s;
+}
+.gnav a:hover { color: var(--text); background: var(--surface-2); }
+.gnav a.active { color: var(--accent); background: rgba(88,166,255,0.1); }
+.gnav-search {
+  margin-left: auto; background: var(--surface-2); border: 1px solid var(--border);
+  color: var(--muted); padding: 5px 12px; border-radius: 6px; font-size: 12px;
+  cursor: pointer; display: flex; align-items: center; gap: 6px;
+}
+.gnav-search:hover { color: var(--text); border-color: var(--accent); }
+.gnav-search-hint { font-size: 10px; opacity: 0.6; }
+
+/* Search modal */
+.search-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  z-index: 1000; display: flex; align-items: flex-start; justify-content: center;
+  padding-top: 15vh; backdrop-filter: blur(4px);
+}
+.search-modal {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; width: 520px; max-width: 90vw;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5); overflow: hidden;
+}
+.search-input {
+  width: 100%; padding: 16px 20px; background: transparent;
+  border: none; border-bottom: 1px solid var(--border);
+  color: var(--text); font-size: 16px; outline: none;
+}
+.search-results { max-height: 360px; overflow-y: auto; }
+.search-item {
+  display: flex; align-items: center; gap: 12px; padding: 10px 20px;
+  text-decoration: none; color: var(--text); transition: background 0.1s;
+}
+.search-item:hover, .search-item.selected { background: var(--surface-2); }
+.si-icon { font-size: 22px; }
+.si-text { flex: 1; }
+.si-title { font-size: 14px; font-weight: 600; }
+.si-tag { font-size: 11px; color: var(--muted); }
+.si-cat { font-size: 10px; color: var(--muted); text-transform: uppercase; }
+.search-empty { padding: 24px; text-align: center; color: var(--muted); font-size: 14px; }
+.search-hint-bar {
+  padding: 8px 20px; font-size: 11px; color: var(--muted);
+  border-top: 1px solid var(--border); text-align: center;
+}
+
+/* Progress */
+.progress-badge {
+  background: var(--green); color: white; font-size: 11px; font-weight: 700;
+  padding: 2px 8px; border-radius: 10px; margin-left: 8px;
+}
+
 .topbar {
   padding: 16px 24px;
   background: var(--surface);
