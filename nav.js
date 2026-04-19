@@ -2,11 +2,12 @@
 (function() {
   const path = location.pathname;
   const depth = (path.match(/concepts\/[^/]+\//) ? '../../' :
-                 path.match(/(demo|cheatsheet|map|comparisons|quiz)\//) ? '../' : '');
+                 path.match(/(demo-cli|demo|cheatsheet|map|comparisons|quiz)\//) ? '../' : '');
 
   const links = [
     { href: 'index.html', label: 'Inicio', match: /index\.html$|learning-ai\/$/ },
-    { href: 'demo/index.html', label: 'Demo', match: /demo\// },
+    { href: 'demo/index.html', label: 'Demo', match: /\/demo\// },
+    { href: 'demo-cli/index.html', label: 'Demo CLI', match: /demo-cli\// },
     { href: 'cheatsheet/cheatsheet.html', label: 'Cheat Sheet', match: /cheatsheet\// },
     { href: 'map/index.html', label: 'Mapa', match: /map\// },
     { href: 'comparisons/index.html', label: 'Comparativas', match: /comparisons\// },

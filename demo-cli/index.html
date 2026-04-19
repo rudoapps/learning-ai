@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cómo funciona una IA en la terminal — Demo CLI</title>
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="cli.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+</head>
+<body>
+  <script src="../nav.js"></script>
+  <header class="topbar">
+    <h1>¿Qué pasa cuando una IA trabaja en tu terminal?</h1>
+    <div class="controls">
+      <select id="scenario">
+        <optgroup label="📚 Empieza por aquí">
+          <option value="list">1. Una pregunta simple: ¿qué hay aquí?</option>
+          <option value="read">2. Leer un archivo</option>
+        </optgroup>
+        <optgroup label="✏️ Modificar código">
+          <option value="edit">3. Arreglar un typo (con aprobación)</option>
+          <option value="bug">4. Arreglar un bug (leer + editar)</option>
+        </optgroup>
+        <optgroup label="🤖 Bucle agente">
+          <option value="test">5. Crear y ejecutar un test</option>
+          <option value="refactor">6. Refactor multi-archivo</option>
+        </optgroup>
+      </select>
+      <button id="play">▶ Reproducir</button>
+      <button id="reset">↺ Reiniciar</button>
+      <label>Velocidad
+        <select id="speed">
+          <option value="1.5">Lenta</option>
+          <option value="1" selected>Normal</option>
+          <option value="0.5">Rápida</option>
+          <option value="0.2">Muy rápida</option>
+        </select>
+      </label>
+    </div>
+  </header>
+
+  <main class="stage">
+    <section class="pane user-pane">
+      <div class="pane-header">
+        <span class="dot green"></span>
+        <h2>Lo que ve el usuario (terminal)</h2>
+      </div>
+      <div id="term" class="term"></div>
+      <div class="term-composer">
+        <span class="term-prompt-char">&gt;</span>
+        <input type="text" placeholder="Escribe una instrucción..." disabled>
+      </div>
+    </section>
+
+    <section class="pane tech-pane">
+      <div class="pane-header">
+        <span class="dot orange"></span>
+        <h2>Lo que ocurre por dentro</h2>
+      </div>
+      <div class="token-meter" id="meter">
+        <div class="meter-row">
+          <div class="meter-item in">
+            <span class="meter-label">↓ Input</span>
+            <span class="meter-value" id="inTokens">0</span>
+            <span class="meter-unit">tokens</span>
+          </div>
+          <div class="meter-item out">
+            <span class="meter-label">↑ Output</span>
+            <span class="meter-value" id="outTokens">0</span>
+            <span class="meter-unit">tokens</span>
+          </div>
+          <div class="meter-item cost">
+            <span class="meter-label">≈ Coste</span>
+            <span class="meter-value" id="cost">$0.0000</span>
+          </div>
+        </div>
+        <div class="meter-explain">
+          En la CLI, el system prompt es <b>enorme</b> (tools + CWD + git status + reglas). Y cada bucle reenvía TODO lo anterior → los costes crecen rápido.
+        </div>
+      </div>
+      <div id="tech" class="tech"></div>
+    </section>
+  </main>
+
+  <script src="scenarios.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
