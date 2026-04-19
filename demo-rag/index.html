@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cómo funciona RAG — Demo</title>
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="rag.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+</head>
+<body class="rag-demo">
+  <script src="../nav.js"></script>
+  <header class="topbar">
+    <h1><span class="rag-icon">📚</span> ¿Cómo busca la IA en tus documentos? — RAG</h1>
+    <div class="controls">
+      <select id="scenario">
+        <optgroup label="📚 Básicos">
+          <option value="basic">1. Consulta con match (top-K)</option>
+          <option value="nomatch">2. Pregunta fuera de los docs</option>
+        </optgroup>
+        <optgroup label="⚠️ Cuando RAG falla">
+          <option value="chunking">3. Chunking malo = mala respuesta</option>
+        </optgroup>
+        <optgroup label="🚀 Avanzado">
+          <option value="rerank">4. Re-ranking en 2 etapas</option>
+        </optgroup>
+      </select>
+      <button id="play">▶ Reproducir</button>
+      <button id="reset">↺ Reiniciar</button>
+      <label>Velocidad
+        <select id="speed">
+          <option value="1.5">Lenta</option>
+          <option value="1" selected>Normal</option>
+          <option value="0.5">Rápida</option>
+          <option value="0.2">Muy rápida</option>
+        </select>
+      </label>
+    </div>
+  </header>
+
+  <main class="stage">
+    <section class="pane user-pane">
+      <div class="pane-header">
+        <span class="dot green"></span>
+        <h2>Lo que ve el usuario</h2>
+      </div>
+      <div id="chat" class="chat"></div>
+      <div class="composer">
+        <input type="text" placeholder="Pregunta sobre tus documentos..." disabled>
+        <button disabled>Enviar</button>
+      </div>
+    </section>
+
+    <section class="pane tech-pane">
+      <div class="pane-header">
+        <span class="dot purple"></span>
+        <h2>🗂 Motor RAG</h2>
+      </div>
+      <div id="vdb" class="vdb">
+        <div class="vdb-header">
+          <span class="vdb-label">Base de conocimiento</span>
+          <span class="vdb-meta" id="vdb-meta">sin documentos</span>
+        </div>
+        <div class="vdb-grid" id="vdb-grid"></div>
+        <div class="vdb-query" id="vdb-query" style="display:none">
+          <span class="vq-label">vector de la pregunta</span>
+          <code id="vq-vec"></code>
+        </div>
+      </div>
+      <div class="token-meter" id="meter">
+        <div class="meter-row">
+          <div class="meter-item in">
+            <span class="meter-label">↓ Input</span>
+            <span class="meter-value" id="inTokens">0</span>
+            <span class="meter-unit">tokens</span>
+          </div>
+          <div class="meter-item out">
+            <span class="meter-label">↑ Output</span>
+            <span class="meter-value" id="outTokens">0</span>
+            <span class="meter-unit">tokens</span>
+          </div>
+          <div class="meter-item cost">
+            <span class="meter-label">≈ Coste</span>
+            <span class="meter-value" id="cost">$0.0000</span>
+          </div>
+        </div>
+        <div class="meter-explain">
+          En RAG, el <b>input crece</b> con cada chunk inyectado. Por eso importa el <b>top-K</b> (menos = más barato pero puede faltar info).
+        </div>
+      </div>
+      <div id="tech" class="tech"></div>
+    </section>
+  </main>
+
+  <script src="scenarios.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
