@@ -8,10 +8,10 @@
 <link rel="stylesheet" href="cli.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
 </head>
-<body>
+<body class="cli-demo">
   <script src="../nav.js"></script>
   <header class="topbar">
-    <h1>¿Qué pasa cuando una IA trabaja en tu terminal?</h1>
+    <h1><span class="cli-prompt">$</span> ¿Qué pasa cuando una IA trabaja en tu terminal?</h1>
     <div class="controls">
       <select id="scenario">
         <optgroup label="📚 Empieza por aquí">
@@ -42,9 +42,9 @@
 
   <main class="stage">
     <section class="pane user-pane">
-      <div class="pane-header">
-        <span class="dot green"></span>
-        <h2>Lo que ve el usuario (terminal)</h2>
+      <div class="pane-header term-chrome">
+        <span class="chrome-dots"><i></i><i></i><i></i></span>
+        <span class="chrome-title">— zsh — fer@mac — ~/mi-proyecto</span>
       </div>
       <div id="term" class="term"></div>
       <div class="term-composer">

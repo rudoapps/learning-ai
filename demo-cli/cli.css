@@ -1,3 +1,89 @@
+/* ===== Page-level overrides for the CLI demo =====
+   Re-accent to green + monospace topbar to clearly separate from the chat demo. */
+.cli-demo .topbar {
+  background: linear-gradient(180deg, #0d1820 0%, #0a1418 100%);
+  border-bottom: 1px solid rgba(63, 185, 80, 0.25);
+  box-shadow: inset 0 -1px 0 rgba(63, 185, 80, 0.08);
+}
+.cli-demo .topbar h1 {
+  font-family: 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 15px;
+  letter-spacing: 0.2px;
+  color: #d4d9e0;
+}
+.cli-demo .topbar h1 .cli-prompt {
+  color: var(--green);
+  font-weight: 700;
+  margin-right: 6px;
+  animation: blink 1.2s infinite;
+}
+.cli-demo .controls select,
+.cli-demo .controls button {
+  font-family: 'SF Mono', Menlo, monospace;
+  font-size: 12px;
+}
+.cli-demo .controls button#play {
+  background: rgba(63, 185, 80, 0.12);
+  border-color: rgba(63, 185, 80, 0.35);
+  color: var(--green);
+}
+.cli-demo .controls button#play:hover {
+  background: rgba(63, 185, 80, 0.22);
+}
+
+/* Terminal window chrome (macOS style) */
+.cli-demo .pane-header.term-chrome {
+  padding: 8px 14px;
+  background: linear-gradient(180deg, #2a2f36 0%, #1e232a 100%);
+  border-bottom: 1px solid #000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: flex-start;
+}
+.cli-demo .chrome-dots {
+  display: inline-flex;
+  gap: 6px;
+}
+.cli-demo .chrome-dots i {
+  width: 11px; height: 11px; border-radius: 50%;
+  display: inline-block;
+  box-shadow: inset 0 0 0 0.5px rgba(0,0,0,0.35);
+}
+.cli-demo .chrome-dots i:nth-child(1) { background: #ff5f57; }
+.cli-demo .chrome-dots i:nth-child(2) { background: #febc2e; }
+.cli-demo .chrome-dots i:nth-child(3) { background: #28c840; }
+.cli-demo .chrome-title {
+  flex: 1;
+  text-align: center;
+  font-family: 'SF Mono', Menlo, monospace;
+  font-size: 11px;
+  color: #8a929b;
+  letter-spacing: 0.3px;
+  margin-right: 54px; /* offset for visual centering vs dots */
+}
+
+/* Right pane gets a subtle different header so it doesn't match the chat demo */
+.cli-demo .pane.tech-pane .pane-header {
+  background: linear-gradient(180deg, #141a21 0%, #0f141a 100%);
+  border-bottom: 1px solid rgba(247, 129, 102, 0.2);
+}
+.cli-demo .pane.tech-pane .pane-header h2 {
+  font-family: 'SF Mono', Menlo, monospace;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--orange);
+}
+.cli-demo .pane.tech-pane .pane-header h2::before {
+  content: '[ ';
+  opacity: 0.6;
+}
+.cli-demo .pane.tech-pane .pane-header h2::after {
+  content: ' ]';
+  opacity: 0.6;
+}
+
 /* Terminal pane (left side of the CLI demo) */
 .term {
   flex: 1;
