@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cómo funcionan los multi-agentes — Demo</title>
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="agents.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+</head>
+<body class="agents-demo">
+  <script src="../nav.js"></script>
+  <header class="topbar">
+    <h1><span class="ag-icon">🤖</span> ¿Cómo se coordinan varios agentes?</h1>
+    <div class="controls">
+      <select id="scenario">
+        <optgroup label="🏗 Patrones">
+          <option value="parallel">1. Orquestador + subagentes en paralelo</option>
+          <option value="sequential">2. Pipeline secuencial (plan → code → test)</option>
+        </optgroup>
+        <optgroup label="🧠 Claves conceptuales">
+          <option value="isolated">3. Cada agente tiene su propio contexto</option>
+          <option value="recover">4. Uno falla — el orquestador reacciona</option>
+        </optgroup>
+      </select>
+      <button id="play">▶ Reproducir</button>
+      <button id="reset">↺ Reiniciar</button>
+      <label>Velocidad
+        <select id="speed">
+          <option value="1.5">Lenta</option>
+          <option value="1" selected>Normal</option>
+          <option value="0.5">Rápida</option>
+          <option value="0.2">Muy rápida</option>
+        </select>
+      </label>
+    </div>
+  </header>
+
+  <main class="stage">
+    <section class="pane user-pane">
+      <div class="pane-header">
+        <span class="dot green"></span>
+        <h2>Lo que ve el usuario</h2>
+      </div>
+      <div id="chat" class="chat"></div>
+      <div class="composer">
+        <input type="text" placeholder="Dale una misión al orquestador..." disabled>
+        <button disabled>Enviar</button>
+      </div>
+    </section>
+
+    <section class="pane tech-pane">
+      <div class="pane-header">
+        <span class="dot orange"></span>
+        <h2>🎭 Orquesta de agentes</h2>
+      </div>
+      <div class="lanes" id="lanes"></div>
+      <div class="token-meter" id="meter">
+        <div class="meter-row">
+          <div class="meter-item in">
+            <span class="meter-label">↓ Input total</span>
+            <span class="meter-value" id="inTokens">0</span>
+            <span class="meter-unit">tokens</span>
+          </div>
+          <div class="meter-item out">
+            <span class="meter-label">↑ Output total</span>
+            <span class="meter-value" id="outTokens">0</span>
+            <span class="meter-unit">tokens</span>
+          </div>
+          <div class="meter-item cost">
+            <span class="meter-label">≈ Coste</span>
+            <span class="meter-value" id="cost">$0.0000</span>
+          </div>
+        </div>
+        <div class="meter-explain">
+          Cada agente es una <b>conversación independiente</b> con el LLM. Suman: más agentes = más coste, pero más paralelismo.
+        </div>
+      </div>
+      <div id="tech" class="tech"></div>
+    </section>
+  </main>
+
+  <script src="scenarios.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
