@@ -13,23 +13,47 @@
   <div class="comp-page">
     <header class="comp-header">
       <h1>🔌 MCP vs 🔧 Tools custom</h1>
-      <p>¿Estándar abierto o implementación a medida? Depende de tu contexto.</p>
+      <p>¿Estandar abierto o implementación a medida? Depende de tu contexto.</p>
     </header>
 
     <div class="comp-content">
+
+      <!-- USB Analogy Visual -->
       <div class="comp-section">
         <h2>🔌 La analogía USB</h2>
-        <p>Antes de USB, cada periférico tenía su conector: impresoras con puerto paralelo, ratones con PS/2, cámaras con FireWire. Cada fabricante hacía su driver. <strong>N periféricos × M ordenadores = N×M adaptadores.</strong></p>
-        <p>USB unificó: un estándar, todos los dispositivos. <strong>N + M implementaciones.</strong></p>
-        <p>MCP hace lo mismo para IA: un protocolo estándar para conectar cualquier herramienta a cualquier modelo.</p>
+        <p>Antes de USB, cada periférico tenía su conector: impresoras con puerto paralelo, ratones con PS/2, cámaras con FireWire. Cada fabricante hacía su driver. MCP hace lo mismo para IA: un protocolo estándar para conectar cualquier herramienta a cualquier modelo.</p>
+        <div class="usb-analogy">
+          <div class="usb-panel before">
+            <h3>Antes (sin MCP)</h3>
+            <div class="usb-diagram">
+              <div class="usb-col" id="before-llms"></div>
+              <div class="usb-lines mess" id="before-lines"><svg></svg></div>
+              <div class="usb-col" id="before-tools"></div>
+            </div>
+            <div class="usb-formula">N x M = 12 adaptadores</div>
+          </div>
+          <div class="usb-panel after">
+            <h3>Después (con MCP)</h3>
+            <div class="usb-diagram">
+              <div class="usb-col" id="after-llms"></div>
+              <div class="usb-lines clean" id="after-lines">
+                <svg></svg>
+                <div class="usb-hub">MCP</div>
+              </div>
+              <div class="usb-col" id="after-tools"></div>
+            </div>
+            <div class="usb-formula">N + M = 7 conexiones</div>
+          </div>
+        </div>
       </div>
 
+      <!-- Interactive Comparison Table -->
       <div class="comp-table-wrap">
-        <table class="comp-table">
+        <table class="comp-table" id="cmpTable">
           <tr>
             <th></th>
-            <th>🔧 Tools custom (función nativa)</th>
-            <th>🔌 MCP (protocolo estándar)</th>
+            <th class="clickable" data-col="1">🔧 Tools custom</th>
+            <th class="clickable" data-col="2">🔌 MCP</th>
           </tr>
           <tr>
             <td><strong>Implementación</strong></td>
@@ -74,38 +98,320 @@
         </table>
       </div>
 
+      <!-- Animated Decision Tree -->
       <div class="comp-section">
         <h2>🌳 Árbol de decisión</h2>
-        <div class="decision-tree">
-          <div class="dt-node dt-question">❓ ¿Cuántas integraciones necesitas?</div>
-          <div class="dt-node dt-answer">1-2 integraciones simples → <strong>Tools custom</strong> (más rápido de montar)</div>
-          <div class="dt-node dt-question" style="margin-left:24px">❓ ¿Existe un servidor MCP oficial para lo que necesitas?</div>
-          <div class="dt-node dt-answer" style="margin-left:48px">Sí (postgres, github, slack...) → <strong>MCP</strong> (ya está hecho, solo configuras)</div>
-          <div class="dt-node dt-question" style="margin-left:48px">❓ ¿Cambiarás de proveedor de LLM en el futuro?</div>
-          <div class="dt-node dt-answer alt" style="margin-left:72px">Probablemente → <strong>MCP</strong> (no reescribes las integraciones al cambiar de modelo)</div>
-          <div class="dt-node dt-answer" style="margin-left:72px">No, estoy atado a uno → <strong>Tools custom</strong> (más simple, menos abstracción)</div>
-          <div class="dt-node dt-answer warn" style="margin-left:24px">¿Tu integración es muy específica/propietaria? → <strong>Tools custom</strong> (envuelve tu lógica directamente)</div>
+        <div class="decision-tree" id="decisionTree">
+          <div class="dt-node dt-question revealed dt-clickable" data-reveals="branch1">❓ ¿Cuántas integraciones necesitas?</div>
+
+          <div class="dt-branch" id="branch1">
+            <div class="dt-node dt-answer">1-2 integraciones simples → <strong>Tools custom</strong> (más rápido de montar)</div>
+            <div class="dt-node dt-question dt-clickable" data-reveals="branch2">❓ ¿Existe un servidor MCP oficial para lo que necesitas?</div>
+            <div class="dt-node dt-answer warn dt-clickable" data-reveals="">¿Tu integración es muy específica/propietaria? → <strong>Tools custom</strong> (envuelve tu lógica directamente)</div>
+          </div>
+
+          <div class="dt-branch" id="branch2">
+            <div class="dt-node dt-answer">Sí (postgres, github, slack...) → <strong>MCP</strong> (ya está hecho, solo configuras)</div>
+            <div class="dt-node dt-question dt-clickable" data-reveals="branch3">❓ ¿Cambiarás de proveedor de LLM en el futuro?</div>
+          </div>
+
+          <div class="dt-branch" id="branch3">
+            <div class="dt-node dt-answer alt">Probablemente → <strong>MCP</strong> (no reescribes las integraciones al cambiar de modelo)</div>
+            <div class="dt-node dt-answer">No, estoy atado a uno → <strong>Tools custom</strong> (más simple, menos abstracción)</div>
+          </div>
+        </div>
+        <button class="dt-reset" id="dtReset">Reiniciar árbol</button>
+      </div>
+
+      <!-- Scenario Quiz -->
+      <div class="comp-section">
+        <h2>🧩 ¿Qué usarías tú?</h2>
+        <div class="scenario-quiz" id="scenarioQuiz">
+
+          <div class="sq-scenario" data-correct="custom">
+            <p>1. Estás haciendo un bot interno que solo necesita consultar tu API REST propia para responder preguntas del equipo.</p>
+            <div class="sq-options">
+              <button class="sq-option" data-choice="mcp">🔌 MCP</button>
+              <button class="sq-option" data-choice="custom">🔧 Tools custom</button>
+            </div>
+            <div class="sq-feedback">Una sola integración simple y propietaria — Tools custom es más directo y rápido de implementar.</div>
+          </div>
+
+          <div class="sq-scenario" data-correct="mcp">
+            <p>2. Tu empresa usa Postgres, GitHub y Slack, y quieres que el asistente IA acceda a los tres.</p>
+            <div class="sq-options">
+              <button class="sq-option" data-choice="mcp">🔌 MCP</button>
+              <button class="sq-option" data-choice="custom">🔧 Tools custom</button>
+            </div>
+            <div class="sq-feedback">Ya existen servidores MCP para Postgres, GitHub y Slack. Solo configuras, no programas.</div>
+          </div>
+
+          <div class="sq-scenario" data-correct="mcp">
+            <p>3. Estás construyendo una plataforma SaaS donde los clientes pueden elegir entre Claude, GPT o Gemini, y todos deben tener las mismas herramientas.</p>
+            <div class="sq-options">
+              <button class="sq-option" data-choice="mcp">🔌 MCP</button>
+              <button class="sq-option" data-choice="custom">🔧 Tools custom</button>
+            </div>
+            <div class="sq-feedback">MCP da portabilidad entre modelos: defines las tools una vez, funcionan con cualquier LLM compatible.</div>
+          </div>
+
+          <div class="sq-scenario" data-correct="custom">
+            <p>4. Necesitas una integración muy específica con tu sistema de facturación legacy que tiene una API SOAP compleja.</p>
+            <div class="sq-options">
+              <button class="sq-option" data-choice="mcp">🔌 MCP</button>
+              <button class="sq-option" data-choice="custom">🔧 Tools custom</button>
+            </div>
+            <div class="sq-feedback">Demasiado específico para un servidor MCP genérico — Tools custom te da control total sobre la integración SOAP.</div>
+          </div>
+
+        </div>
+        <div class="sq-score" id="quizScore"></div>
+      </div>
+
+      <!-- Expandable Scenario Cards -->
+      <div class="comp-section">
+        <h2>🏢 Escenarios reales</h2>
+        <div class="scenario-cards">
+
+          <div class="sc-card">
+            <div class="sc-card-header">
+              <span class="sc-icon">🚀</span>
+              <div class="sc-info">
+                <h4>Startup con 1 bot simple</h4>
+                <p>Bot que consulta tu API y responde en Slack</p>
+              </div>
+              <span class="sc-badge custom">Custom</span>
+              <span class="sc-chevron">▶</span>
+            </div>
+            <div class="sc-body">
+              <p>Más rápido de montar, menos infraestructura. No necesitas un protocolo estándar para una sola integración. Escribes tu función, la conectas al LLM y listo.</p>
+            </div>
+          </div>
+
+          <div class="sc-card">
+            <div class="sc-card-header">
+              <span class="sc-icon">🏢</span>
+              <div class="sc-info">
+                <h4>Empresa con 5 sistemas internos</h4>
+                <p>Conectar Postgres + GitHub + Slack + Drive + Jira</p>
+              </div>
+              <span class="sc-badge mcp">MCP</span>
+              <span class="sc-chevron">▶</span>
+            </div>
+            <div class="sc-body">
+              <p>Ya existen servidores MCP para todos estos servicios. Una configuración, todo conectado. Mantenidos por la comunidad, así que no tienes que actualizar 5 integraciones tú solo.</p>
+            </div>
+          </div>
+
+          <div class="sc-card">
+            <div class="sc-card-header">
+              <span class="sc-icon">🌐</span>
+              <div class="sc-info">
+                <h4>Plataforma multi-modelo</h4>
+                <p>El usuario elige Claude o GPT, las tools deben funcionar igual</p>
+              </div>
+              <span class="sc-badge mcp">MCP</span>
+              <span class="sc-chevron">▶</span>
+            </div>
+            <div class="sc-body">
+              <p>Las tools se definen una vez y funcionan con cualquier LLM compatible con MCP. Sin reescribir adaptadores para cada proveedor. Portabilidad real.</p>
+            </div>
+          </div>
+
         </div>
       </div>
 
+      <!-- Verdict -->
       <div class="comp-section">
-        <h2>🏢 Escenarios reales</h2>
-        <h3>Startup con 1 bot simple</h3>
-        <p>Bot que consulta tu API y responde en Slack. → <strong>Tools custom</strong>. Más rápido, menos infraestructura.</p>
-        <h3>Empresa con 5 sistemas internos</h3>
-        <p>Conectar a Postgres + GitHub + Slack + Drive + Jira. → <strong>MCP</strong>. Ya existen servidores para todos. Una configuración, todo conectado.</p>
-        <h3>Plataforma multi-modelo</h3>
-        <p>Quieres que el usuario elija Claude o GPT y que las herramientas funcionen igual. → <strong>MCP</strong>. Las tools se definen una vez, funcionan con cualquier LLM compatible.</p>
         <div class="comp-verdict">
           <strong>Tendencia</strong>: MCP es joven (2024-2025) pero creciendo rápido. Si empiezas un proyecto nuevo con múltiples integraciones, MCP es la apuesta segura. Para una tool puntual, custom sigue siendo más pragmático.
         </div>
       </div>
 
+      <!-- Deep dive links -->
       <div class="comp-links">
         <a href="../concepts/mcp/index.html">🔌 Deep dive: MCP</a>
         <a href="../concepts/tools/index.html">🖐️ Deep dive: Tools</a>
       </div>
     </div>
   </div>
+
+  <script>
+  /* ========== USB Analogy Diagram ========== */
+  (function() {
+    const llms = ['Claude', 'GPT', 'Gemini'];
+    const tools = ['Postgres', 'GitHub', 'Slack', 'Filesystem'];
+
+    function makeBoxes(containerId, items, cls) {
+      const c = document.getElementById(containerId);
+      items.forEach(function(name) {
+        var d = document.createElement('div');
+        d.className = 'usb-box ' + cls;
+        d.textContent = name;
+        c.appendChild(d);
+      });
+    }
+
+    makeBoxes('before-llms', llms, 'llm');
+    makeBoxes('before-tools', tools, 'tool');
+    makeBoxes('after-llms', llms, 'llm');
+    makeBoxes('after-tools', tools, 'tool');
+
+    function drawLines(svgParent, leftCount, rightCount, allToAll) {
+      var svg = svgParent.querySelector('svg');
+      // Wait for layout
+      requestAnimationFrame(function() {
+        var rect = svgParent.getBoundingClientRect();
+        svg.setAttribute('viewBox', '0 0 ' + rect.width + ' ' + rect.height);
+        var lStep = rect.height / (leftCount + 1);
+        var rStep = rect.height / (rightCount + 1);
+        if (allToAll) {
+          for (var i = 1; i <= leftCount; i++) {
+            for (var j = 1; j <= rightCount; j++) {
+              var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+              line.setAttribute('x1', 0);
+              line.setAttribute('y1', lStep * i);
+              line.setAttribute('x2', rect.width);
+              line.setAttribute('y2', rStep * j);
+              svg.appendChild(line);
+            }
+          }
+        } else {
+          var cx = rect.width / 2;
+          var cy = rect.height / 2;
+          for (var i = 1; i <= leftCount; i++) {
+            var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', 0);
+            line.setAttribute('y1', lStep * i);
+            line.setAttribute('x2', cx);
+            line.setAttribute('y2', cy);
+            svg.appendChild(line);
+          }
+          for (var j = 1; j <= rightCount; j++) {
+            var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', cx);
+            line.setAttribute('y1', cy);
+            line.setAttribute('x2', rect.width);
+            line.setAttribute('y2', rStep * j);
+            svg.appendChild(line);
+          }
+        }
+      });
+    }
+
+    drawLines(document.getElementById('before-lines'), llms.length, tools.length, true);
+    drawLines(document.getElementById('after-lines'), llms.length, tools.length, false);
+  })();
+
+  /* ========== Interactive Table ========== */
+  (function() {
+    var table = document.getElementById('cmpTable');
+    var ths = table.querySelectorAll('th.clickable');
+    ths.forEach(function(th) {
+      th.addEventListener('click', function() {
+        var col = parseInt(th.dataset.col);
+        var wasSelected = th.classList.contains('selected');
+        // Clear all
+        table.querySelectorAll('.selected').forEach(function(el) { el.classList.remove('selected'); });
+        if (!wasSelected) {
+          th.classList.add('selected');
+          var rows = table.querySelectorAll('tr');
+          for (var i = 1; i < rows.length; i++) {
+            var cells = rows[i].querySelectorAll('td');
+            if (cells[col]) cells[col].classList.add('selected');
+          }
+        }
+      });
+    });
+  })();
+
+  /* ========== Animated Decision Tree ========== */
+  (function() {
+    var tree = document.getElementById('decisionTree');
+    var clickables = tree.querySelectorAll('.dt-clickable');
+
+    clickables.forEach(function(node) {
+      node.addEventListener('click', function() {
+        if (node.classList.contains('used')) return;
+        node.classList.add('used');
+        var targetId = node.dataset.reveals;
+        if (!targetId) return;
+        var branch = document.getElementById(targetId);
+        if (!branch) return;
+        var children = branch.querySelectorAll('.dt-node');
+        var delay = 0;
+        children.forEach(function(child) {
+          setTimeout(function() { child.classList.add('revealed'); }, delay);
+          delay += 200;
+        });
+      });
+    });
+
+    document.getElementById('dtReset').addEventListener('click', function() {
+      // Hide all except first
+      tree.querySelectorAll('.dt-node').forEach(function(n, i) {
+        if (i === 0) return;
+        n.classList.remove('revealed');
+      });
+      tree.querySelectorAll('.dt-clickable').forEach(function(n) {
+        n.classList.remove('used');
+      });
+    });
+  })();
+
+  /* ========== Scenario Quiz ========== */
+  (function() {
+    var quiz = document.getElementById('scenarioQuiz');
+    var scenarios = quiz.querySelectorAll('.sq-scenario');
+    var answered = 0;
+    var correct = 0;
+
+    scenarios.forEach(function(sc) {
+      var correctAnswer = sc.dataset.correct;
+      var buttons = sc.querySelectorAll('.sq-option');
+      var feedback = sc.querySelector('.sq-feedback');
+
+      buttons.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          if (sc.classList.contains('answered')) return;
+          sc.classList.add('answered');
+          answered++;
+          var choice = btn.dataset.choice;
+          if (choice === correctAnswer) {
+            btn.classList.add('correct');
+            feedback.classList.add('correct', 'show');
+            correct++;
+          } else {
+            btn.classList.add('wrong');
+            feedback.classList.add('wrong', 'show');
+            // Highlight correct one
+            buttons.forEach(function(b) {
+              if (b.dataset.choice === correctAnswer) b.classList.add('correct');
+              else if (!b.classList.contains('wrong')) b.classList.add('disabled');
+            });
+          }
+          // Disable others
+          buttons.forEach(function(b) {
+            if (!b.classList.contains('correct') && !b.classList.contains('wrong')) b.classList.add('disabled');
+          });
+          // Update score
+          if (answered === scenarios.length) {
+            document.getElementById('quizScore').innerHTML = 'Resultado: <span>' + correct + '/' + scenarios.length + '</span> correctas';
+          }
+        });
+      });
+    });
+  })();
+
+  /* ========== Expandable Scenario Cards ========== */
+  (function() {
+    document.querySelectorAll('.sc-card-header').forEach(function(header) {
+      header.addEventListener('click', function() {
+        var card = header.parentElement;
+        card.classList.toggle('open');
+      });
+    });
+  })();
+  </script>
 </body>
 </html>

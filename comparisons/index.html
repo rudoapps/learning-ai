@@ -13,24 +13,72 @@
   <div class="comp-page">
     <header class="comp-header">
       <h1>Comparativas</h1>
-      <p>Las preguntas más frecuentes: "¿cuál uso?"</p>
+      <p class="comp-subtitle">Cuando dos (o tres) opciones compiten, lo que importa no es cuál es "mejor" sino <strong>cuál encaja en tu caso</strong>. Cada comparativa incluye tabla de diferencias, árbol de decisión interactivo y un mini-quiz para que lo compruebes.</p>
     </header>
+
     <div class="comp-grid">
+
+      <!-- Card 1 -->
       <a href="rag-vs-finetuning.html" class="comp-card">
-        <div class="cc-icons">👁 vs 🎓</div>
+        <div class="cc-tag" data-color="orange">Decisión frecuente</div>
+        <div class="cc-vs">
+          <span class="cc-pill" style="--pill-color: var(--accent);">RAG</span>
+          <span class="cc-vs-label">vs</span>
+          <span class="cc-pill" style="--pill-color: var(--purple);">Fine-tuning</span>
+          <span class="cc-vs-label">vs</span>
+          <span class="cc-pill" style="--pill-color: var(--green);">Prompting</span>
+        </div>
         <h2>RAG vs Fine-tuning vs Prompting</h2>
-        <p>Tres formas de enseñarle algo a la IA. ¿Cuándo usar cada una?</p>
+        <p>Tres formas de enseñarle algo a la IA. No son excluyentes, pero arrancar por la correcta ahorra semanas.</p>
+        <div class="cc-verdict-preview">
+          <span class="cc-verdict-icon">&#9889;</span>
+          <span>Si tus datos cambian a menudo &rarr; RAG. Si necesitas cambiar el estilo &rarr; Fine-tuning. Si son pocas reglas &rarr; Prompting.</span>
+        </div>
       </a>
+
+      <!-- Card 2 -->
       <a href="agent-vs-skill-vs-tool.html" class="comp-card">
-        <div class="cc-icons">🤖 vs 🎯 vs 🖐️</div>
+        <div class="cc-tag" data-color="purple">Para arquitectos</div>
+        <div class="cc-vs">
+          <span class="cc-pill" style="--pill-color: var(--accent);">Agent</span>
+          <span class="cc-vs-label">vs</span>
+          <span class="cc-pill" style="--pill-color: var(--orange);">Skill</span>
+          <span class="cc-vs-label">vs</span>
+          <span class="cc-pill" style="--pill-color: var(--yellow);">Tool</span>
+        </div>
         <h2>Agent vs Skill vs Tool</h2>
-        <p>Ladrillos, recetas y cocineros. La diferencia importa.</p>
+        <p>Ladrillos, recetas y cocineros. Confundirlos lleva a arquitecturas frágiles.</p>
+        <div class="cc-verdict-preview">
+          <span class="cc-verdict-icon">&#9889;</span>
+          <span>Tool = función atómica. Skill = secuencia reutilizable. Agent = decisor autónomo que elige skills y tools.</span>
+        </div>
       </a>
+
+      <!-- Card 3 -->
       <a href="mcp-vs-tools.html" class="comp-card">
-        <div class="cc-icons">🔌 vs 🔧</div>
+        <div class="cc-tag" data-color="green">Setup inicial</div>
+        <div class="cc-vs">
+          <span class="cc-pill" style="--pill-color: var(--green);">MCP</span>
+          <span class="cc-vs-label">vs</span>
+          <span class="cc-pill" style="--pill-color: var(--orange);">Tools custom</span>
+        </div>
         <h2>MCP vs Tools custom</h2>
-        <p>¿Estándar abierto o implementación a medida? Pros y contras.</p>
+        <p>Estándar abierto frente a implementación a medida. La elección marca tu roadmap.</p>
+        <div class="cc-verdict-preview">
+          <span class="cc-verdict-icon">&#9889;</span>
+          <span>MCP si quieres interoperabilidad y ecosistema. Custom si necesitas control total y rendimiento máximo.</span>
+        </div>
       </a>
+
+    </div>
+
+    <!-- Helper section -->
+    <div class="comp-starter">
+      <div class="comp-starter-icon">&#128161;</div>
+      <div class="comp-starter-body">
+        <h3>¿No sabes por dónde empezar?</h3>
+        <p>La comparativa que más se consulta es <a href="rag-vs-finetuning.html"><strong>RAG vs Fine-tuning vs Prompting</strong></a>. Es la primera decisión que tomas en casi cualquier proyecto de IA aplicada.</p>
+      </div>
     </div>
   </div>
 </body>

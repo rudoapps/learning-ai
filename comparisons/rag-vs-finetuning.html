@@ -12,103 +12,207 @@
   <script src="../nav.js"></script>
   <div class="comp-page">
     <header class="comp-header">
-      <h1>👁 RAG vs 🎓 Fine-tuning vs 📋 Prompting</h1>
+      <h1>RAG vs Fine-tuning vs Prompting</h1>
       <p>Tres formas de enseñarle algo a la IA. No son alternativas — a veces se combinan.</p>
     </header>
 
     <div class="comp-content">
-      <div class="comp-table-wrap">
-        <table class="comp-table">
-          <tr>
-            <th></th>
-            <th>📋 Prompting</th>
-            <th>👁 RAG</th>
-            <th>🎓 Fine-tuning</th>
-          </tr>
-          <tr>
-            <td><strong>Qué es</strong></td>
-            <td>Instrucciones en el prompt</td>
-            <td>Buscar en tus docs y pegarlos al prompt</td>
-            <td>Re-entrenar parcialmente los pesos del modelo</td>
-          </tr>
-          <tr>
-            <td><strong>Coste setup</strong></td>
-            <td>$0 — solo escribir</td>
-            <td>Bajo — indexar docs + base vectorial</td>
-            <td>Alto — dataset + horas de GPU ($200+)</td>
-          </tr>
-          <tr>
-            <td><strong>Tiempo setup</strong></td>
-            <td>Minutos</td>
-            <td>Horas</td>
-            <td>Días</td>
-          </tr>
-          <tr>
-            <td><strong>Actualizable</strong></td>
-            <td>Inmediato (editas el prompt)</td>
-            <td>Inmediato (cambias el doc, se reindexa)</td>
-            <td>Lento (hay que re-entrenar)</td>
-          </tr>
-          <tr>
-            <td><strong>Escala</strong></td>
-            <td>No — limitado por context window</td>
-            <td>Sí — millones de documentos</td>
-            <td>No — para estilo, no datos</td>
-          </tr>
-          <tr>
-            <td><strong>Enseña hechos</strong></td>
-            <td>Sí (pocos, en el prompt)</td>
-            <td>Sí (muchos, con citas)</td>
-            <td>No (solo estilo/formato)</td>
-          </tr>
-          <tr>
-            <td><strong>Enseña estilo</strong></td>
-            <td>Parcial (instrucciones)</td>
-            <td>No (solo datos)</td>
-            <td>Sí (interioriza patrones)</td>
-          </tr>
-          <tr>
-            <td><strong>Cita fuentes</strong></td>
-            <td>No</td>
-            <td>Sí</td>
-            <td>No</td>
-          </tr>
-          <tr>
-            <td><strong>Coste por turno</strong></td>
-            <td>Bajo (solo el prompt)</td>
-            <td>Medio (prompt + chunks)</td>
-            <td>Bajo (prompt corto) pero modelo más caro</td>
-          </tr>
-        </table>
-      </div>
 
-      <div class="comp-section">
-        <h2>🌳 Árbol de decisión</h2>
-        <div class="decision-tree">
-          <div class="dt-node dt-question">❓ ¿Quieres que la IA <strong>sepa cosas</strong> (hechos, documentos) o que <strong>hable de cierta forma</strong> (tono, formato)?</div>
-          <div class="dt-node dt-answer">📚 <strong>Saber cosas</strong> → ¿cuántos documentos?</div>
-          <div class="dt-node dt-answer" style="margin-left:48px">Pocos (< 10 páginas) → <strong>Prompting</strong> (mételos en el prompt directamente)</div>
-          <div class="dt-node dt-answer" style="margin-left:48px">Muchos (100+) → <strong>RAG</strong> (indexa y busca dinámicamente)</div>
-          <div class="dt-node dt-answer alt">🎨 <strong>Hablar de cierta forma</strong> → ¿puedes describirlo con palabras?</div>
-          <div class="dt-node dt-answer alt" style="margin-left:48px">Sí → <strong>Prompting</strong> (instrucciones detalladas + few-shot)</div>
-          <div class="dt-node dt-answer alt" style="margin-left:48px">No, es un patrón sutil → <strong>Fine-tuning</strong> (miles de ejemplos)</div>
-          <div class="dt-node dt-answer warn">⚠️ ¿Quieres AMBAS cosas? → <strong>RAG + Prompting</strong> (lo más común en producción)</div>
+      <!-- ── Analogy cards ── -->
+      <div class="analogy-cards">
+        <div class="analogy-card prompting">
+          <div class="ac-border"></div>
+          <div class="ac-icon">📋</div>
+          <div class="ac-name">Prompting</div>
+          <div class="ac-desc">Como darle instrucciones escritas a un empleado nuevo antes de empezar.</div>
+        </div>
+        <div class="analogy-card rag">
+          <div class="ac-border"></div>
+          <div class="ac-icon">👁</div>
+          <div class="ac-name">RAG</div>
+          <div class="ac-desc">Como darle acceso a la biblioteca de la empresa para que consulte antes de responder.</div>
+        </div>
+        <div class="analogy-card finetuning">
+          <div class="ac-border"></div>
+          <div class="ac-icon">🎓</div>
+          <div class="ac-name">Fine-tuning</div>
+          <div class="ac-desc">Como enviar al empleado a un curso intensivo para que interiorice un estilo.</div>
         </div>
       </div>
 
+      <!-- ── Interactive comparison table ── -->
+      <div class="comp-table-wrap">
+        <table class="comp-table" id="compTable">
+          <thead>
+            <tr>
+              <th></th>
+              <th class="clickable" data-col="1">📋 Prompting</th>
+              <th class="clickable" data-col="2">👁 RAG</th>
+              <th class="clickable" data-col="3">🎓 Fine-tuning</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Que es</strong></td>
+              <td>Instrucciones en el prompt</td>
+              <td>Buscar en tus docs y pegarlos al prompt</td>
+              <td>Re-entrenar parcialmente los pesos del modelo</td>
+            </tr>
+            <tr>
+              <td><strong>Coste setup</strong></td>
+              <td>$0 — solo escribir</td>
+              <td>Bajo — indexar docs + base vectorial</td>
+              <td>Alto — dataset + horas de GPU ($200+)</td>
+            </tr>
+            <tr>
+              <td><strong>Tiempo setup</strong></td>
+              <td>Minutos</td>
+              <td>Horas</td>
+              <td>Dias</td>
+            </tr>
+            <tr>
+              <td><strong>Actualizable</strong></td>
+              <td>Inmediato (editas el prompt)</td>
+              <td>Inmediato (cambias el doc, se reindexa)</td>
+              <td>Lento (hay que re-entrenar)</td>
+            </tr>
+            <tr>
+              <td><strong>Escala</strong></td>
+              <td>No — limitado por context window</td>
+              <td>Si — millones de documentos</td>
+              <td>No — para estilo, no datos</td>
+            </tr>
+            <tr>
+              <td><strong>Enseña hechos</strong></td>
+              <td>Si (pocos, en el prompt)</td>
+              <td>Si (muchos, con citas)</td>
+              <td>No (solo estilo/formato)</td>
+            </tr>
+            <tr>
+              <td><strong>Enseña estilo</strong></td>
+              <td>Parcial (instrucciones)</td>
+              <td>No (solo datos)</td>
+              <td>Si (interioriza patrones)</td>
+            </tr>
+            <tr>
+              <td><strong>Cita fuentes</strong></td>
+              <td>No</td>
+              <td>Si</td>
+              <td>No</td>
+            </tr>
+            <tr>
+              <td><strong>Coste por turno</strong></td>
+              <td>Bajo (solo el prompt)</td>
+              <td>Medio (prompt + chunks)</td>
+              <td>Bajo (prompt corto) pero modelo mas caro</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="comp-table-hint">Haz clic en una columna para resaltarla. Shift+clic para comparar dos.</div>
+      </div>
+
+      <!-- ── Decision tree ── -->
+      <div class="comp-section">
+        <h2>🌳 Arbol de decision</h2>
+        <div class="decision-tree" id="decisionTree">
+
+          <div class="dt-node dt-question" data-step="0">
+            ¿Quieres que la IA <strong>sepa cosas</strong> (hechos, documentos) o que <strong>hable de cierta forma</strong> (tono, formato)?
+          </div>
+
+          <!-- Branch: saber cosas -->
+          <div class="dt-node dt-answer hidden" data-step="1a" data-reveals="branch-knowledge">
+            📚 <strong>Saber cosas</strong>
+          </div>
+          <div class="dt-branch hidden" id="branch-knowledge">
+            <div class="dt-node dt-question" data-step="1a-q">
+              ¿Cuantos documentos necesita consultar?
+            </div>
+            <div class="dt-node dt-answer hidden" data-step="1a-1" data-result="prompting">
+              Pocos (&lt; 10 paginas)
+            </div>
+            <div class="dt-result hidden" data-step="1a-1-r">
+              → <strong>Prompting</strong>: metelos en el prompt directamente. Simple y efectivo.
+            </div>
+            <div class="dt-node dt-answer hidden" data-step="1a-2" data-result="rag">
+              Muchos (100+)
+            </div>
+            <div class="dt-result hidden" data-step="1a-2-r">
+              → <strong>RAG</strong>: indexa y busca dinamicamente. Escala a millones de documentos.
+            </div>
+          </div>
+
+          <!-- Branch: hablar de cierta forma -->
+          <div class="dt-node dt-answer alt hidden" data-step="1b" data-reveals="branch-style">
+            🎨 <strong>Hablar de cierta forma</strong>
+          </div>
+          <div class="dt-branch hidden" id="branch-style">
+            <div class="dt-node dt-question" data-step="1b-q">
+              ¿Puedes describir el estilo con palabras e instrucciones?
+            </div>
+            <div class="dt-node dt-answer alt hidden" data-step="1b-1" data-result="prompting">
+              Si, es describible
+            </div>
+            <div class="dt-result hidden" data-step="1b-1-r">
+              → <strong>Prompting</strong>: instrucciones detalladas + few-shot examples. Empieza siempre por aqui.
+            </div>
+            <div class="dt-node dt-answer alt hidden" data-step="1b-2" data-result="finetuning">
+              No, es un patron sutil
+            </div>
+            <div class="dt-result hidden" data-step="1b-2-r">
+              → <strong>Fine-tuning</strong>: necesitas miles de ejemplos para que el modelo interiorice el patron.
+            </div>
+          </div>
+
+          <!-- Both -->
+          <div class="dt-node dt-answer warn hidden" data-step="1c" data-result="both">
+            ⚠️ <strong>Ambas cosas</strong>
+          </div>
+          <div class="dt-result hidden" data-step="1c-r">
+            → <strong>RAG + Prompting</strong>: la combinacion mas comun en produccion. RAG para los datos, prompting para el estilo.
+          </div>
+
+          <button class="dt-reset hidden" id="dtReset">Reiniciar</button>
+        </div>
+      </div>
+
+      <!-- ── Ejemplo real ── -->
       <div class="comp-section">
         <h2>🏢 Ejemplo: bufete de abogados</h2>
-        <h3>Necesidad 1: responder sobre contratos del bufete</h3>
-        <p>→ <strong>RAG</strong>. Indexas 2.000 contratos, el asistente busca los relevantes por cada consulta y cita fuentes.</p>
-        <h3>Necesidad 2: tono legal formal español</h3>
-        <p>→ <strong>Prompting</strong> primero ("usa tono formal, cita artículos del CC"). Si no basta → <strong>Fine-tuning</strong> con 5.000 ejemplos de respuestas ideales.</p>
-        <h3>Necesidad 3: reglas fijas del bufete</h3>
-        <p>→ <strong>Prompting</strong>. "Nunca prometas resultados judiciales. Siempre recomienda consulta presencial para casos penales."</p>
+        <div class="example-tabs" id="exampleTabs">
+          <button class="example-tab active" data-panel="ex-1">📚 Contratos</button>
+          <button class="example-tab" data-panel="ex-2">🎨 Tono legal</button>
+          <button class="example-tab" data-panel="ex-3">📋 Reglas fijas</button>
+        </div>
+        <div class="example-panel active" id="ex-1">
+          <span class="ep-method rag">RAG</span>
+          <p>Indexas 2.000 contratos del bufete. El asistente busca los relevantes por cada consulta y cita fuentes exactas. El abogado puede verificar cada respuesta contra el documento original.</p>
+        </div>
+        <div class="example-panel" id="ex-2">
+          <span class="ep-method prompting">Prompting → Fine-tuning</span>
+          <p>Primero pruebas con <strong>Prompting</strong>: "Usa tono formal, cita articulos del Codigo Civil, estructura en parrafos numerados." Si no es suficiente porque el estilo legal tiene matices que no se capturan con instrucciones, pasas a <strong>Fine-tuning</strong> con 5.000 ejemplos de respuestas ideales.</p>
+        </div>
+        <div class="example-panel" id="ex-3">
+          <span class="ep-method prompting">Prompting</span>
+          <p>"Nunca prometas resultados judiciales. Siempre recomienda consulta presencial para casos penales. No des cifras de indemnizacion sin advertir que son orientativas." Reglas claras y describibles = prompting puro.</p>
+        </div>
+
         <div class="comp-verdict">
-          <strong>En producción real</strong>: RAG + prompting afinados cubren el 90% de los casos. El fine-tuning es la herramienta menos usada y más sobrevalorada — solo para estilo muy específico que no se puede describir con instrucciones.
+          <strong>En produccion real</strong>: RAG + prompting afinados cubren el 90% de los casos. El fine-tuning es la herramienta menos usada y mas sobrevalorada — solo para estilo muy especifico que no se puede describir con instrucciones.
         </div>
       </div>
 
+      <!-- ── Quiz ── -->
+      <div class="comp-section scenario-quiz">
+        <h2>🧪 ¿Que usarias tu?</h2>
+        <div class="sq-score">
+          <span id="sqScoreText">0 / 4</span>
+          <div class="sq-score-bar"><div class="sq-score-fill" id="sqScoreFill"></div></div>
+        </div>
+        <div id="quizContainer"></div>
+      </div>
+
+      <!-- ── Links ── -->
       <div class="comp-links">
         <a href="../concepts/rag/index.html">👁 Deep dive: RAG</a>
         <a href="../concepts/fine_tuning/index.html">🎓 Deep dive: Fine-tuning</a>
@@ -116,5 +220,236 @@
       </div>
     </div>
   </div>
+
+<script>
+(function() {
+  // ─── Interactive table ───
+  const table = document.getElementById('compTable');
+  const ths = table.querySelectorAll('th.clickable');
+  const rows = table.querySelectorAll('tbody tr');
+  const selectedCols = new Set();
+
+  function updateTableHighlight() {
+    ths.forEach(th => {
+      const col = th.dataset.col;
+      th.classList.toggle('selected', selectedCols.has(col));
+    });
+    rows.forEach(row => {
+      const cells = row.querySelectorAll('td');
+      cells.forEach((td, i) => {
+        if (i === 0) return;
+        td.classList.toggle('selected', selectedCols.has(String(i)));
+      });
+    });
+  }
+
+  ths.forEach(th => {
+    th.addEventListener('click', (e) => {
+      const col = th.dataset.col;
+      if (e.shiftKey) {
+        if (selectedCols.has(col)) {
+          selectedCols.delete(col);
+        } else {
+          if (selectedCols.size >= 2) {
+            const first = selectedCols.values().next().value;
+            selectedCols.delete(first);
+          }
+          selectedCols.add(col);
+        }
+      } else {
+        if (selectedCols.size === 1 && selectedCols.has(col)) {
+          selectedCols.clear();
+        } else {
+          selectedCols.clear();
+          selectedCols.add(col);
+        }
+      }
+      updateTableHighlight();
+    });
+  });
+
+  // ─── Decision tree ───
+  const tree = document.getElementById('decisionTree');
+  const dtReset = document.getElementById('dtReset');
+
+  // Show initial answer options
+  function initTree() {
+    tree.querySelectorAll('.dt-node, .dt-branch, .dt-result').forEach(el => {
+      if (el.dataset.step === '0') return;
+      el.classList.add('hidden');
+      el.classList.remove('revealed');
+    });
+    dtReset.classList.add('hidden');
+
+    // Reveal first-level answers
+    ['1a', '1b', '1c'].forEach(step => {
+      const el = tree.querySelector(`[data-step="${step}"]`);
+      if (el) revealEl(el);
+    });
+  }
+
+  function revealEl(el) {
+    el.classList.remove('hidden');
+    el.classList.add('revealed');
+  }
+
+  tree.addEventListener('click', (e) => {
+    const answer = e.target.closest('.dt-answer');
+    if (!answer || answer.classList.contains('hidden')) return;
+
+    const step = answer.dataset.step;
+    const revealsId = answer.dataset.reveals;
+    const result = answer.dataset.result;
+
+    // Handle first-level choices
+    if (['1a', '1b', '1c'].includes(step)) {
+      // Hide sibling first-level answers that weren't picked
+      ['1a', '1b', '1c'].forEach(s => {
+        if (s !== step) {
+          const el = tree.querySelector(`[data-step="${s}"]`);
+          if (el) el.classList.add('hidden');
+        }
+      });
+    }
+
+    // Reveal branch if applicable
+    if (revealsId) {
+      const branch = document.getElementById(revealsId);
+      if (branch) {
+        revealEl(branch);
+        // Reveal the question inside
+        const branchQ = branch.querySelector('.dt-question');
+        if (branchQ) revealEl(branchQ);
+        // Reveal sub-answers
+        setTimeout(() => {
+          branch.querySelectorAll('.dt-answer').forEach(a => revealEl(a));
+        }, 200);
+      }
+    }
+
+    // Show result
+    if (result) {
+      const resultStep = step + '-r';
+      const resultEl = tree.querySelector(`[data-step="${resultStep}"]`);
+      if (resultEl) {
+        setTimeout(() => revealEl(resultEl), 150);
+      }
+      // Hide sibling answers in same branch
+      const parent = answer.parentElement;
+      parent.querySelectorAll('.dt-answer').forEach(a => {
+        if (a !== answer && a.dataset.step && a.dataset.step.startsWith(step.substring(0, 2))) {
+          // only hide siblings at same level
+        }
+      });
+      dtReset.classList.remove('hidden');
+    }
+  });
+
+  dtReset.addEventListener('click', initTree);
+  initTree();
+
+  // ─── Example tabs ───
+  const tabBar = document.getElementById('exampleTabs');
+  tabBar.addEventListener('click', (e) => {
+    const tab = e.target.closest('.example-tab');
+    if (!tab) return;
+    tabBar.querySelectorAll('.example-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelectorAll('.example-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(tab.dataset.panel).classList.add('active');
+  });
+
+  // ─── Scenario quiz ───
+  const scenarios = [
+    {
+      text: 'Tu startup tiene 50 PDFs de documentacion interna y el equipo de soporte necesita encontrar respuestas rapidamente.',
+      correct: 'RAG',
+      explanations: {
+        'RAG': '¡Correcto! Con RAG indexas los 50 PDFs y el asistente busca los fragmentos relevantes por cada consulta. Escalable y actualizable.',
+        'Prompting': 'No encaja. 50 PDFs no caben en un prompt. Necesitas un sistema de busqueda que recupere solo lo relevante.',
+        'Fine-tuning': 'El fine-tuning no sirve para enseñar hechos concretos. Necesitas RAG para que la IA consulte los documentos.'
+      }
+    },
+    {
+      text: 'Quieres que tu chatbot siempre responda con bullet points y en tono formal, sin excepcion.',
+      correct: 'Prompting',
+      explanations: {
+        'Prompting': '¡Correcto! El formato y tono se describen perfectamente con instrucciones: "Responde siempre con viñetas y tono formal."',
+        'RAG': 'RAG es para datos y documentos, no para definir estilo de respuesta.',
+        'Fine-tuning': 'Sobredimensionado. Si puedes describir el estilo con palabras, el prompting es suficiente.'
+      }
+    },
+    {
+      text: 'Una empresa medica necesita que el modelo genere informes con la estructura exacta y jerga especifica que usan internamente, que no se puede describir con reglas simples.',
+      correct: 'Fine-tuning',
+      explanations: {
+        'Fine-tuning': '¡Correcto! Cuando el estilo es un patron sutil que no se captura con instrucciones, necesitas fine-tuning con miles de ejemplos reales.',
+        'Prompting': 'Si el patron es demasiado sutil para describirlo con instrucciones, el prompting no sera suficiente.',
+        'RAG': 'RAG sirve para hechos y datos, no para interiorizar un estilo de escritura.'
+      }
+    },
+    {
+      text: 'Un ecommerce quiere que su bot responda preguntas sobre el catalogo de 10.000 productos, con precios actualizados.',
+      correct: 'RAG',
+      explanations: {
+        'RAG': '¡Correcto! 10.000 productos con precios cambiantes = necesitas busqueda dinamica. RAG indexa el catalogo y siempre sirve datos actualizados.',
+        'Prompting': '10.000 productos no caben en ningun prompt. Y los precios cambian constantemente.',
+        'Fine-tuning': 'El fine-tuning no puede enseñar datos cambiantes. Los precios de ayer estarian desactualizados.'
+      }
+    }
+  ];
+
+  let score = 0;
+  const total = scenarios.length;
+  const container = document.getElementById('quizContainer');
+
+  scenarios.forEach((sc, i) => {
+    const div = document.createElement('div');
+    div.className = 'sq-scenario';
+    div.innerHTML = `
+      <div class="sq-number">Escenario ${i + 1}</div>
+      <div class="sq-text">${sc.text}</div>
+      <div class="sq-options">
+        <button class="sq-option" data-choice="Prompting">📋 Prompting</button>
+        <button class="sq-option" data-choice="RAG">👁 RAG</button>
+        <button class="sq-option" data-choice="Fine-tuning">🎓 Fine-tuning</button>
+      </div>
+      <div class="sq-feedback-slot"></div>
+    `;
+    container.appendChild(div);
+
+    const btns = div.querySelectorAll('.sq-option');
+    const feedbackSlot = div.querySelector('.sq-feedback-slot');
+    let answered = false;
+
+    btns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (answered) return;
+        const choice = btn.dataset.choice;
+        const isCorrect = choice === sc.correct;
+
+        if (isCorrect) {
+          answered = true;
+          btn.classList.add('correct');
+          div.classList.add('answered-correct');
+          btns.forEach(b => { if (b !== btn) b.classList.add('disabled'); });
+          score++;
+          updateScore();
+          feedbackSlot.innerHTML = `<div class="sq-feedback correct">${sc.explanations[choice]}</div>`;
+        } else {
+          btn.classList.add('wrong');
+          setTimeout(() => btn.classList.remove('wrong'), 500);
+          feedbackSlot.innerHTML = `<div class="sq-feedback wrong">${sc.explanations[choice]}</div>`;
+        }
+      });
+    });
+  });
+
+  function updateScore() {
+    document.getElementById('sqScoreText').textContent = `${score} / ${total}`;
+    document.getElementById('sqScoreFill').style.width = `${(score / total) * 100}%`;
+  }
+})();
+</script>
 </body>
 </html>

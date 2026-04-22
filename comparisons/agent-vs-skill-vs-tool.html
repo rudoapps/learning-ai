@@ -12,31 +12,63 @@
   <script src="../nav.js"></script>
   <div class="comp-page">
     <header class="comp-header">
-      <h1>🤖 Agent vs 🎯 Skill vs 🖐️ Tool</h1>
-      <p>Ladrillos, recetas y cocineros. La analogía perfecta para entender los tres niveles.</p>
+      <h1>🤖 Agent vs ⚡ Skill vs 🔧 Tool</h1>
+      <p>Utensilios, recetas y cocineros. La analogía perfecta para entender los tres niveles de autonomía en IA.</p>
     </header>
 
     <div class="comp-content">
+
+      <!-- 1. Analogy cards -->
       <div class="comp-section">
         <h2>🧱 La analogía de la cocina</h2>
-        <p><strong>Tool = un utensilio</strong>. Un cuchillo, un horno, una sartén. Hace UNA cosa.</p>
-        <p><strong>Skill = una receta</strong>. Combina varios utensilios en un orden concreto para lograr un plato. Es reutilizable.</p>
-        <p><strong>Agent = un cocinero</strong>. Conoce recetas, tiene utensilios, pero además improvisa: si falta un ingrediente, busca un sustituto. Si algo se quema, ajusta. Decide por sí mismo qué hacer.</p>
+        <div class="analogy-cards">
+          <div class="analogy-card tool">
+            <div class="ac-icon">🔧</div>
+            <div class="ac-name">Tool</div>
+            <div class="ac-analogy">Un utensilio de cocina. Hace UNA cosa.</div>
+            <div class="ac-tags">
+              <span class="ac-tag">Atomico</span>
+              <span class="ac-tag">Predecible</span>
+              <span class="ac-tag">Barato</span>
+            </div>
+          </div>
+          <div class="analogy-card skill">
+            <div class="ac-icon">⚡</div>
+            <div class="ac-name">Skill</div>
+            <div class="ac-analogy">Una receta. Combina utensilios en orden fijo.</div>
+            <div class="ac-tags">
+              <span class="ac-tag">Multi-paso</span>
+              <span class="ac-tag">Guionizado</span>
+              <span class="ac-tag">Reutilizable</span>
+            </div>
+          </div>
+          <div class="analogy-card agent">
+            <div class="ac-icon">🤖</div>
+            <div class="ac-name">Agent</div>
+            <div class="ac-analogy">Un cocinero. Improvisa y decide por si mismo.</div>
+            <div class="ac-tags">
+              <span class="ac-tag">Autonomo</span>
+              <span class="ac-tag">Adaptable</span>
+              <span class="ac-tag">Costoso</span>
+            </div>
+          </div>
+        </div>
       </div>
 
+      <!-- 2. Interactive table -->
       <div class="comp-table-wrap">
-        <table class="comp-table">
+        <table class="comp-table" id="compTable">
           <tr>
             <th></th>
-            <th>🖐️ Tool</th>
-            <th>🎯 Skill</th>
-            <th>🤖 Agent</th>
+            <th class="clickable" data-col="1">🔧 Tool</th>
+            <th class="clickable" data-col="2">⚡ Skill</th>
+            <th class="clickable" data-col="3">🤖 Agent</th>
           </tr>
           <tr>
-            <td><strong>Qué es</strong></td>
-            <td>Una función atómica</td>
+            <td><strong>Que es</strong></td>
+            <td>Una funcion atomica</td>
             <td>Prompt + cadena de tools</td>
-            <td>LLM + tools + bucle de decisión</td>
+            <td>LLM + tools + bucle de decision</td>
           </tr>
           <tr>
             <td><strong>Ejemplo</strong></td>
@@ -45,16 +77,16 @@
             <td>"Reserva cena italiana" (busca, comprueba, se adapta, reserva)</td>
           </tr>
           <tr>
-            <td><strong>Decide qué hacer</strong></td>
-            <td>No — le dicen qué ejecutar</td>
+            <td><strong>Decide que hacer</strong></td>
+            <td>No — le dicen que ejecutar</td>
             <td>No — sigue un guion fijo</td>
-            <td>Sí — decide en cada paso</td>
+            <td>Si — decide en cada paso</td>
           </tr>
           <tr>
             <td><strong>Se adapta a fallos</strong></td>
             <td>No</td>
-            <td>No (o con lógica hardcoded)</td>
-            <td>Sí — reintenta, cambia de estrategia</td>
+            <td>No (o con logica hardcoded)</td>
+            <td>Si — reintenta, cambia de estrategia</td>
           </tr>
           <tr>
             <td><strong>Coste</strong></td>
@@ -70,45 +102,320 @@
           </tr>
           <tr>
             <td><strong>Complejidad</strong></td>
-            <td>Mínima</td>
+            <td>Minima</td>
             <td>Media</td>
-            <td>Alta — depuración difícil</td>
+            <td>Alta — depuracion dificil</td>
+          </tr>
+          <tr class="hint-row">
+            <td colspan="4">Haz clic en las cabeceras para destacar y comparar columnas</td>
           </tr>
         </table>
       </div>
 
+      <!-- 3. Animated decision tree -->
       <div class="comp-section">
-        <h2>🌳 Árbol de decisión</h2>
-        <div class="decision-tree">
-          <div class="dt-node dt-question">❓ ¿La tarea requiere <strong>un solo paso</strong> o <strong>varios</strong>?</div>
-          <div class="dt-node dt-answer">Un solo paso → <strong>Tool</strong> (get_weather, send_email, query_db)</div>
-          <div class="dt-node dt-question" style="margin-left:24px">❓ ¿Los pasos son siempre los mismos?</div>
-          <div class="dt-node dt-answer" style="margin-left:48px">Sí, siempre → <strong>Skill</strong> (cadena fija, predecible, más barata)</div>
-          <div class="dt-node dt-question" style="margin-left:48px">❓ ¿Pueden surgir imprevistos o ramificaciones?</div>
-          <div class="dt-node dt-answer alt" style="margin-left:72px">Sí → <strong>Agent</strong> (se adapta, pero pon guardrails)</div>
-          <div class="dt-node dt-answer warn" style="margin-left:72px">No estoy seguro → empieza con <strong>Skill</strong> y escala a Agent si se queda corto</div>
+        <h2>🌳 Arbol de decision</h2>
+        <div class="decision-tree" id="decisionTree">
+          <div class="dt-node dt-question" id="q1">❓ ¿La tarea requiere <strong>un solo paso</strong> o <strong>varios</strong>?</div>
+
+          <div class="dt-node dt-answer dt-answer-btn" id="a1-solo" onclick="dtReveal('solo')">
+            👉 Un solo paso
+          </div>
+          <div class="dt-branch">
+            <div class="dt-node dt-answer hidden" id="r-tool">
+              ✅ <strong>Tool</strong> — Usa una funcion atomica: <code>get_weather</code>, <code>send_email</code>, <code>query_db</code>
+            </div>
+          </div>
+
+          <div class="dt-node dt-answer dt-answer-btn" id="a1-varios" onclick="dtReveal('varios')">
+            👉 Varios pasos
+          </div>
+          <div class="dt-branch" id="branch-varios">
+            <div class="dt-node dt-question hidden" id="q2">❓ ¿Los pasos son siempre los mismos?</div>
+
+            <div class="dt-node dt-answer dt-answer-btn hidden" id="a2-si" onclick="dtReveal('fijo')">
+              👉 Si, siempre iguales
+            </div>
+            <div class="dt-branch">
+              <div class="dt-node dt-answer hidden" id="r-skill">
+                ✅ <strong>Skill</strong> — Cadena fija, predecible y mas barata que un agente
+              </div>
+            </div>
+
+            <div class="dt-node dt-answer alt dt-answer-btn hidden" id="a2-no" onclick="dtReveal('variable')">
+              👉 Pueden variar o surgir imprevistos
+            </div>
+            <div class="dt-branch" id="branch-variable">
+              <div class="dt-node dt-question hidden" id="q3">❓ ¿Pueden surgir imprevistos o ramificaciones?</div>
+
+              <div class="dt-node dt-answer alt dt-answer-btn hidden" id="a3-si" onclick="dtReveal('agent')">
+                👉 Si, necesita adaptarse
+              </div>
+              <div class="dt-branch">
+                <div class="dt-node dt-answer alt hidden" id="r-agent">
+                  ✅ <strong>Agent</strong> — Se adapta, pero pon guardrails para controlarlo
+                </div>
+              </div>
+
+              <div class="dt-node dt-answer warn dt-answer-btn hidden" id="a3-no" onclick="dtReveal('notsure')">
+                👉 No estoy seguro
+              </div>
+              <div class="dt-branch">
+                <div class="dt-node dt-answer warn hidden" id="r-notsure">
+                  💡 Empieza con <strong>Skill</strong> y escala a <strong>Agent</strong> si se queda corto
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button class="dt-reset" onclick="dtReset()">↺ Reiniciar</button>
         </div>
       </div>
 
+      <!-- 4. Scenario quiz -->
       <div class="comp-section">
-        <h2>🏢 Ejemplo: gestión de tickets de soporte</h2>
-        <h3>Con Tool</h3>
-        <p><code>classify_ticket(text)</code> → devuelve categoría y urgencia. Una sola llamada. Para catalogar.</p>
-        <h3>Con Skill</h3>
-        <p>"Atender ticket": <code>read_ticket</code> → <code>classify</code> → <code>draft_reply</code>. Siempre los mismos 3 pasos. Para 80% de tickets estándar.</p>
-        <h3>Con Agent</h3>
-        <p>"Resuelve este ticket": lee el ticket → busca en la FAQ → si no encuentra, busca en JIRA → si es crítico, escala a un humano → si tiene solución, la aplica. Para tickets complejos que no siguen un guion fijo.</p>
-        <div class="comp-verdict">
-          <strong>Heurística</strong>: si puedes escribir un script determinista para la tarea, no necesitas un agente. Empieza siempre por la opción más simple que funcione.
+        <h2>🎯 ¿Que usarias tu?</h2>
+        <p style="font-size:14px;color:var(--muted);margin-bottom:4px;">Pon a prueba tu intuicion. Elige la opcion correcta para cada escenario.</p>
+        <div class="scenario-quiz" id="scenarioQuiz">
+
+          <div class="sq-scenario" data-correct="tool">
+            <div class="sq-text">
+              <strong>Escenario 1:</strong> Necesitas que tu app envie un email de confirmacion cuando el usuario se registra.
+            </div>
+            <div class="sq-options">
+              <button class="sq-option" data-value="tool" onclick="checkAnswer(this)">🔧 Tool</button>
+              <button class="sq-option" data-value="skill" onclick="checkAnswer(this)">⚡ Skill</button>
+              <button class="sq-option" data-value="agent" onclick="checkAnswer(this)">🤖 Agent</button>
+            </div>
+            <div class="sq-feedback">Es una <strong>funcion atomica</strong>: una llamada, un resultado. No necesita multiples pasos ni decisiones.</div>
+          </div>
+
+          <div class="sq-scenario" data-correct="skill">
+            <div class="sq-text">
+              <strong>Escenario 2:</strong> Quieres procesar facturas: extraer datos con OCR, clasificar por tipo, y guardar en la base de datos. Siempre los mismos 3 pasos.
+            </div>
+            <div class="sq-options">
+              <button class="sq-option" data-value="tool" onclick="checkAnswer(this)">🔧 Tool</button>
+              <button class="sq-option" data-value="skill" onclick="checkAnswer(this)">⚡ Skill</button>
+              <button class="sq-option" data-value="agent" onclick="checkAnswer(this)">🤖 Agent</button>
+            </div>
+            <div class="sq-feedback">Es una <strong>cadena fija</strong> de pasos que nunca cambia: OCR → clasificar → guardar. Perfecto para un Skill.</div>
+          </div>
+
+          <div class="sq-scenario" data-correct="agent">
+            <div class="sq-text">
+              <strong>Escenario 3:</strong> Un usuario pide: "Organiza mi viaje a Tokio". El sistema debe buscar vuelos, comparar hoteles, verificar disponibilidad, ajustar si hay cambios de precio, y reservar.
+            </div>
+            <div class="sq-options">
+              <button class="sq-option" data-value="tool" onclick="checkAnswer(this)">🔧 Tool</button>
+              <button class="sq-option" data-value="skill" onclick="checkAnswer(this)">⚡ Skill</button>
+              <button class="sq-option" data-value="agent" onclick="checkAnswer(this)">🤖 Agent</button>
+            </div>
+            <div class="sq-feedback">Requiere <strong>decisiones dinamicas</strong>: si un vuelo no esta disponible, busca otro. Si el precio cambia, recalcula. Un Agent se adapta a cada situacion.</div>
+          </div>
+
+          <div class="sq-scenario" data-correct="skill">
+            <div class="sq-text">
+              <strong>Escenario 4:</strong> Tu pipeline de CI necesita ejecutar tests, generar un reporte, y notificar por Slack. Los pasos nunca cambian.
+            </div>
+            <div class="sq-options">
+              <button class="sq-option" data-value="tool" onclick="checkAnswer(this)">🔧 Tool</button>
+              <button class="sq-option" data-value="skill" onclick="checkAnswer(this)">⚡ Skill</button>
+              <button class="sq-option" data-value="agent" onclick="checkAnswer(this)">🤖 Agent</button>
+            </div>
+            <div class="sq-feedback">Son <strong>multiples pasos fijos</strong> (test → reporte → notificar). Siempre iguales, sin variacion. Skill ideal.</div>
+          </div>
+
+          <div class="sq-score" id="quizScore"></div>
         </div>
       </div>
 
+      <!-- 5. Real-world example with tabs -->
+      <div class="comp-section">
+        <h2>🏢 Ejemplo: gestion de tickets de soporte</h2>
+        <div class="example-tabs">
+          <button class="example-tab tab-tool active" onclick="switchTab(this, 'panel-tool')">🔧 Con Tool</button>
+          <button class="example-tab tab-skill" onclick="switchTab(this, 'panel-skill')">⚡ Con Skill</button>
+          <button class="example-tab tab-agent" onclick="switchTab(this, 'panel-agent')">🤖 Con Agent</button>
+        </div>
+        <div class="tab-panels">
+          <div class="tab-panel active" id="panel-tool">
+            <p class="flow-desc"><strong>Una sola llamada. Para catalogar.</strong></p>
+            <div class="flow-steps">
+              <div class="flow-step tool-step">classify_ticket(text)</div>
+              <span class="flow-arrow">→</span>
+              <div class="flow-step tool-step">categoria + urgencia</div>
+            </div>
+            <p class="flow-desc" style="margin-top:12px">Recibe el texto del ticket, devuelve su categoria y nivel de urgencia. Nada mas. Una funcion, un resultado.</p>
+          </div>
+          <div class="tab-panel" id="panel-skill">
+            <p class="flow-desc"><strong>Pipeline de 3 pasos fijos. Para el 80% de tickets estandar.</strong></p>
+            <div class="flow-steps">
+              <div class="flow-step skill-step">read_ticket</div>
+              <span class="flow-arrow">→</span>
+              <div class="flow-step skill-step">classify</div>
+              <span class="flow-arrow">→</span>
+              <div class="flow-step skill-step">draft_reply</div>
+            </div>
+            <p class="flow-desc" style="margin-top:12px">Lee el ticket, lo clasifica, y genera un borrador de respuesta. Siempre los mismos 3 pasos, en el mismo orden. Predecible y eficiente.</p>
+          </div>
+          <div class="tab-panel" id="panel-agent">
+            <p class="flow-desc"><strong>Resolucion adaptativa. Para tickets complejos.</strong></p>
+            <div class="flow-steps">
+              <div class="flow-step agent-step">Leer ticket</div>
+              <span class="flow-arrow">→</span>
+              <div class="flow-step agent-step">Buscar FAQ</div>
+              <span class="flow-arrow">→</span>
+              <div class="flow-step agent-decision">¿Encontro solucion?</div>
+            </div>
+            <div class="flow-steps" style="margin-top:8px">
+              <div class="flow-step agent-decision">No →</div>
+              <span class="flow-arrow">→</span>
+              <div class="flow-step agent-step">Buscar en JIRA</div>
+              <span class="flow-arrow">→</span>
+              <div class="flow-step agent-decision">¿Es critico?</div>
+              <span class="flow-arrow">→</span>
+              <div class="flow-step agent-step">Escalar / Resolver</div>
+            </div>
+            <p class="flow-desc" style="margin-top:12px">El agente decide en cada paso: si no encuentra respuesta en la FAQ, busca en JIRA. Si el ticket es critico, escala a un humano. Si tiene solucion, la aplica. No sigue un guion fijo.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Verdict -->
+      <div class="comp-verdict">
+        <strong>Heuristica</strong>: si puedes escribir un script determinista para la tarea, no necesitas un agente. Empieza siempre por la opcion mas simple que funcione.
+      </div>
+
+      <!-- Links -->
       <div class="comp-links">
-        <a href="../concepts/tools/index.html">🖐️ Deep dive: Tools</a>
-        <a href="../concepts/skills/index.html">🎯 Deep dive: Skills</a>
+        <a href="../concepts/tools/index.html">🔧 Deep dive: Tools</a>
+        <a href="../concepts/skills/index.html">⚡ Deep dive: Skills</a>
         <a href="../concepts/agent/index.html">🤖 Deep dive: Agent</a>
       </div>
     </div>
   </div>
+
+<script>
+/* ── Interactive table: click columns to highlight ── */
+(function(){
+  const table = document.getElementById('compTable');
+  if (!table) return;
+  const headers = table.querySelectorAll('th.clickable');
+  headers.forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.col;
+      const wasSelected = th.classList.contains('selected');
+      // Count currently selected
+      const selectedCount = table.querySelectorAll('th.selected').length;
+      if (wasSelected) {
+        // Deselect this column
+        th.classList.remove('selected');
+        table.querySelectorAll('td').forEach(td => {
+          if (td.cellIndex == col) td.classList.remove('selected');
+        });
+      } else {
+        // If already 2 selected, deselect all first
+        if (selectedCount >= 2) {
+          table.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+        }
+        th.classList.add('selected');
+        const rows = table.querySelectorAll('tr');
+        rows.forEach(tr => {
+          const cells = tr.querySelectorAll('td');
+          if (cells[col]) cells[col].classList.add('selected');
+        });
+      }
+    });
+  });
+})();
+
+/* ── Decision tree ── */
+function dtReveal(choice) {
+  const map = {
+    'solo':     ['r-tool'],
+    'varios':   ['q2', 'a2-si', 'a2-no'],
+    'fijo':     ['r-skill'],
+    'variable': ['q3', 'a3-si', 'a3-no'],
+    'agent':    ['r-agent'],
+    'notsure':  ['r-notsure']
+  };
+  const ids = map[choice];
+  if (!ids) return;
+  ids.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el) {
+      setTimeout(() => {
+        el.classList.remove('hidden');
+        el.classList.add('revealed');
+      }, i * 120);
+    }
+  });
+}
+
+function dtReset() {
+  const tree = document.getElementById('decisionTree');
+  tree.querySelectorAll('.revealed').forEach(el => {
+    el.classList.remove('revealed');
+    el.classList.add('hidden');
+  });
+}
+
+/* ── Scenario quiz ── */
+let quizAnswered = 0;
+let quizCorrect = 0;
+const totalScenarios = 4;
+
+function checkAnswer(btn) {
+  const scenario = btn.closest('.sq-scenario');
+  if (scenario.classList.contains('answered-correct') || scenario.classList.contains('answered-wrong')) return;
+
+  const correct = scenario.dataset.correct;
+  const chosen = btn.dataset.value;
+  const feedback = scenario.querySelector('.sq-feedback');
+  const allBtns = scenario.querySelectorAll('.sq-option');
+
+  if (chosen === correct) {
+    btn.classList.add('correct');
+    scenario.classList.add('answered-correct');
+    quizCorrect++;
+  } else {
+    btn.classList.add('wrong');
+    scenario.classList.add('answered-wrong');
+    // Highlight the correct one
+    allBtns.forEach(b => {
+      if (b.dataset.value === correct) b.classList.add('correct');
+    });
+  }
+
+  // Disable other buttons
+  allBtns.forEach(b => {
+    if (!b.classList.contains('correct') && !b.classList.contains('wrong')) {
+      b.classList.add('disabled');
+    }
+  });
+
+  feedback.classList.add('visible');
+  quizAnswered++;
+
+  if (quizAnswered === totalScenarios) {
+    const score = document.getElementById('quizScore');
+    score.textContent = quizCorrect + ' de ' + totalScenarios + ' correctas' +
+      (quizCorrect === totalScenarios ? ' — Perfecto!' : quizCorrect >= 3 ? ' — Muy bien!' : ' — Sigue practicando!');
+    score.classList.add('visible');
+  }
+}
+
+/* ── Tabs for real-world example ── */
+function switchTab(tabBtn, panelId) {
+  // Deactivate all tabs and panels
+  const parent = tabBtn.closest('.comp-section');
+  parent.querySelectorAll('.example-tab').forEach(t => t.classList.remove('active'));
+  parent.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  // Activate clicked
+  tabBtn.classList.add('active');
+  document.getElementById(panelId).classList.add('active');
+}
+</script>
 </body>
 </html>
