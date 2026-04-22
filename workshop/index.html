@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prompt Workshop — Taller interactivo</title>
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="workshop.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+</head>
+<body>
+  <script src="../nav.js"></script>
+
+  <header class="topbar">
+    <h1>🛠 Prompt Workshop</h1>
+    <div class="controls">
+      <span class="workshop-subtitle">Construye, visualiza y entiende cómo se configura un prompt</span>
+    </div>
+  </header>
+
+  <main class="stage">
+    <!-- LEFT PANE: Constructor -->
+    <div class="pane">
+      <div class="pane-header">
+        <div class="dot green"></div>
+        <h2>Constructor de Prompt</h2>
+      </div>
+      <div class="constructor">
+
+        <!-- System Prompt -->
+        <section class="constructor-section">
+          <label class="section-label">System Prompt</label>
+          <div class="preset-bar">
+            <button class="preset-btn active" data-preset="general">Asistente general</button>
+            <button class="preset-btn" data-preset="traductor">Traductor</button>
+            <button class="preset-btn" data-preset="codigo">Revisor de código</button>
+            <button class="preset-btn" data-preset="rpg">Personaje RPG</button>
+          </div>
+          <textarea id="system-prompt" class="workshop-textarea" rows="5" spellcheck="false"></textarea>
+        </section>
+
+        <!-- Tools -->
+        <section class="constructor-section">
+          <label class="section-label">Herramientas disponibles</label>
+          <div class="tool-chips" id="tool-chips">
+            <button class="tool-chip" data-tool="web_search">🔍 Buscar en web</button>
+            <button class="tool-chip" data-tool="read_files">📁 Leer archivos</button>
+            <button class="tool-chip" data-tool="calculator">🧮 Calculadora</button>
+            <button class="tool-chip" data-tool="calendar">🗓 Calendario</button>
+            <button class="tool-chip" data-tool="send_email">📧 Enviar email</button>
+          </div>
+        </section>
+
+        <!-- Temperature -->
+        <section class="constructor-section">
+          <label class="section-label">Temperatura</label>
+          <div class="slider-row">
+            <span class="slider-label-left">Preciso</span>
+            <input type="range" id="temperature" min="0" max="100" value="70" class="workshop-slider">
+            <span class="slider-label-right">Creativo</span>
+          </div>
+          <div class="slider-value" id="temp-display">0.7</div>
+        </section>
+
+        <!-- Max tokens -->
+        <section class="constructor-section">
+          <label class="section-label">Max tokens de respuesta</label>
+          <select id="max-tokens" class="workshop-select">
+            <option value="256">256 tokens</option>
+            <option value="512">512 tokens</option>
+            <option value="1024" selected>1024 tokens</option>
+            <option value="2048">2048 tokens</option>
+            <option value="4096">4096 tokens</option>
+          </select>
+        </section>
+
+        <!-- User message -->
+        <section class="constructor-section">
+          <label class="section-label">Mensaje del usuario</label>
+          <textarea id="user-message" class="workshop-textarea" rows="4" spellcheck="false"></textarea>
+          <button id="send-btn" class="send-btn">▶ Enviar</button>
+        </section>
+
+      </div>
+    </div>
+
+    <!-- RIGHT PANE: Live Preview -->
+    <div class="pane">
+      <div class="pane-header">
+        <div class="dot orange"></div>
+        <h2>Vista previa en vivo</h2>
+        <span class="preview-badge">API Request</span>
+      </div>
+      <div class="preview-area" id="preview-area">
+
+        <!-- Live JSON preview -->
+        <div class="tech-block system" id="json-preview-block">
+          <div class="label">
+            REQUEST BODY
+            <span class="tag">Actualización en tiempo real</span>
+          </div>
+          <div class="body" id="json-preview"></div>
+        </div>
+
+        <!-- Simulation steps appear here -->
+        <div id="simulation-container"></div>
+
+        <!-- Token meter -->
+        <div class="token-meter" id="token-meter">
+          <div class="meter-row">
+            <div class="meter-item in">
+              <span class="meter-label">System prompt</span>
+              <span class="meter-value" id="tokens-system">0</span>
+              <span class="meter-unit">tokens (aprox.)</span>
+            </div>
+            <div class="meter-item cost">
+              <span class="meter-label">Herramientas</span>
+              <span class="meter-value" id="tokens-tools">0</span>
+              <span class="meter-unit">tokens (aprox.)</span>
+            </div>
+            <div class="meter-item in">
+              <span class="meter-label">Mensaje usuario</span>
+              <span class="meter-value" id="tokens-user">0</span>
+              <span class="meter-unit">tokens (aprox.)</span>
+            </div>
+          </div>
+          <div class="meter-row">
+            <div class="meter-item out" style="grid-column: 1 / -1;">
+              <span class="meter-label">Total estimado de entrada</span>
+              <span class="meter-value" id="tokens-total">0</span>
+              <span class="meter-unit">tokens (aprox.) — heurística: ~4 caracteres = 1 token</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
