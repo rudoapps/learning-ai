@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rutas de aprendizaje — IA</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="paths.css">
+</head>
+<body>
+<script src="../nav.js"></script>
+
+<div class="paths-page">
+  <!-- Header -->
+  <header class="paths-header">
+    <h1>🎓 Rutas de aprendizaje</h1>
+    <p class="paths-subtitle">Elige tu nivel y sigue el camino paso a paso</p>
+    <!-- Overall progress -->
+    <div class="overall-progress">
+      <div class="overall-label">
+        <span>Progreso global</span>
+        <span class="overall-pct">0%</span>
+      </div>
+      <div class="overall-bar">
+        <div class="overall-fill"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Path selector cards -->
+  <section class="path-cards">
+    <button class="path-card" data-path="fundamentos">
+      <div class="pc-color pc-green"></div>
+      <div class="pc-body">
+        <div class="pc-top">
+          <h2>🟢 Fundamentos</h2>
+          <span class="pc-badge pc-badge-green">Principiante</span>
+        </div>
+        <p class="pc-subtitle">De cero a entender qué es la IA</p>
+        <div class="pc-meta">
+          <span>⏱ ~45 min</span>
+          <span>📋 9 pasos</span>
+          <span class="pc-progress-text" data-path="fundamentos">0/9</span>
+        </div>
+      </div>
+      <div class="pc-action">Empezar →</div>
+    </button>
+
+    <button class="path-card" data-path="intermedio">
+      <div class="pc-color pc-yellow"></div>
+      <div class="pc-body">
+        <div class="pc-top">
+          <h2>🟡 Construyendo con IA</h2>
+          <span class="pc-badge pc-badge-yellow">Intermedio</span>
+        </div>
+        <p class="pc-subtitle">Herramientas, RAG y cómo extender la IA</p>
+        <div class="pc-meta">
+          <span>⏱ ~60 min</span>
+          <span>📋 13 pasos</span>
+          <span class="pc-progress-text" data-path="intermedio">0/13</span>
+        </div>
+      </div>
+      <div class="pc-action">Empezar →</div>
+    </button>
+
+    <button class="path-card" data-path="avanzado">
+      <div class="pc-color pc-red"></div>
+      <div class="pc-body">
+        <div class="pc-top">
+          <h2>🔴 Agentes y producción</h2>
+          <span class="pc-badge pc-badge-red">Avanzado</span>
+        </div>
+        <p class="pc-subtitle">Agentes autónomos, seguridad y sistemas complejos</p>
+        <div class="pc-meta">
+          <span>⏱ ~50 min</span>
+          <span>📋 15 pasos</span>
+          <span class="pc-progress-text" data-path="avanzado">0/15</span>
+        </div>
+      </div>
+      <div class="pc-action">Empezar →</div>
+    </button>
+  </section>
+
+  <!-- Expanded path view -->
+  <section class="path-detail" id="path-detail">
+    <!-- Rendered by JS -->
+  </section>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
