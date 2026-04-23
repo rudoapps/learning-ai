@@ -29,14 +29,16 @@ body {
   padding: 10px 24px; background: var(--surface);
   border-bottom: 1px solid var(--border);
   font-size: 13px; flex-shrink: 0;
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
 }
-.gnav .gnav-brand { font-weight: 700; color: var(--text); text-decoration: none; margin-right: 12px; }
+.gnav .gnav-brand { font-weight: 700; color: var(--text); text-decoration: none; margin-right: 12px; flex-shrink: 0; }
 .gnav a {
   color: var(--muted); text-decoration: none; padding: 5px 10px;
-  border-radius: 6px; transition: all 0.15s;
+  border-radius: 6px; transition: all 0.15s; white-space: nowrap;
 }
 .gnav a:hover { color: var(--text); background: var(--surface-2); }
 .gnav a.active { color: var(--accent); background: rgba(88,166,255,0.1); }
+.gnav-sep { width: 1px; height: 16px; background: var(--border); flex-shrink: 0; }
 .gnav-search {
   margin-left: auto; background: var(--surface-2); border: 1px solid var(--border);
   color: var(--muted); padding: 5px 12px; border-radius: 6px; font-size: 12px;

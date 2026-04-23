@@ -2,24 +2,32 @@
 (function() {
   const path = location.pathname;
   const depth = (path.match(/concepts\/[^/]+\//) ? '../../' :
-                 path.match(/(demo-cli|demo-rag|demo-agents|demo|cheatsheet|map|comparisons|quiz)\//) ? '../' : '');
+                 path.match(/(demo-cli|demo-rag|demo-agents|demo|cheatsheet|map|comparisons|quiz|workshop|paths)\//) ? '../' : '');
 
+  // Links grouped: orientation | learn | demos | practice | test
+  // 'sep' entries render as a visual divider
   const links = [
-    { href: 'index.html', label: 'Inicio', match: /index\.html$|learning-ai\/$/ },
-    { href: 'demo/index.html', label: 'Demo', match: /\/demo\// },
-    { href: 'demo-cli/index.html', label: 'Demo CLI', match: /demo-cli\// },
-    { href: 'demo-rag/index.html', label: 'Demo RAG', match: /demo-rag\// },
-    { href: 'demo-agents/index.html', label: 'Demo Agentes', match: /demo-agents\// },
-    { href: 'cheatsheet/cheatsheet.html', label: 'Cheat Sheet', match: /cheatsheet\// },
-    { href: 'map/index.html', label: 'Mapa', match: /map\// },
-    { href: 'comparisons/index.html', label: 'Comparativas', match: /comparisons\// },
-    { href: 'quiz/index.html', label: 'Quiz', match: /quiz\// },
+    { href: 'paths/index.html',              label: 'Rutas',       match: /paths\// },
+    { href: 'map/index.html',                label: 'Mapa',        match: /map\// },
+    'sep',
+    { href: 'concepts/llm/index.html',       label: 'Conceptos',   match: /concepts\// },
+    { href: 'cheatsheet/cheatsheet.html',    label: 'Cheat Sheet', match: /cheatsheet\// },
+    { href: 'comparisons/index.html',        label: 'Comparativas', match: /comparisons\// },
+    'sep',
+    { href: 'demo/index.html',              label: 'Demo',         match: /\/demo\// },
+    { href: 'demo-cli/index.html',          label: 'CLI',          match: /demo-cli\// },
+    { href: 'demo-rag/index.html',          label: 'RAG',          match: /demo-rag\// },
+    { href: 'demo-agents/index.html',       label: 'Agentes',      match: /demo-agents\// },
+    'sep',
+    { href: 'workshop/index.html',          label: 'Workshop',     match: /workshop\// },
+    { href: 'quiz/index.html',              label: 'Quiz',         match: /quiz\// },
   ];
 
   const nav = document.createElement('nav');
   nav.className = 'gnav';
   nav.innerHTML = `<a href="${depth}index.html" class="gnav-brand">🧠 IA</a>` +
     links.map(l => {
+      if (l === 'sep') return '<span class="gnav-sep"></span>';
       const active = l.match.test(path) ? ' active' : '';
       return `<a href="${depth}${l.href}" class="${active}">${l.label}</a>`;
     }).join('');
