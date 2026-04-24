@@ -39,7 +39,7 @@
         { icon: '📚', title: 'RAG', desc: 'IA + tus documentos', href: '../concepts/rag/index.html', type: 'concepto' },
         { icon: '📚', title: 'Demo RAG', desc: 'Ve RAG en acción', href: '../demo-rag/index.html', type: 'demo' },
         { icon: '⚖️', title: 'Comparativas', desc: 'RAG vs Fine-tuning y más', href: '../comparisons/index.html', type: 'recurso' },
-        { icon: '🧪', title: 'Quiz completo', desc: 'Pon a prueba todo', href: '../quiz/index.html', type: 'quiz' },
+        { icon: '🧪', title: 'Quiz', desc: 'Pon a prueba todo', href: '../quiz/index.html', type: 'quiz' },
       ]
     },
     avanzado: {
@@ -62,7 +62,7 @@
         { icon: '⚖', title: 'Alignment', desc: 'Alinear con valores humanos', href: '../concepts/alignment/index.html', type: 'concepto' },
         { icon: '💉', title: 'Prompt injection', desc: 'Ataques y defensas', href: '../concepts/prompt_injection/index.html', type: 'concepto' },
         { icon: '🗺', title: 'Mapa de conceptos', desc: 'Ve el panorama completo', href: '../map/index.html', type: 'recurso' },
-        { icon: '🧪', title: 'Quiz completo', desc: 'Prueba final', href: '../quiz/index.html', type: 'quiz' },
+        { icon: '🔥', title: 'Quiz Avanzado', desc: 'Escenarios y decisiones', href: '../quiz-advanced/index.html', type: 'quiz' },
       ]
     }
   };
