@@ -10,17 +10,18 @@ let correct = 0;
 let mode = 'all';
 let selectedCat = null;
 
+const QUIZ_DATA = typeof QUIZZES_ADVANCED !== 'undefined' ? QUIZZES_ADVANCED : QUIZZES;
+
 const catLabels = { foundations: 'Fundamentos', action: 'Acción', memory: 'Memoria y datos', scaling: 'Arquitectura', safety: 'Seguridad' };
 const catCls = { foundations: 'cat-foundations', action: 'cat-action', memory: 'cat-memory', scaling: 'cat-scaling', safety: 'cat-safety' };
 
 function buildQuestions(filter) {
   const questions = [];
-  for (const [conceptId, qs] of Object.entries(QUIZZES)) {
+  for (const [conceptId, qs] of Object.entries(QUIZ_DATA)) {
     const concept = CONCEPTS.find(c => c.id === conceptId);
     if (!concept) continue;
     if (filter && concept.category !== filter) continue;
     qs.forEach((q, qi) => {
-      // Shuffle options, tracking the correct answer
       const indices = q.opts.map((_, i) => i);
       for (let i = indices.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -141,7 +142,6 @@ function showFinal() {
     : pct >= 40 ? 'Revisa los conceptos donde fallaste.'
     : 'Te recomiendo repasar los deep dives antes de reintentar.';
 
-  // Find weak concepts
   const conceptErrors = {};
   currentQuestions.forEach((q, i) => {
     const card = document.getElementById('qc-' + i);
