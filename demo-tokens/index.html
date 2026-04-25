@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Reto del Token — Elige modelo, gasta bien</title>
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="tokens.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+</head>
+<body>
+  <script src="../nav.js"></script>
+
+  <div class="game-page">
+    <!-- Intro screen -->
+    <div class="game-intro" id="gameIntro">
+      <div class="intro-icon">🎮</div>
+      <h1>El Reto del Token</h1>
+      <p>Tienes <strong>$1.00 de presupuesto</strong> y 6 tareas cada vez más complejas.<br>
+      Elige el modelo correcto, ajusta los parámetros y maximiza la calidad sin quedarte sin dinero.</p>
+      <div class="intro-models">
+        <div class="intro-model">
+          <span class="im-icon">⚡</span>
+          <strong>Haiku</strong>
+          <span class="im-price">$0.25 / $1.25</span>
+          <span class="im-desc">Rápido y barato</span>
+        </div>
+        <div class="intro-model">
+          <span class="im-icon">🎯</span>
+          <strong>Sonnet</strong>
+          <span class="im-price">$3 / $15</span>
+          <span class="im-desc">Equilibrado</span>
+        </div>
+        <div class="intro-model">
+          <span class="im-icon">🧠</span>
+          <strong>Opus</strong>
+          <span class="im-price">$15 / $75</span>
+          <span class="im-desc">Máxima calidad</span>
+        </div>
+      </div>
+      <p class="intro-hint">Precios por millón de tokens (input / output). Cada decisión cuenta.</p>
+      <button class="btn-start" id="btnStart">Empezar el reto →</button>
+    </div>
+
+    <!-- Game screen -->
+    <div class="game-main" id="gameMain" style="display:none;">
+      <!-- Stats bar -->
+      <div class="game-stats">
+        <div class="stat">
+          <span class="stat-label">Presupuesto</span>
+          <span class="stat-value" id="statBudget">$1.00</span>
+          <div class="budget-bar"><div class="budget-fill" id="budgetFill"></div></div>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Calidad media</span>
+          <span class="stat-value" id="statQuality">—</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Nivel</span>
+          <span class="stat-value" id="statLevel">1 / 6</span>
+        </div>
+      </div>
+
+      <!-- Level progress -->
+      <div class="level-dots" id="levelDots"></div>
+
+      <!-- Scenario -->
+      <div class="scenario" id="scenario"></div>
+
+      <!-- Config panel -->
+      <div class="config-panel" id="configPanel"></div>
+
+      <!-- Execute -->
+      <div class="execute-row">
+        <button class="btn-execute" id="btnExecute">▶ Ejecutar</button>
+      </div>
+
+      <!-- Result -->
+      <div class="result-panel" id="resultPanel" style="display:none;"></div>
+    </div>
+
+    <!-- Final screen -->
+    <div class="game-final" id="gameFinal" style="display:none;"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
