@@ -2,7 +2,7 @@
 (function() {
   const path = location.pathname;
   const depth = path.match(/concepts\/[^/]+\//) ? '../../' :
-                path.match(/(demo-cli|demo-rag|demo-agents|demo|cheatsheet|map|comparisons|quiz-advanced|quiz|workshop|paths)\//) ? '../' : '';
+                path.match(/(demo-cli|demo-rag|demo-agents|demo-tokens|demo|cheatsheet|map|comparisons|quiz-advanced|quiz|workshop|paths)\//) ? '../' : '';
 
   // Inject search button in nav
   const nav = document.querySelector('.gnav');

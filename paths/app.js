@@ -39,6 +39,7 @@
         { icon: '📚', title: 'RAG', desc: 'IA + tus documentos', href: '../concepts/rag/index.html', type: 'concepto' },
         { icon: '📚', title: 'Demo RAG', desc: 'Ve RAG en acción', href: '../demo-rag/index.html', type: 'demo' },
         { icon: '⚖️', title: 'Comparativas', desc: 'RAG vs Fine-tuning y más', href: '../comparisons/index.html', type: 'recurso' },
+        { icon: '🎮', title: 'Reto del Token', desc: 'Elige modelo y presupuesto', href: '../demo-tokens/index.html', type: 'demo' },
         { icon: '🧪', title: 'Quiz', desc: 'Pon a prueba todo', href: '../quiz/index.html', type: 'quiz' },
       ]
     },
