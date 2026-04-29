@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IA vs Humano — Pensar rápido vs pensar despacio</title>
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="comparisons.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+</head>
+<body>
+  <script src="../nav.js"></script>
+  <div class="comp-page">
+    <header class="comp-header">
+      <h1>IA vs Humano — Pensar rápido, pensar despacio</h1>
+      <p>Daniel Kahneman describió dos sistemas de pensamiento. La IA domina el Sistema 1. Los humanos siguen siendo imprescindibles en el Sistema 2. La clave no es elegir — es saber cuándo usar cada uno.</p>
+    </header>
+
+    <div class="comp-content">
+
+      <!-- ── Analogy cards ── -->
+      <div class="analogy-cards">
+        <div class="analogy-card" style="border-top-color: var(--accent);">
+          <div class="ac-icon">⚡</div>
+          <div class="ac-name" style="color: var(--accent);">Sistema 1 — IA</div>
+          <div class="ac-desc">Rápido, automático, incansable. Procesa patrones a velocidades que ningún humano puede igualar. No se distrae, no se cansa, no tiene mal día.</div>
+        </div>
+        <div class="analogy-card" style="border-top-color: var(--purple);">
+          <div class="ac-icon">🧘</div>
+          <div class="ac-name" style="color: var(--purple);">Sistema 2 — Humano</div>
+          <div class="ac-desc">Lento, deliberado, consciente. Razona sobre lo nuevo, cuestiona supuestos, entiende el "por qué". Tiene contexto vital, empatía y sentido común real.</div>
+        </div>
+        <div class="analogy-card" style="border-top-color: var(--green);">
+          <div class="ac-icon">🤝</div>
+          <div class="ac-name" style="color: var(--green);">Juntos</div>
+          <div class="ac-desc">La IA como primer filtro veloz + el humano como supervisor que valida, decide y asume la responsabilidad. Cada uno en lo que mejor hace.</div>
+        </div>
+      </div>
+
+      <!-- ── Interactive comparison table ── -->
+      <div class="comp-table-wrap">
+        <table class="comp-table" id="compTable">
+          <thead>
+            <tr>
+              <th></th>
+              <th class="clickable" data-col="1">⚡ IA (Sistema 1)</th>
+              <th class="clickable" data-col="2">🧘 Humano (Sistema 2)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Velocidad</strong></td>
+              <td>Milisegundos. Procesa 100 docs mientras lees esta frase.</td>
+              <td>Minutos a horas. Pero cada segundo es razonamiento consciente.</td>
+            </tr>
+            <tr>
+              <td><strong>Consistencia</strong></td>
+              <td>Idéntica calidad en la petición 1 y en la 10.000.</td>
+              <td>Se cansa, se distrae, tiene sesgos que varían con el humor.</td>
+            </tr>
+            <tr>
+              <td><strong>Patrones</strong></td>
+              <td>Detecta patrones estadísticos en volúmenes masivos de datos.</td>
+              <td>Ve patrones con mucho menos contexto — intuición experta.</td>
+            </tr>
+            <tr>
+              <td><strong>Situaciones nuevas</strong></td>
+              <td>Extrapola desde el entrenamiento, pero puede fallar en lo verdaderamente nuevo.</td>
+              <td>Razona desde principios. Maneja lo que nunca ha visto.</td>
+            </tr>
+            <tr>
+              <td><strong>Contexto social</strong></td>
+              <td>No entiende quién está leyendo ni las consecuencias reales de lo que dice.</td>
+              <td>Entiende cultura, política de oficina, emociones, timing.</td>
+            </tr>
+            <tr>
+              <td><strong>Juicio ético</strong></td>
+              <td>Aplica reglas que le programaron. No tiene moral propia.</td>
+              <td>Pondera valores, dilemas, consecuencias a largo plazo.</td>
+            </tr>
+            <tr>
+              <td><strong>Escala</strong></td>
+              <td>Infinita en paralelo. Puede atender a 10.000 usuarios a la vez.</td>
+              <td>Una persona, una tarea a la vez (de calidad).</td>
+            </tr>
+            <tr>
+              <td><strong>Coste marginal</strong></td>
+              <td>~$0.001 por tarea. Baja con el volumen.</td>
+              <td>~$30-100/hora. Sube con la especialización.</td>
+            </tr>
+            <tr>
+              <td><strong>Errores</strong></td>
+              <td>Alucina con confianza. No sabe que no sabe.</td>
+              <td>Duda, pide ayuda, escala. Sabe decir "no estoy seguro".</td>
+            </tr>
+            <tr>
+              <td><strong>Creatividad</strong></td>
+              <td>Recombina lo que ha visto. Genera 100 variaciones en segundos.</td>
+              <td>Inventa lo que nunca existió. Conecta dominios que nadie conectó.</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="comp-table-hint">Haz clic en una columna para resaltarla. Shift+clic para comparar.</div>
+      </div>
+
+      <!-- ── La IA brilla ── -->
+      <div class="comp-section">
+        <h2>⚡ Donde la IA supera al humano</h2>
+        <p>Tareas que son <strong>repetitivas, de alto volumen, con reglas claras</strong>. El Sistema 1 de Kahneman: rápido, automático, sin esfuerzo consciente.</p>
+
+        <div class="strength-grid" id="iaStrengths">
+          <div class="strength-card">
+            <div class="sc-head">
+              <span class="sc-emoji">📬</span>
+              <strong>Clasificación masiva</strong>
+            </div>
+            <p>Clasificar 10.000 emails, tickets, o documentos en minutos. Misma calidad en el primero y en el último.</p>
+            <span class="sc-ratio">IA: 3 min · Humano: 40 horas</span>
+          </div>
+          <div class="strength-card">
+            <div class="sc-head">
+              <span class="sc-emoji">🔍</span>
+              <strong>Extracción de datos</strong>
+            </div>
+            <p>Sacar nombres, fechas e importes de 500 facturas. Sin fatiga visual, sin errores por cansancio.</p>
+            <span class="sc-ratio">IA: 5 min · Humano: 20 horas</span>
+          </div>
+          <div class="strength-card">
+            <div class="sc-head">
+              <span class="sc-emoji">🌐</span>
+              <strong>Traducción a escala</strong>
+            </div>
+            <p>Traducir una web entera a 10 idiomas manteniendo coherencia terminológica. 24/7 sin descanso.</p>
+            <span class="sc-ratio">IA: 1 hora · Humano: 3 semanas</span>
+          </div>
+          <div class="strength-card">
+            <div class="sc-head">
+              <span class="sc-emoji">📊</span>
+              <strong>Resumen y síntesis</strong>
+            </div>
+            <p>Resumir 200 artículos científicos en fichas de 3 líneas. Consistente, rápido, reproducible.</p>
+            <span class="sc-ratio">IA: 15 min · Humano: 3 días</span>
+          </div>
+          <div class="strength-card">
+            <div class="sc-head">
+              <span class="sc-emoji">🔄</span>
+              <strong>Transformación de formato</strong>
+            </div>
+            <p>Convertir CSV a JSON, SQL a NoSQL, texto libre a tabla estructurada. Reglas mecánicas = IA perfecta.</p>
+            <span class="sc-ratio">IA: segundos · Humano: horas</span>
+          </div>
+          <div class="strength-card">
+            <div class="sc-head">
+              <span class="sc-emoji">🛡</span>
+              <strong>Vigilancia 24/7</strong>
+            </div>
+            <p>Monitorizar logs, detectar anomalías, filtrar spam. No se distrae, no parpadea, no se va a comer.</p>
+            <span class="sc-ratio">IA: siempre activa · Humano: turnos de 8h</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── El humano brilla ── -->
+      <div class="comp-section">
+        <h2>🧘 Donde el humano supera a la IA</h2>
+        <p>Tareas que requieren <strong>juicio, contexto real, empatía o razonamiento ante lo desconocido</strong>. El Sistema 2: lento, deliberado, consciente.</p>
+
+        <div class="strength-grid" id="humanStrengths">
+          <div class="strength-card human">
+            <div class="sc-head">
+              <span class="sc-emoji">⚖️</span>
+              <strong>Decisiones éticas</strong>
+            </div>
+            <p>"¿Despedimos a alguien o reestructuramos?" La IA puede listar opciones, pero la decisión tiene consecuencias humanas reales.</p>
+            <span class="sc-why">Requiere: valores, empatía, responsabilidad</span>
+          </div>
+          <div class="strength-card human">
+            <div class="sc-head">
+              <span class="sc-emoji">🆕</span>
+              <strong>Problemas nuevos</strong>
+            </div>
+            <p>Nunca ha existido un caso como este. No hay datos de entrenamiento. El humano razona desde principios, analogías y experiencia vital.</p>
+            <span class="sc-why">Requiere: razonamiento desde cero, adaptación</span>
+          </div>
+          <div class="strength-card human">
+            <div class="sc-head">
+              <span class="sc-emoji">🤝</span>
+              <strong>Negociación y persuasión</strong>
+            </div>
+            <p>Leer la sala, detectar tensiones no dichas, ajustar el tono en tiempo real. La IA no sabe si tu jefe tuvo mal día.</p>
+            <span class="sc-why">Requiere: inteligencia emocional, lectura social</span>
+          </div>
+          <div class="strength-card human">
+            <div class="sc-head">
+              <span class="sc-emoji">🎨</span>
+              <strong>Creatividad con propósito</strong>
+            </div>
+            <p>La IA genera 100 variaciones. El humano elige la que funciona, la que emociona, la que nadie ha visto — y sabe <em>por qué</em>.</p>
+            <span class="sc-why">Requiere: gusto, visión, intención</span>
+          </div>
+          <div class="strength-card human">
+            <div class="sc-head">
+              <span class="sc-emoji">🔥</span>
+              <strong>Gestión de crisis</strong>
+            </div>
+            <p>Producción caída, cliente furioso, prensa llamando. Alguien tiene que tomar decisiones bajo presión con información incompleta y asumir las consecuencias.</p>
+            <span class="sc-why">Requiere: liderazgo, responsabilidad, improvisación</span>
+          </div>
+          <div class="strength-card human">
+            <div class="sc-head">
+              <span class="sc-emoji">🧩</span>
+              <strong>Conectar lo desconectado</strong>
+            </div>
+            <p>"Esto me recuerda a un problema que vimos en otro sector hace 5 años." Transferir conocimiento entre dominios no relacionados.</p>
+            <span class="sc-why">Requiere: experiencia cross-domain, intuición</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Decision tree ── -->
+      <div class="comp-section">
+        <h2>🌳 ¿Quién debería hacerlo?</h2>
+        <div class="decision-tree" id="decisionTree">
+
+          <div class="dt-node dt-question" data-step="0">
+            ¿La tarea tiene <strong>reglas claras y repetibles</strong>, o requiere <strong>juicio ante lo nuevo</strong>?
+          </div>
+
+          <!-- Branch: reglas claras -->
+          <div class="dt-node dt-answer hidden" data-step="1a" data-reveals="branch-rules">
+            📏 <strong>Reglas claras y repetibles</strong>
+          </div>
+          <div class="dt-branch hidden" id="branch-rules">
+            <div class="dt-node dt-question" data-step="1a-q">
+              ¿Cuántas veces al día se ejecuta esta tarea?
+            </div>
+            <div class="dt-node dt-answer hidden" data-step="1a-1" data-result="ia">
+              Decenas o miles de veces
+            </div>
+            <div class="dt-result hidden" data-step="1a-1-r">
+              → <strong>IA sola</strong>: clasificar, extraer, filtrar, transformar. Automatiza y olvídate. El humano solo revisa métricas.
+            </div>
+            <div class="dt-node dt-answer hidden" data-step="1a-2" data-result="ia-review">
+              Pocas veces, pero cada una importa mucho
+            </div>
+            <div class="dt-result hidden" data-step="1a-2-r">
+              → <strong>IA + revisión humana</strong>: la IA genera un primer borrador, el humano valida antes de publicar/enviar. Lo mejor de ambos.
+            </div>
+          </div>
+
+          <!-- Branch: juicio -->
+          <div class="dt-node dt-answer alt hidden" data-step="1b" data-reveals="branch-judgment">
+            🤔 <strong>Juicio ante lo nuevo</strong>
+          </div>
+          <div class="dt-branch hidden" id="branch-judgment">
+            <div class="dt-node dt-question" data-step="1b-q">
+              ¿Hay datos históricos parecidos de los que aprender?
+            </div>
+            <div class="dt-node dt-answer alt hidden" data-step="1b-1" data-result="together">
+              Sí, hay precedentes
+            </div>
+            <div class="dt-result hidden" data-step="1b-1-r">
+              → <strong>IA asiste, humano decide</strong>: la IA busca precedentes y propone opciones, el humano aplica su juicio para elegir.
+            </div>
+            <div class="dt-node dt-answer alt hidden" data-step="1b-2" data-result="human">
+              No, es territorio desconocido
+            </div>
+            <div class="dt-result hidden" data-step="1b-2-r">
+              → <strong>Humano lidera</strong>: razonamiento desde principios, creatividad genuina, decisiones éticas. La IA puede ayudar a recopilar información, pero la decisión es humana.
+            </div>
+          </div>
+
+          <!-- Both -->
+          <div class="dt-node dt-answer warn hidden" data-step="1c" data-result="depends">
+            ⚠️ <strong>Depende del caso</strong>
+          </div>
+          <div class="dt-result hidden" data-step="1c-r">
+            → <strong>Empieza con IA, escala a humano</strong>: deja que la IA haga el primer pase (borrador, análisis, filtro). Si la confianza es baja o el riesgo es alto, el humano toma el control.
+          </div>
+
+          <button class="dt-reset hidden" id="dtReset">Reiniciar</button>
+        </div>
+      </div>
+
+      <!-- ── Ejemplos reales ── -->
+      <div class="comp-section">
+        <h2>🏢 Ejemplos reales</h2>
+        <div class="example-tabs" id="exampleTabs">
+          <button class="example-tab active" data-panel="ex-1">🏥 Hospital</button>
+          <button class="example-tab" data-panel="ex-2">📰 Redacción</button>
+          <button class="example-tab" data-panel="ex-3">⚖️ Bufete</button>
+          <button class="example-tab" data-panel="ex-4">🛒 E-commerce</button>
+        </div>
+        <div class="example-panel active" id="ex-1">
+          <span class="ep-method" style="background: rgba(88,166,255,0.15); color: var(--accent);">IA + Humano</span>
+          <p><strong>IA (Sistema 1)</strong>: analiza 200 radiografías en 3 minutos, marca las 12 sospechosas con un score de confianza.</p>
+          <p><strong>Humano (Sistema 2)</strong>: el radiólogo revisa las 12 marcadas, descarta 3 falsos positivos, confirma 9 diagnósticos y decide el tratamiento. Contexto del paciente, historial, conversación con el oncólogo — eso no lo hace la IA.</p>
+        </div>
+        <div class="example-panel" id="ex-2">
+          <span class="ep-method" style="background: rgba(88,166,255,0.15); color: var(--accent);">IA + Humano</span>
+          <p><strong>IA (Sistema 1)</strong>: genera 5 borradores de artículo, resume fuentes, sugiere titulares. En 10 minutos tienes materia prima.</p>
+          <p><strong>Humano (Sistema 2)</strong>: elige el ángulo, verifica datos con fuentes primarias, añade la voz editorial, decide qué matiz político dar y qué omitir por responsabilidad. La firma es del periodista.</p>
+        </div>
+        <div class="example-panel" id="ex-3">
+          <span class="ep-method" style="background: rgba(188,140,255,0.15); color: var(--purple);">Humano lidera</span>
+          <p><strong>IA (Sistema 1)</strong>: busca jurisprudencia relevante, resume 50 sentencias, detecta cláusulas de riesgo en el contrato.</p>
+          <p><strong>Humano (Sistema 2)</strong>: interpreta la jurisprudencia en contexto (este juez, esta jurisdicción, este cliente), diseña la estrategia legal, negocia con la contraparte. La IA no sabe que el abogado contrario es impredecible en juicio.</p>
+        </div>
+        <div class="example-panel" id="ex-4">
+          <span class="ep-method" style="background: rgba(88,166,255,0.15); color: var(--accent);">IA domina</span>
+          <p><strong>IA (Sistema 1)</strong>: clasifica reseñas de productos (positiva/negativa/neutra), genera descripciones de catálogo, responde FAQs, personaliza recomendaciones. 24/7, 10.000 usuarios simultáneos.</p>
+          <p><strong>Humano (Sistema 2)</strong>: diseña la estrategia de producto, decide qué vender y a quién, gestiona crisis de reputación cuando un producto falla. La IA es la maquinaria; el humano es el piloto.</p>
+        </div>
+
+        <div class="comp-verdict">
+          <strong>El patrón que funciona</strong>: la IA hace el trabajo pesado del Sistema 1 (volumen, velocidad, consistencia). El humano aporta el Sistema 2 (juicio, contexto, responsabilidad). Los mejores resultados no vienen de elegir uno u otro — vienen de diseñar bien la colaboración.
+        </div>
+      </div>
+
+      <!-- ── Trampas comunes ── -->
+      <div class="comp-section">
+        <h2>⚠️ Trampas comunes</h2>
+        <div class="traps-grid">
+          <div class="trap-card">
+            <div class="trap-icon">🤖➡️❌</div>
+            <strong>Delegar todo a la IA</strong>
+            <p>"La IA se encarga de todo" → alucinaciones que nadie revisa, decisiones sin accountability, errores que llegan al cliente.</p>
+          </div>
+          <div class="trap-card">
+            <div class="trap-icon">🧑➡️❌</div>
+            <strong>No usar IA por miedo</strong>
+            <p>"No me fío" → tu competidor clasifica tickets 100x más rápido mientras tú sigues leyendo emails uno a uno.</p>
+          </div>
+          <div class="trap-card">
+            <div class="trap-icon">🔄➡️❌</div>
+            <strong>Humano revisando lo trivial</strong>
+            <p>Un senior revisando 500 clasificaciones de spam al día. Caro, aburrido, y no añade valor. Deja que la IA lo haga sola.</p>
+          </div>
+          <div class="trap-card">
+            <div class="trap-icon">⚡➡️❌</div>
+            <strong>IA decidiendo lo importante</strong>
+            <p>La IA decide sola despedir, diagnosticar o publicar. Funciona el 95% del tiempo — pero el 5% restante te puede hundir.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Quiz ── -->
+      <div class="comp-section scenario-quiz">
+        <h2>🧪 ¿Quién debería hacerlo?</h2>
+        <div class="sq-score">
+          <span id="sqScoreText">0 / 6</span>
+          <div class="sq-score-bar"><div class="sq-score-fill" id="sqScoreFill"></div></div>
+        </div>
+        <div id="quizContainer"></div>
+      </div>
+
+      <!-- ── Links ── -->
+      <div class="comp-links">
+        <a href="../concepts/hallucination/index.html">👻 Deep dive: Alucinación</a>
+        <a href="../concepts/guardrails/index.html">🛡 Deep dive: Guardrails</a>
+        <a href="../concepts/alignment/index.html">⚖ Deep dive: Alignment</a>
+        <a href="../demo-tokens/index.html">🎮 El Reto del Token</a>
+      </div>
+    </div>
+  </div>
+
+<style>
+.strength-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+.strength-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px;
+  border-left: 3px solid var(--accent);
+}
+.strength-card.human {
+  border-left-color: var(--purple);
+}
+.sc-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+.sc-emoji { font-size: 20px; }
+.strength-card p {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0 0 8px;
+}
+.sc-ratio {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  font-family: monospace;
+}
+.sc-why {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--purple);
+}
+
+.traps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-top: 12px;
+}
+.trap-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px;
+  border-top: 3px solid var(--orange);
+}
+.trap-icon { font-size: 24px; margin-bottom: 8px; }
+.trap-card strong { font-size: 14px; display: block; margin-bottom: 6px; }
+.trap-card p { font-size: 13px; color: var(--muted); line-height: 1.5; margin: 0; }
+
+@media (max-width: 640px) {
+  .strength-grid, .traps-grid { grid-template-columns: 1fr; }
+}
+</style>
+
+<script>
+(function() {
+  // ─── Interactive table ───
+  const table = document.getElementById('compTable');
+  const ths = table.querySelectorAll('th.clickable');
+  const rows = table.querySelectorAll('tbody tr');
+  const selectedCols = new Set();
+
+  function updateTableHighlight() {
+    ths.forEach(th => {
+      const col = th.dataset.col;
+      th.classList.toggle('selected', selectedCols.has(col));
+    });
+    rows.forEach(row => {
+      const cells = row.querySelectorAll('td');
+      cells.forEach((td, i) => {
+        if (i === 0) return;
+        td.classList.toggle('selected', selectedCols.has(String(i)));
+      });
+    });
+  }
+
+  ths.forEach(th => {
+    th.addEventListener('click', (e) => {
+      const col = th.dataset.col;
+      if (e.shiftKey) {
+        if (selectedCols.has(col)) selectedCols.delete(col);
+        else {
+          if (selectedCols.size >= 2) selectedCols.delete(selectedCols.values().next().value);
+          selectedCols.add(col);
+        }
+      } else {
+        if (selectedCols.size === 1 && selectedCols.has(col)) selectedCols.clear();
+        else { selectedCols.clear(); selectedCols.add(col); }
+      }
+      updateTableHighlight();
+    });
+  });
+
+  // ─── Decision tree ───
+  const tree = document.getElementById('decisionTree');
+  const dtReset = document.getElementById('dtReset');
+
+  function initTree() {
+    tree.querySelectorAll('.dt-node, .dt-branch, .dt-result').forEach(el => {
+      if (el.dataset.step === '0') return;
+      el.classList.add('hidden');
+      el.classList.remove('revealed');
+    });
+    dtReset.classList.add('hidden');
+    ['1a', '1b', '1c'].forEach(step => {
+      const el = tree.querySelector(`[data-step="${step}"]`);
+      if (el) revealEl(el);
+    });
+  }
+
+  function revealEl(el) {
+    el.classList.remove('hidden');
+    el.classList.add('revealed');
+  }
+
+  tree.addEventListener('click', (e) => {
+    const answer = e.target.closest('.dt-answer');
+    if (!answer || answer.classList.contains('hidden')) return;
+
+    const step = answer.dataset.step;
+    const revealsId = answer.dataset.reveals;
+    const result = answer.dataset.result;
+
+    if (['1a', '1b', '1c'].includes(step)) {
+      ['1a', '1b', '1c'].forEach(s => {
+        if (s !== step) {
+          const el = tree.querySelector(`[data-step="${s}"]`);
+          if (el) el.classList.add('hidden');
+        }
+      });
+    }
+
+    if (revealsId) {
+      const branch = document.getElementById(revealsId);
+      if (branch) {
+        revealEl(branch);
+        const branchQ = branch.querySelector('.dt-question');
+        if (branchQ) revealEl(branchQ);
+        setTimeout(() => {
+          branch.querySelectorAll('.dt-answer').forEach(a => revealEl(a));
+        }, 200);
+      }
+    }
+
+    if (result) {
+      const resultStep = step + '-r';
+      const resultEl = tree.querySelector(`[data-step="${resultStep}"]`);
+      if (resultEl) setTimeout(() => revealEl(resultEl), 150);
+      dtReset.classList.remove('hidden');
+    }
+  });
+
+  dtReset.addEventListener('click', initTree);
+  initTree();
+
+  // ─── Example tabs ───
+  const tabBar = document.getElementById('exampleTabs');
+  tabBar.addEventListener('click', (e) => {
+    const tab = e.target.closest('.example-tab');
+    if (!tab) return;
+    tabBar.querySelectorAll('.example-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelectorAll('.example-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(tab.dataset.panel).classList.add('active');
+  });
+
+  // ─── Scenario quiz ───
+  const scenarios = [
+    {
+      text: 'Clasificar 5.000 tickets de soporte por urgencia (alta/media/baja) cada día.',
+      correct: 'IA sola',
+      explanations: {
+        'IA sola': '¡Correcto! Tarea repetitiva con reglas claras y alto volumen. Sistema 1 puro — la IA es 1000x más rápida y no se cansa.',
+        'Humano solo': 'Sería agotador y lento. 5.000 tickets diarios es volumen de máquina, no de persona.',
+        'IA + Humano': 'Para clasificación con reglas claras, la revisión humana no añade valor proporcional al coste. Mejor auditar métricas periódicamente.'
+      }
+    },
+    {
+      text: 'Decidir si la empresa debe entrar en un nuevo mercado en Sudamérica.',
+      correct: 'Humano solo',
+      explanations: {
+        'IA sola': 'La IA puede recopilar datos, pero la decisión estratégica involucra política, cultura, riesgo reputacional y visión a largo plazo.',
+        'Humano solo': '¡Correcto! Decisión estratégica con muchas variables blandas: cultura, timing político, relaciones, riesgo. La IA puede preparar informes, pero la decisión es humana.',
+        'IA + Humano': 'Razonable, pero aquí la IA solo aporta como herramienta de research. La decisión es 100% del Sistema 2 humano.'
+      }
+    },
+    {
+      text: 'Revisar contratos de proveedores para detectar cláusulas de penalización ocultas.',
+      correct: 'IA + Humano',
+      explanations: {
+        'IA sola': 'La IA puede marcar cláusulas sospechosas, pero interpretar su riesgo legal real requiere un abogado que conozca el contexto.',
+        'Humano solo': 'Funciona, pero leer 200 páginas de contrato es agotador. La IA como primer filtro ahorra horas y reduce errores por fatiga.',
+        'IA + Humano': '¡Correcto! La IA escanea y marca las cláusulas sospechosas (Sistema 1). El abogado interpreta el riesgo real en contexto (Sistema 2). Lo mejor de ambos mundos.'
+      }
+    },
+    {
+      text: 'Un cliente VIP está furioso porque su pedido llegó roto. Quiere hablar con alguien. Ya.',
+      correct: 'Humano solo',
+      explanations: {
+        'IA sola': 'Un chatbot a un cliente furioso es echar gasolina al fuego. Necesita empatía real, poder de decisión y flexibilidad.',
+        'Humano solo': '¡Correcto! Gestión de crisis emocional = Sistema 2 puro. El cliente necesita sentirse escuchado por una persona con poder de decisión.',
+        'IA + Humano': 'Quizá la IA puede preparar el historial del cliente, pero la conversación es 100% humana. No delegues la empatía.'
+      }
+    },
+    {
+      text: 'Generar 50 variaciones de un anuncio publicitario para A/B testing.',
+      correct: 'IA sola',
+      explanations: {
+        'IA sola': '¡Correcto! Generar variaciones es combinatoria pura — Sistema 1. La IA produce 50 opciones en minutos. El humano ya decidirá cuáles testear.',
+        'Humano solo': 'Un copywriter tardará días en escribir 50 variaciones. La IA lo hace en minutos y el humano selecciona las mejores.',
+        'IA + Humano': 'Razonable si quieres curar las opciones, pero para generar variaciones masivas la IA sola basta. El humano entra en la selección posterior.'
+      }
+    },
+    {
+      text: 'Tu startup tiene que decidir si pivotar el producto después de 6 meses sin tracción.',
+      correct: 'Humano solo',
+      explanations: {
+        'IA sola': 'Pivotar un producto es una decisión existencial que involucra equipo, inversores, mercado, timing y visión. No es un problema de datos.',
+        'Humano solo': '¡Correcto! Decisión fundacional con implicaciones para personas, capital y dirección. La IA puede analizar métricas, pero la visión y el coraje son humanos.',
+        'IA + Humano': 'La IA puede ayudar con análisis de mercado, pero la decisión de pivotar es del fundador. Es Sistema 2 en estado puro.'
+      }
+    }
+  ];
+
+  let score = 0;
+  const total = scenarios.length;
+  const container = document.getElementById('quizContainer');
+
+  scenarios.forEach((sc, i) => {
+    const div = document.createElement('div');
+    div.className = 'sq-scenario';
+    div.innerHTML = `
+      <div class="sq-number">Escenario ${i + 1}</div>
+      <div class="sq-text">${sc.text}</div>
+      <div class="sq-options">
+        <button class="sq-option" data-choice="IA sola">⚡ IA sola</button>
+        <button class="sq-option" data-choice="Humano solo">🧘 Humano solo</button>
+        <button class="sq-option" data-choice="IA + Humano">🤝 IA + Humano</button>
+      </div>
+      <div class="sq-feedback-slot"></div>
+    `;
+    container.appendChild(div);
+
+    const btns = div.querySelectorAll('.sq-option');
+    const feedbackSlot = div.querySelector('.sq-feedback-slot');
+    let answered = false;
+
+    btns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (answered) return;
+        const choice = btn.dataset.choice;
+        const isCorrect = choice === sc.correct;
+
+        if (isCorrect) {
+          answered = true;
+          btn.classList.add('correct');
+          div.classList.add('answered-correct');
+          btns.forEach(b => { if (b !== btn) b.classList.add('disabled'); });
+          score++;
+          updateScore();
+          feedbackSlot.innerHTML = `<div class="sq-feedback correct">${sc.explanations[choice]}</div>`;
+        } else {
+          btn.classList.add('wrong');
+          setTimeout(() => btn.classList.remove('wrong'), 500);
+          feedbackSlot.innerHTML = `<div class="sq-feedback wrong">${sc.explanations[choice]}</div>`;
+        }
+      });
+    });
+  });
+
+  function updateScore() {
+    document.getElementById('sqScoreText').textContent = `${score} / ${total}`;
+    document.getElementById('sqScoreFill').style.width = `${(score / total) * 100}%`;
+  }
+})();
+</script>
+</body>
+</html>
