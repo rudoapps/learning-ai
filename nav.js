@@ -2,7 +2,7 @@
 (function() {
   const path = location.pathname;
   const depth = (path.match(/concepts\/[^/]+\//) ? '../../' :
-                 path.match(/(demo-cli|demo-rag|demo-agents|demo-tokens|demo|cheatsheet|map|comparisons|quiz-advanced|quiz|workshop|paths)\//) ? '../' : '');
+                 path.match(/(demo-cli|demo-rag|demo-agents|demo-tokens|demo|cheatsheet|map|comparisons|quiz-advanced|quiz|workshop|paths|tokenizer)\//) ? '../' : '');
 
   // Links grouped: orientation | learn | demos | practice | test
   // 'sep' entries render as a visual divider
@@ -20,6 +20,7 @@
     { href: 'demo-agents/index.html',       label: 'Agentes',      match: /demo-agents\// },
     { href: 'demo-tokens/index.html',      label: 'Tokens',       match: /demo-tokens\// },
     'sep',
+    { href: 'tokenizer/index.html',         label: 'Tokenizer',    match: /tokenizer\// },
     { href: 'workshop/index.html',          label: 'Workshop',     match: /workshop\// },
     { href: 'quiz/index.html',              label: 'Quiz',         match: /\/quiz\// },
     { href: 'quiz-advanced/index.html',     label: 'Quiz Pro',     match: /quiz-advanced\// },

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tokenizador y Calculadora de Coste — Cómo funciona la IA</title>
+<meta name="description" content="Pega texto y mira cómo lo trocea un LLM. Calcula el coste real en Claude, GPT, Gemini y Llama — escalado a 1, 100, 10k o 1M llamadas.">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="tokenizer.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+</head>
+<body>
+  <script src="../nav.js"></script>
+
+  <main class="tk-page">
+    <header class="tk-header">
+      <h1>🪙 Tokenizador y calculadora de coste</h1>
+      <p>Pega texto y mira cómo un LLM lo "trocea" en tokens — y cuánto cuesta procesarlo en cada modelo.</p>
+    </header>
+
+    <!-- Ejemplos -->
+    <section class="tk-block">
+      <div class="tk-block-head">
+        <h2>1 · Elige un ejemplo o escribe el tuyo</h2>
+        <button id="btnClear" class="tk-btn-ghost">Vaciar</button>
+      </div>
+      <div id="sampleButtons" class="sample-buttons"></div>
+      <p id="sampleHint" class="sample-hint"></p>
+      <textarea id="input" rows="8" placeholder="Pega o escribe aquí..."></textarea>
+    </section>
+
+    <!-- Stats -->
+    <section class="tk-block">
+      <div class="tk-block-head">
+        <h2>2 · Cómo lo ve el modelo</h2>
+        <span class="tk-block-hint">Cada chip = 1 token. <code>×N</code> indica que ese carácter cuenta como N tokens.</span>
+      </div>
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-num" id="statTokens">0</div>
+          <div class="stat-label">tokens</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="statChars">0</div>
+          <div class="stat-label">caracteres</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="statWords">0</div>
+          <div class="stat-label">palabras</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="statRatio">—</div>
+          <div class="stat-label">caracteres / token</div>
+        </div>
+      </div>
+      <div id="tokens" class="tokens-view"></div>
+    </section>
+
+    <!-- Output slider + cache -->
+    <section class="tk-block">
+      <div class="tk-block-head">
+        <h2>3 · Estima el output y opciones</h2>
+        <span class="tk-block-hint">El input lo acabas de medir. El output (lo que el modelo responde) lo eliges tú.</span>
+      </div>
+      <div class="controls-row">
+        <div class="control-slider">
+          <label for="outputSlider">Tokens de output esperados: <strong id="outputValue">500 tokens</strong></label>
+          <input type="range" id="outputSlider" min="0" max="4000" step="50" value="500">
+          <div class="slider-marks">
+            <span>0</span><span>1k</span><span>2k</span><span>3k</span><span>4k</span>
+          </div>
+        </div>
+        <label class="cache-toggle">
+          <input type="checkbox" id="cacheToggle">
+          <span>Usar prompt caching (input ~90% más barato)</span>
+        </label>
+      </div>
+    </section>
+
+    <!-- Tabla de precios -->
+    <section class="tk-block">
+      <div class="tk-block-head">
+        <h2>4 · Coste por modelo</h2>
+        <span class="tk-block-hint">Una sola llamada con tu input y output estimado.</span>
+      </div>
+      <div class="price-table-wrap">
+        <table id="priceTable" class="price-table">
+          <thead>
+            <tr>
+              <th>Modelo</th>
+              <th>Input</th>
+              <th>Output</th>
+              <th>Coste por llamada</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="price-note">Precios <strong>por 1M de tokens</strong> — actualizados a enero 2026. Verifica los oficiales antes de producción.</p>
+    </section>
+
+    <!-- Escenarios -->
+    <section class="tk-block">
+      <div class="tk-block-head">
+        <h2>5 · Escala — ¿y si lo haces 1M de veces?</h2>
+        <span class="tk-block-hint">Mismo prompt repetido. Aquí es donde las decisiones importan.</span>
+      </div>
+      <div id="scenarios" class="scenarios-grid"></div>
+    </section>
+
+    <!-- Educational footer -->
+    <section class="tk-block tk-tips">
+      <h2>💡 Cosas que vas a notar</h2>
+      <ul>
+        <li><strong>Inglés ≈ 4 caracteres / token.</strong> Es la "moneda base" del BPE — fue entrenado con mucho inglés.</li>
+        <li><strong>Español ≈ 2.5–3 caracteres / token.</strong> Acentos, ñ y conjugaciones largas dividen más. Pagas un ~30-40% extra por el mismo contenido.</li>
+        <li><strong>Código y JSON: 2–3 c/t.</strong> Llaves, comas y comillas son tokens completos. Un schema grande puede salir más caro que un párrafo.</li>
+        <li><strong>Emojis: 2–4 tokens cada uno.</strong> Banderas y emojis "compuestos" (👨‍👩‍👧) son los más caros — usan ZWJ y modifiers.</li>
+        <li><strong>Chino, japonés, árabe: ~1.5–2 tokens / carácter.</strong> Cada carácter aporta más información, pero el tokenizer no fue optimizado para ellos.</li>
+        <li><strong>El output es 5× más caro que el input.</strong> Casi siempre — diseña los prompts para respuestas concisas.</li>
+        <li><strong>Prompt caching cambia las matemáticas.</strong> Si reusas el mismo system prompt, el coste de input puede caer 90%. Activa el toggle arriba para verlo.</li>
+      </ul>
+      <p class="tk-disclaimer">⚠️ Este tokenizador es una <strong>aproximación heurística</strong> — no usa la librería oficial de OpenAI/Anthropic/Google. El conteo real puede variar ±10-15%, pero las proporciones y el orden de magnitud son correctos.</p>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
