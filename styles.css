@@ -47,6 +47,51 @@ body {
 .gnav-search:hover { color: var(--text); border-color: var(--accent); }
 .gnav-search-hint { font-size: 10px; opacity: 0.6; }
 
+/* Hamburger toggle — hidden on desktop */
+.gnav-toggle {
+  display: none;
+  background: var(--surface-2); border: 1px solid var(--border);
+  color: var(--text); padding: 4px 12px; border-radius: 6px;
+  font-size: 16px; line-height: 1.2; cursor: pointer;
+  font-family: inherit; flex-shrink: 0;
+}
+.gnav-toggle:hover { border-color: var(--accent); }
+
+@media (max-width: 760px) {
+  .gnav {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    padding: 8px 16px;
+    gap: 6px;
+  }
+  .gnav-toggle { display: inline-block; margin-left: auto; }
+  .gnav-search { margin-left: 0; }
+  .gnav-search .gnav-search-hint { display: none; }
+
+  /* Hide nav links + separators by default on mobile */
+  .gnav > a:not(.gnav-brand),
+  .gnav .gnav-sep {
+    display: none;
+  }
+
+  /* When open: links stack full-width below the toolbar row */
+  .gnav.gnav-open {
+    padding-bottom: 0;
+  }
+  .gnav.gnav-open > a:not(.gnav-brand) {
+    display: block;
+    flex: 0 0 100%;
+    padding: 12px 14px;
+    border-top: 1px solid var(--border);
+    border-radius: 0;
+    margin: 0 -16px;
+    width: calc(100% + 32px);
+  }
+  .gnav.gnav-open > a:not(.gnav-brand).active {
+    background: rgba(88,166,255,0.12);
+  }
+}
+
 /* Search modal */
 .search-overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,0.6);

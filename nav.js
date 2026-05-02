@@ -35,6 +35,29 @@
       return `<a href="${depth}${l.href}" class="${active}">${l.label}</a>`;
     }).join('');
 
+  // Hamburger toggle (visible only on mobile via CSS)
+  const toggle = document.createElement('button');
+  toggle.className = 'gnav-toggle';
+  toggle.setAttribute('aria-label', 'Abrir menú');
+  toggle.setAttribute('aria-expanded', 'false');
+  toggle.innerHTML = '☰';
+  toggle.addEventListener('click', () => {
+    const isOpen = nav.classList.toggle('gnav-open');
+    toggle.innerHTML = isOpen ? '✕' : '☰';
+    toggle.setAttribute('aria-expanded', String(isOpen));
+    toggle.setAttribute('aria-label', isOpen ? 'Cerrar menú' : 'Abrir menú');
+  });
+  nav.appendChild(toggle);
+
+  // Close menu when a link inside is tapped
+  nav.addEventListener('click', (e) => {
+    if (e.target.tagName === 'A' && nav.classList.contains('gnav-open')) {
+      nav.classList.remove('gnav-open');
+      toggle.innerHTML = '☰';
+      toggle.setAttribute('aria-expanded', 'false');
+    }
+  });
+
   document.body.insertBefore(nav, document.body.firstChild);
 
   // Load search + progress
