@@ -2,7 +2,7 @@
 (function() {
   const path = location.pathname;
   const depth = (path.match(/concepts\/[^/]+\//) ? '../../' :
-                 path.match(/(demo-cli|demo-rag|demo-agents|demo-tokens|demo|cheatsheet|map|comparisons|quiz-advanced|quiz|workshop|paths|tokenizer)\//) ? '../' : '');
+                 path.match(/(demo-cli|demo-rag|demo-agents|demo-tokens|demo|cheatsheet|map|comparisons|quiz-advanced|quiz|workshop|paths|tokenizer|cca-trainer)\//) ? '../' : '');
 
   // Links grouped: orientation | learn | demos | practice | test
   // 'sep' entries render as a visual divider
@@ -24,6 +24,7 @@
     { href: 'workshop/index.html',          label: 'Workshop',     match: /workshop\// },
     { href: 'quiz/index.html',              label: 'Quiz',         match: /\/quiz\// },
     { href: 'quiz-advanced/index.html',     label: 'Quiz Pro',     match: /quiz-advanced\// },
+    { href: 'cca-trainer/index.html',       label: 'CCAR-F',       match: /cca-trainer\// },
   ];
 
   const nav = document.createElement('nav');
