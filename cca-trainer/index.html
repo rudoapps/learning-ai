@@ -500,6 +500,10 @@ button { font: inherit; color: inherit; cursor: pointer; }
   border: 1px solid;
 }
 .verdict.pass { background: var(--good-soft); color: var(--good); border-color: var(--good); }
+/* Reuses the brass pair rather than introducing a third colour: the palette already
+   carries an amber with a light and a dark value, and a fourth token would be one
+   more thing to keep in step across both themes. */
+.verdict.hold { background: var(--brass-soft); color: var(--brass); border-color: var(--brass); }
 .verdict.fail { background: var(--bad-soft); color: var(--bad); border-color: var(--bad); }
 
 .gauge { margin-top: 26px; }
@@ -806,8 +810,9 @@ button { font: inherit; color: inherit; cursor: pointer; }
 <div id="results" class="hidden">
   <main class="wrap" style="padding-top:38px;">
     <div id="results-body"></div>
-    <div class="panel" id="report-panel">
-      <h2>Enviar el informe</h2>
+    <div class="panel hidden" id="report-panel">
+      <h2 id="report-title">Enviar el informe</h2>
+      <p class="sub" id="report-sub"></p>
       <div class="actions">
         <button class="btn btn-primary" id="report-mail">Enviar por correo</button>
         <button class="btn btn-ghost" id="report-download">Descargar</button>
@@ -1105,6 +1110,13 @@ const EXAM_ITEM_COUNT = 60;
 const SECONDS_PER_ITEM = 120;
 const PRACTICE_SIZES = [10, 30, 60];
 const CUT_SCORE = 720;
+/* Our recommendation bar, deliberately ABOVE the official cut. 800 is the exact image
+   of 80% weighted accuracy under the scale mapping, so the two ways of stating it agree.
+   The gap between 720 and 800 is the point: a candidate there does clear the official
+   cut, but with no margin for a bad day or a form weighted towards a domain they are
+   thin on. Thresholded on the SCORE, not on the accuracy, so the badge can never
+   disagree with the number printed next to it. */
+const READY_SCORE = 800;
 
 /* ==================================================================
    EXACT RATIONAL ARITHMETIC
@@ -1282,7 +1294,16 @@ function saveMistakes() {
 /* ==================================================================
    TEXT RENDERING
    ================================================================== */
-const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+/* Covers quotes too, because the emailed report interpolates the candidate name into
+   markup rather than setting textContent. In a text node &quot; renders as " anyway, so
+   the stronger form is safe everywhere and there is no second escaper to keep in step. */
+/* A declaration, not a const arrow: the verify harnesses slice functions out of the
+   built page by brace matching, and an arrow with an expression body has no braces to
+   match. Declaring it also hoists, so order of use never matters. */
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+}
 
 /* Technical identifiers set in mono so they're findable at a glance —
    the whole point of reading an item in 20 seconds. */
@@ -1656,11 +1677,10 @@ function renderResults() {
       </div>`;
 
   /* The verdict exists only in exam mode: it is the only mode that
-     reproduces the official domain mix. */
-  if (S.mode === "exam") {
-    html += `<div class="verdict ${passed ? "pass" : "fail"}">
-      ${passed ? "Estimación: llegas al corte" : "Estimación: aún no llegas"}
-    </div>`;
+     reproduces the official domain mix. Three bands, not two -- see readiness(). */
+  const verdict = readiness(lastResult);
+  if (verdict) {
+    html += `<div class="verdict ${verdict.key}">${verdict.word}</div>`;
   }
 
   html += `</div>
@@ -1673,7 +1693,7 @@ function renderResults() {
     </div>`;
 
   if (S.mode === "exam") {
-    html += `<p class="disclaimer"><b>Es una estimación, no tu nota.</b> El algoritmo real de Pearson VUE no es público y equipara formas por dificultad. El cálculo replica la especificación de este proyecto: precisión ponderada por los pesos oficiales renormalizados sobre los dominios presentes, mapeo lineal a trozos continuo en 720, aritmética racional exacta y un único redondeo final al alza. Un 720 exacto aprueba: el corte es inclusivo.</p>`;
+    html += `<p class="disclaimer"><b>${verdict.word}.</b> ${verdict.line} Nuestra recomendación se pone en ${READY_SCORE} (el 80% de precisión ponderada), por encima del corte oficial de ${CUT_SCORE}, a propósito: entre esos dos números el examen se aprueba sin colchón. <b>Y es una estimación, no tu nota.</b> El algoritmo real de Pearson VUE no es público y equipara formas por dificultad. El cálculo replica la especificación de este proyecto: precisión ponderada por los pesos oficiales renormalizados sobre los dominios presentes, mapeo lineal a trozos continuo en 720, aritmética racional exacta y un único redondeo final al alza. Un 720 exacto aprueba: el corte es inclusivo.</p>`;
   } else {
     html += `<p class="disclaimer"><b>Sin veredicto de preparación, a propósito.</b> Solo el examen completo reproduce la mezcla oficial de dominios, así que un 720 en un test de un solo dominio no dice nada sobre si estás listo. La nota está aquí como referencia comparable entre sesiones.</p>`;
   }
@@ -1763,6 +1783,21 @@ function renderResults() {
   </div>`;
 
   $("results-body").innerHTML = html;
+
+  /* The report panel is policy-driven, not always-on. Hiding it is the feedback: a
+     10-question sprint offering to mail a training lead invites a report that means
+     nothing, and no wording on the button fixes that. */
+  const policy = reportPolicy(lastResult);
+  $("report-panel").classList.toggle("hidden", !policy.show);
+  if (policy.show) {
+    $("report-title").textContent = policy.required
+      ? "Enviar el informe"
+      : "Enviar el informe (opcional)";
+    $("report-sub").textContent = policy.required
+      ? "El examen completo se envía siempre al responsable de formación. Lleva el veredicto de preparación."
+      : "Simulacro de 60 preguntas en modo práctica. Enviarlo es opcional y el informe no lleva veredicto: el veredicto es solo del examen completo.";
+    $("report-msg").textContent = "";
+  }
 
   /* --- collapsible per-item review --- */
   const list = $("rev-list");
@@ -2065,19 +2100,35 @@ function buildReport() {
   return out.join("\n");
 }
 
-/* The candidate name is the only free text in the report, and here it lands in
-   markup rather than through textContent. Escaped at the single point it is
-   interpolated: a name with an angle bracket must not become an element. */
-function escHtml(v) {
-  return String(v).replace(/[&<>"']/g, c =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+/* Readiness, three bands, exam mode only.
+   The scope rule is unchanged: only the full exam reproduces the official domain mix,
+   so no other mode returns a verdict at all -- it returns null, and every caller must
+   render nothing rather than render a neutral word. A neutral word in a badge still
+   reads as an assessment. */
+function readiness(r) {
+  if (r.mode !== "exam") return null;
+  if (r.score >= READY_SCORE) {
+    return { key: "pass", word: "Listo",
+             line: `Supera el corte con margen (${r.score} frente a ${CUT_SCORE}).` };
+  }
+  if (r.score >= CUT_SCORE) {
+    return { key: "hold", word: "Preparando",
+             line: `Llega al corte pero sin margen: ${r.score} sobre ${CUT_SCORE}. Un mal día, o una forma cargada hacia un dominio flojo, lo tumba.` };
+  }
+  return { key: "fail", word: "No está listo",
+           line: `Por debajo del corte (${r.score} frente a ${CUT_SCORE}).` };
 }
 
-/* Readiness wording, kept to the same scope rule the screen obeys: only the full
-   exam reproduces the official domain mix, so no other mode may return a verdict. */
-function readinessLabel(r) {
-  if (r.mode !== "exam") return "Sin veredicto";
-  return r.passed ? "Listo" : "Preparando";
+/* Who may send a report, and whether sending is expected.
+   The full exam is the attempt the company acts on, so it is always sent. A 60-question
+   practice run is the same length and the same domain mix, so it is worth sending and
+   the candidate decides. Shorter runs, single-domain tests and mistake reviews are
+   study tools: a report on those would put a number in front of a training lead that
+   says nothing about readiness. */
+function reportPolicy(r) {
+  if (r.mode === "exam") return { show: true, required: true };
+  if (r.mode === "practice" && r.total === 60) return { show: true, required: false };
+  return { show: false, required: false };
 }
 
 /* The report as a standalone HTML document.
@@ -2090,11 +2141,15 @@ function readinessLabel(r) {
 function buildReportHtml() {
   if (!lastResult) return "";
   const r = lastResult;
-  const who = escHtml(readCandidate() || "(sin nombre)");
+  const who = esc(readCandidate() || "(sin nombre)");
   const now = new Date();
   const day = now.toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" });
   const when = now.toLocaleString("es-ES", { dateStyle: "long", timeStyle: "short" });
-  const state = readinessLabel(r);
+  const v = readiness(r);
+  /* The same three bands the screen uses, in literal hex because an email carries no
+     custom properties. Amber is the app's brass token, hand-copied for that reason. */
+  const TONES = { pass: ["#15803d", "#ecfdf3"], hold: ["#8A6320", "#F4EAD6"],
+                  fail: ["#A32319", "#FAE2E0"] };
 
   /* Single quotes around the font name, NOT double. The whole style attribute is
      delimited by double quotes, so a double quote inside it closes the attribute
@@ -2104,8 +2159,7 @@ function buildReportHtml() {
      simply ended, which is valid. */
   const F = "font-family:'Segoe UI',Arial,Helvetica,sans-serif";
   const INK = "#0f172a", MUTED = "#64748b", LINE = "#d7dee8", BAND = "#0f172a";
-  const tone = r.mode !== "exam" ? "#475569" : (r.passed ? "#15803d" : "#b45309");
-  const toneBg = r.mode !== "exam" ? "#f1f5f9" : (r.passed ? "#ecfdf3" : "#fffbeb");
+  const [tone, toneBg] = v ? TONES[v.key] : ["#475569", "#f1f5f9"];
 
   const TH = `style="${F};font-size:11px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;` +
              `text-align:left;padding:9px 11px;background:${BAND};color:#f8fafc;border:1px solid ${BAND}"`;
@@ -2122,12 +2176,14 @@ function buildReportHtml() {
 
   const summary = [
     ["Candidato", who],
-    ["Estado", `<b style="color:${tone}">${state}</b>`],
+    /* No verdict outside the full exam, so the cell carries a dash rather than a
+       neutral word: "sin evaluar" in a status column still reads as a status. */
+    ["Estado", v ? `<b style="color:${tone}">${v.word}</b>` : "&mdash;"],
     ["Nota", `<b>${r.score}</b>`],
     ["Corte", String(CUT_SCORE)],
     ["Aciertos", `${r.raw}/${r.total}`],
-    ["Precision", `${r.accPct}%`],
-    ["Modo", escHtml(r.modeLabel)],
+    ["Precisión", `${r.accPct}%`],
+    ["Modo", esc(r.modeLabel)],
     ["Minutos", String(r.elapsed)],
     ["Fecha", day]
   ];
@@ -2138,15 +2194,15 @@ function buildReportHtml() {
     const zebra = n % 2 ? "background:#f8fafc;" : "";
     const col = pct >= 72 ? "#15803d" : pct >= 55 ? "#b45309" : "#b91c1c";
     return `<tr><td ${td(zebra)}><b style="color:${INK}">${d}</b> ` +
-           `<span style="color:${MUTED}">${escHtml(DOMAINS[d].name)}</span></td>` +
+           `<span style="color:${MUTED}">${esc(DOMAINS[d].name)}</span></td>` +
            `<td ${td(zebra + "text-align:right;white-space:nowrap")}>${row.correct}/${row.total}</td>` +
            `<td ${td(zebra + "text-align:right;font-weight:600")}>${pct}%</td>` +
            `<td ${td(zebra + "width:120px")}>${bar(pct, col)}</td></tr>`;
   }).join("");
 
-  const note = r.mode === "exam"
-    ? "Es una estimacion, no una nota oficial: el algoritmo real de Pearson VUE no es publico y equipara formas por dificultad."
-    : "Sin veredicto de preparacion: solo el examen completo reproduce la mezcla oficial de dominios.";
+  const note = v
+    ? `${v.line} La recomendación se pone en ${READY_SCORE} (80% de precisión ponderada), por encima del corte oficial de ${CUT_SCORE}: entre esos dos números el examen se aprueba sin colchón. Es una estimación, no una nota oficial -- el algoritmo real de Pearson VUE no es público y equipara formas por dificultad.`
+    : "Sin veredicto de preparación: solo el examen completo reproduce la mezcla oficial de dominios, así que este informe es una referencia de progreso y no una recomendación.";
 
   return [
     "<!doctype html>",
@@ -2159,6 +2215,11 @@ function buildReportHtml() {
     /* Band */
     `<tr><td style="padding:22px 26px;background:${BAND}">`,
     `<div style="${F};font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#94a3b8">Simulacro CCAR-F</div>`,
+    /* The mode, stated in the band and not only in a table cell. A lead reading two
+       reports side by side has to see at a glance which one was the full exam. */
+    `<div style="padding-top:9px"><span style="${F};display:inline-block;font-size:11px;` +
+      `font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#0f172a;` +
+      `background:#e2e8f0;padding:4px 10px">${esc(r.modeLabel)} &middot; ${r.total} preguntas</span></div>`,
     `<div style="${F};font-size:23px;font-weight:600;color:#ffffff;padding-top:3px">${who}</div>`,
     `<div style="${F};font-size:12px;color:#94a3b8;padding-top:5px">${when}</div>`,
     "</td></tr>",
@@ -2170,8 +2231,9 @@ function buildReportHtml() {
     `<div style="${F};font-size:44px;font-weight:700;color:${INK};line-height:1">${r.score}</div>`,
     `<div style="${F};font-size:12px;color:${MUTED};padding-top:4px">sobre 100-1000 &middot; corte ${CUT_SCORE}</div>`,
     `</td><td style="${F};text-align:right;vertical-align:middle">`,
-    `<span style="${F};display:inline-block;font-size:14px;font-weight:600;color:${tone};` +
-      `background:${toneBg};border:1px solid ${tone};padding:7px 16px">${state}</span>`,
+    v ? `<span style="${F};display:inline-block;font-size:14px;font-weight:600;color:${tone};` +
+        `background:${toneBg};border:1px solid ${tone};padding:7px 16px">${v.word}</span>`
+      : `<span style="${F};font-size:12px;color:${MUTED}">Sin veredicto de preparación</span>`,
     `<div style="${F};font-size:12px;color:${MUTED};padding-top:7px">${r.raw} de ${r.total} aciertos &middot; ${r.accPct}%</div>`,
     "</td></tr></table>",
     `<div style="padding-top:16px">${bar(scorePct, tone).replace("width:110px", "width:100%")}</div>`,
@@ -2180,7 +2242,7 @@ function buildReportHtml() {
     /* Excel row */
     `<tr><td style="padding:22px 26px 4px">`,
     `<div style="${F};font-size:13px;font-weight:600;color:${INK};padding-bottom:3px">Fila para la hoja de seguimiento</div>`,
-    `<div style="${F};font-size:12px;color:${MUTED};padding-bottom:10px">Selecciona la tabla y pegala en Excel: entra como celdas, una fila por candidato.</div>`,
+    `<div style="${F};font-size:12px;color:${MUTED};padding-bottom:10px">Selecciona la tabla y pégala en Excel: entra como celdas, una fila por candidato.</div>`,
     '<table cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:100%">',
     "<tr>" + summary.map(([k]) => `<th ${TH}>${k}</th>`).join("") + "</tr>",
     "<tr>" + summary.map(([, v]) => `<td ${td("white-space:nowrap")}>${v}</td>`).join("") + "</tr>",
