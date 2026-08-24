@@ -333,7 +333,6 @@ button { font: inherit; color: inherit; cursor: pointer; }
   color: var(--ink);
 }
 
-.ask { font-size: 13px; color: var(--ink-3); margin: 0 0 22px; }
 
 .options { display: grid; gap: 10px; }
 
@@ -953,6 +952,11 @@ const BANK_ERR_EXAM = "Este banco es de otro examen, no del CCAR-F.";
    verification failure is defined to be indistinguishable, and both surface as
    the same OperationError — so one message names both causes. */
 const BANK_ERR_AUTH = "Contraseña incorrecta, o el archivo está dañado.";
+/* Not a bank problem at all: the picked file moved before it could be read, or
+   crypto.subtle is missing because the page was opened over http://. Reporting either
+   as an invalid bank sends the candidate to re-download a file that was always fine,
+   and the real cause never surfaces anywhere. */
+const BANK_ERR_ENV = "No se pudo leer o descifrar el archivo en este navegador. Comprueba que el archivo siga disponible y que la página se abra por HTTPS.";
 
 class BankError extends Error {}
 
@@ -1353,7 +1357,7 @@ function esc(s) {
 
 /* Technical identifiers set in mono so they're findable at a glance —
    the whole point of reading an item in 20 seconds. */
-const IDENT = /(--[a-z][a-z0-9-]*|\b[a-z][a-z0-9]*(?:_[a-z0-9]+)+\b|\bPreToolUse\b|\bPostToolUse\b|\bPreToolCall\b|\bCLAUDE\.md\b|\bSKILL\.md\b|\bisError\b|\bisRetryable\b|\berrorCategory\b|\ballowedTools\b|\bstopReason\b)/g;
+const IDENT = /(--[a-z][a-z0-9-]*|\b[a-z][a-z0-9]*(?:_[a-z0-9]+)+\b|\bPreToolUse\b|\bPostToolUse\b|\bPreToolCall\b|\bCLAUDE\.md\b|\bSKILL\.md\b|\bisError\b|\bisRetryable\b|\berrorCategory\b|\ballowedTools\b)/g;
 const mark = (s) => esc(s).replace(IDENT, "<code>$1</code>");
 
 const $ = (id) => document.getElementById(id);
@@ -1509,9 +1513,9 @@ function renderQuestion() {
   $("flag-btn").classList.toggle("btn-primary", it.flagged);
 
   $("q-tags").innerHTML = [
-    `<span class="tag accent" title="${esc(DOMAINS[q.d].name)}">${q.d}</span>`,
-    `<span class="tag" title="${esc(TASKS[q.t] || "")}">Objetivo ${q.t}</span>`,
-    `<span class="tag" title="${esc(SCENARIOS[q.s] || "")}">${q.s} · ${esc(SCENARIOS[q.s] || "")}</span>`
+    `<span class="tag accent" title="${esc(DOMAINS[q.d].name)}">${esc(q.d)}</span>`,
+    `<span class="tag" title="${esc(TASKS[q.t] || "")}">Objetivo ${esc(q.t)}</span>`,
+    `<span class="tag" title="${esc(SCENARIOS[q.s] || "")}">${esc(q.s)} · ${esc(SCENARIOS[q.s] || "")}</span>`
   ].join("");
 
   $("q-stem").innerHTML = mark(q.stem);
@@ -1672,10 +1676,21 @@ function tally(items, keyFn) {
   return rows;
 }
 
-function band(pct) {
-  if (pct >= 80) return "ok";
-  if (pct >= 60) return "mid";
-  return "weak";
+/* ONE scale, consumed by all three surfaces: the results table, the plain-text
+   report and the HTML report. There used to be three of them and they disagreed --
+   at 72-79% the screen said one level and the report the one above it, and "flojo"
+   was the screen's WORST label while it was the report's MIDDLE one. Same word, two
+   levels, in the two artifacts a candidate and a training lead read side by side.
+
+   The two boundaries are the exam's own numbers, not round figures: 80 is the exact
+   image of 80% weighted accuracy, where our readiness recommendation sits, and 72 is
+   the official cut. So a domain reads "justo" precisely when it would pass with no
+   cushion, and "flojo" when it would not pass at all. The 60 and 55 the old scales
+   used meant nothing. */
+function domainBand(pct) {
+  if (pct >= 80) return { key: "ok", label: "sólido", color: "#15803d" };
+  if (pct >= 72) return { key: "mid", label: "justo", color: "#b45309" };
+  return { key: "weak", label: "flojo", color: "#b91c1c" };
 }
 
 function renderResults() {
@@ -1701,7 +1716,7 @@ function renderResults() {
 
   /* The report is composed from THIS object, never recomputed: a second
      derivation of the score is a second thing that can disagree with the page. */
-  lastResult = { score, passed, raw, total: S.items.length, mode: S.mode,
+  lastResult = { score, raw, total: S.items.length, mode: S.mode,
                  modeLabel, elapsed, byDomain, accPct: frToPct(acc).toFixed(1) };
 
   let html = "";
@@ -1739,7 +1754,10 @@ function renderResults() {
       <div class="gauge-ends"><span>100</span><span>1000</span></div>
     </div>`;
 
-  if (S.mode === "exam") {
+  /* Branch on the verdict itself, not on a second reading of the same rule:
+     readiness() already decides where a verdict exists, and restating it here is how
+     a badge and the paragraph under it come to contradict each other. */
+  if (verdict) {
     html += `<p class="disclaimer"><b>${verdict.word}.</b> ${verdict.line} Nuestra recomendación se pone en ${READY_SCORE} (el 80% de precisión ponderada), por encima del corte oficial de ${CUT_SCORE}, a propósito: entre esos dos números el examen se aprueba sin colchón. <b>Y es una estimación, no tu nota.</b> El algoritmo real de Pearson VUE no es público y equipara formas por dificultad. El cálculo replica la especificación de este proyecto: precisión ponderada por los pesos oficiales renormalizados sobre los dominios presentes, mapeo lineal a trozos continuo en 720, aritmética racional exacta y un único redondeo final al alza. Un 720 exacto aprueba: el corte es inclusivo.</p>`;
   } else {
     html += `<p class="disclaimer"><b>Sin veredicto de preparación, a propósito.</b> Solo el examen completo reproduce la mezcla oficial de dominios, así que un 720 en un test de un solo dominio no dice nada sobre si estás listo. La nota está aquí como referencia comparable entre sesiones.</p>`;
@@ -1765,14 +1783,14 @@ function renderResults() {
     const row = byDomain[d];
     if (!row) continue;
     const pct = (row.correct / row.total) * 100;
-    const b = band(pct);
+    const b = domainBand(pct);
     html += `<tr>
-      <td class="dname">${d}<small>${esc(DOMAINS[d].name)}</small></td>
+      <td class="dname">${esc(d)}<small>${esc(DOMAINS[d].name)}</small></td>
       <td class="r">${Number(DOMAINS[d].w[0])}%</td>
       <td class="r">${row.correct}/${row.total}</td>
       <td class="r">${pct.toFixed(0)}%</td>
-      <td><div class="meter"><i class="${b === "ok" ? "ok" : b === "weak" ? "weak" : ""}" style="width:${pct}%"></i></div></td>
-      <td><span class="pill ${b}">${b === "ok" ? "sólido" : b === "mid" ? "justo" : "flojo"}</span></td>
+      <td><div class="meter"><i class="${b.key === "mid" ? "" : b.key}" style="width:${pct}%"></i></div></td>
+      <td><span class="pill ${b.key}">${b.label}</span></td>
     </tr>`;
   }
   html += `</tbody></table></div>`;
@@ -1795,11 +1813,11 @@ function renderResults() {
   for (const t of ordered) {
     const row = byTask[t];
     const pct = (row.correct / row.total) * 100;
-    const b = band(pct);
+    const b = domainBand(pct);
     html += `<tr>
-      <td class="dname"><span class="mono">${t}</span><small>${esc(TASKS[t] || "")}</small></td>
+      <td class="dname"><span class="mono">${esc(t)}</span><small>${esc(TASKS[t] || "")}</small></td>
       <td class="r">${row.correct}/${row.total}</td>
-      <td><div class="meter"><i class="${b === "ok" ? "ok" : b === "weak" ? "weak" : ""}" style="width:${pct}%"></i></div></td>
+      <td><div class="meter"><i class="${b.key === "mid" ? "" : b.key}" style="width:${pct}%"></i></div></td>
     </tr>`;
   }
   html += `</tbody></table></div></div>`;
@@ -1840,7 +1858,6 @@ function renderResults() {
   /* The acknowledgement gate exists only where the report is required. Everywhere
      else the exits are live from the start: gating a practice run would be ceremony
      with nothing behind it. */
-  reportTouched = false;
   $("report-ack").checked = false;
   $("report-ack").disabled = true;
   $("report-ack-row").classList.toggle("hidden", !policy.required);
@@ -1890,7 +1907,7 @@ function renderResults() {
     head.setAttribute("aria-expanded", "false");
     head.innerHTML = `
       <span class="rev-mark ${blank ? "blank" : right ? "right" : "wrong"}">${blank ? "–" : right ? "✓" : "✗"}</span>
-      <span class="rev-id">${i + 1}. ${q.id}</span>
+      <span class="rev-id">${i + 1}. ${esc(q.id)}</span>
       <span class="rev-stem">${esc(q.stem.slice(0, 120))}…</span>
       <span class="rev-caret">▾</span>`;
 
@@ -1916,9 +1933,9 @@ function renderResults() {
 function renderItemDetail(it) {
   const q = it.q;
   let html = `<div class="tags" style="margin:14px 0 12px">
-    <span class="tag accent">${q.d}</span>
-    <span class="tag">Objetivo ${q.t}</span>
-    <span class="tag">${q.s} · ${esc(SCENARIOS[q.s] || "")}</span>
+    <span class="tag accent">${esc(q.d)}</span>
+    <span class="tag">Objetivo ${esc(q.t)}</span>
+    <span class="tag">${esc(q.s)} · ${esc(SCENARIOS[q.s] || "")}</span>
   </div>`;
   html += `<p class="stem" style="font-size:16px">${mark(q.stem)}</p><div class="options">`;
 
@@ -2017,7 +2034,13 @@ armConfirm(
   () => submit()
 );
 
-$("results-body").addEventListener("click", (e) => {
+/* Bound to #results-actions, NOT to #results-body. The four exits used to be
+   rendered inside #results-body and the listener sat there with them; commit CCAT-24
+   moved them out into static markup and left the listener behind, on what is now
+   their SIBLING. Clicks stopped reaching it and all four exits were dead. Delegating
+   on the container that actually holds them keeps the routing in one place and makes
+   the ancestry the thing a gate can assert. */
+$("results-actions").addEventListener("click", (e) => {
   const t = e.target.closest("button");
   if (!t) return;
   if (t.dataset.practiceDomain) start("domain", { domain: t.dataset.practiceDomain });
@@ -2107,7 +2130,13 @@ function initBankGate() {
         ? `${items} preguntas cargadas en este dispositivo.`
         : `${items} preguntas cargadas. Este navegador bloquea el almacenamiento, así que habrá que repetirlo al recargar.`);
     } catch (err) {
-      say(err instanceof BankError ? err.message : BANK_ERR_SHAPE, true);
+      if (err instanceof BankError) say(err.message, true);
+      else {
+        /* Never swallowed: the loader names every cause it knows, so an unknown one
+           is worth a console entry rather than a wrong message on screen. */
+        console.error("bank load failed:", err);
+        say(BANK_ERR_ENV, true);
+      }
     } finally {
       go.disabled = false;
       go.textContent = idle;
@@ -2188,8 +2217,9 @@ function buildReport() {
     if (!row) continue;
     const pct = Math.round((row.correct / row.total) * 100);
     /* A word, not a bar: block characters are the one thing that does survive a
-       proportional font badly enough to look broken. */
-    const mark = pct >= 72 ? "bien" : pct >= 55 ? "flojo" : "debil";
+       proportional font badly enough to look broken. The word comes from domainBand,
+       so it is the same word the screen showed for the same percentage. */
+    const mark = domainBand(pct).label;
     out.push(`- ${d} ${DOMAINS[d].name}: ${row.correct}/${row.total} (${pct}%) - ${mark}`);
   }
 
@@ -2335,8 +2365,10 @@ function buildReportFragment() {
   const domains = DOMAIN_IDS.filter(d => r.byDomain[d]).map((d, n) => {
     const row = r.byDomain[d];
     const pct = Math.round((row.correct / row.total) * 100);
-    /* No zebra. Striping is a background, and the borders separate the rows anyway. */
-    const col = pct >= 72 ? "#15803d" : pct >= 55 ? "#b45309" : "#b91c1c";
+    /* No zebra. Striping is a background, and the borders separate the rows anyway.
+       The colour comes from domainBand, so the bar cannot disagree with the pill the
+       candidate saw on screen for the same percentage. */
+    const col = domainBand(pct).color;
     return `<tr><td ${td()}><b>${d}</b> ${esc(DOMAINS[d].name)}</td>` +
            `<td ${td("text-align:right;white-space:nowrap")}>${row.correct}/${row.total}</td>` +
            `<td ${td("text-align:right;font-weight:600")}>${pct}%</td>` +
@@ -2437,7 +2469,6 @@ function buildReportHtml() {
    the one failure that costs two hours. The result is written to storage as soon as
    it exists and cleared only when the candidate says it went out. */
 const PENDING_KEY = "ccarf-pending-exam-v1";
-let reportTouched = false;
 
 function writePending(r) {
   try { window.localStorage.setItem(PENDING_KEY, JSON.stringify(r)); } catch (e) { /* blocked storage: nothing to do */ }
@@ -2463,11 +2494,9 @@ function applyExitGate(policy) {
   for (const id of ["again-btn", "weakest-btn", "results-mistakes-btn", "home-btn"]) $(id).disabled = shut;
 }
 
-/* Marks the report as acted on. Called from both delivery buttons, because a
-   downloaded file the candidate attaches by hand counts every bit as much as a
-   draft opened in their mail client -- neither is verifiable from here. */
+/* Neither path is verifiable from here: nothing the page can observe tells it the
+   report reached anyone. */
 function markReportTouched(msg) {
-  reportTouched = true;
   $("report-ack").disabled = false;
   $("report-msg").textContent = msg;
 }
