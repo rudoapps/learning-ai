@@ -841,7 +841,6 @@ button { font: inherit; color: inherit; cursor: pointer; }
       <h2 id="report-title">Enviar el informe</h2>
       <p class="sub" id="report-sub"></p>
       <div class="actions">
-        <button class="btn btn-primary hidden" id="report-send">Enviar al responsable</button>
         <button class="btn btn-primary" id="report-mail">Enviar por correo</button>
         <button class="btn btn-ghost" id="report-copy">Copiar informe</button>
         <button class="btn btn-ghost" id="report-download">Descargar</button>
@@ -947,30 +946,6 @@ const BANK_TAG_BYTES = 16;
    swapped, so only they show the control that clears them. */
 let bankSource = "none";
 
-/* Where the finished report is posted, when the bank carries a destination.
-   It arrives in the envelope rather than in the page because the page is public and
-   permanent and the envelope is not -- see the note in encrypt_bank.py. Validated to
-   the one host that can be meant: a bank file is internal, but "internal" is not
-   "trusted enough to name any URL the browser will POST a candidate's name to". */
-const WEBHOOK_PREFIX = "https://hooks.slack.com/";
-const WEBHOOK_KEY = "ccarf-delivery-v1";
-let deliveryWebhook = "";
-
-function adoptWebhook(url) {
-  deliveryWebhook = (typeof url === "string" && url.startsWith(WEBHOOK_PREFIX)) ? url : "";
-  try {
-    if (deliveryWebhook) window.localStorage.setItem(WEBHOOK_KEY, deliveryWebhook);
-    else window.localStorage.removeItem(WEBHOOK_KEY);
-  } catch (e) { /* blocked storage costs a reload, never a crash */ }
-}
-
-function restoreWebhook() {
-  try {
-    const v = window.localStorage.getItem(WEBHOOK_KEY);
-    if (v && v.startsWith(WEBHOOK_PREFIX)) deliveryWebhook = v;
-  } catch (e) { /* nothing to do */ }
-}
-
 const BANK_ERR_SHAPE = "Este archivo no es un banco válido.";
 const BANK_ERR_VERSION = "Versión de banco no compatible con esta versión del simulador.";
 const BANK_ERR_EXAM = "Este banco es de otro examen, no del CCAR-F.";
@@ -1040,8 +1015,7 @@ function parseEnvelope(text) {
   if (ct.length <= BANK_TAG_BYTES) throw new BankError(BANK_ERR_SHAPE);
 
   return { v: env.v, exam: env.exam, items: env.items,
-           iterations: env.kdf.iterations, salt, iv, ct,
-           delivery: deliveryFromEnvelope(env) };
+           iterations: env.kdf.iterations, salt, iv, ct };
 }
 
 /** Native Web Crypto only — no libraries, no polyfills. The KDF and cipher
@@ -1071,13 +1045,6 @@ async function decryptEnvelope(env, passphrase) {
      rather than decoration. */
   if (items.length !== env.items) throw new BankError(BANK_ERR_SHAPE);
   return items;
-}
-
-/* Read off the RAW envelope, before decryption: the loader needs the destination
-   whether or not the passphrase turns out to be right, and an unknown key in the
-   envelope was already tolerated, so this breaks no existing file. */
-function deliveryFromEnvelope(raw) {
-  return (raw && raw.delivery && typeof raw.delivery.slack === "string") ? raw.delivery.slack : "";
 }
 
 /* Storage is best effort, exactly like the mistakes store: a browser that
@@ -1115,7 +1082,6 @@ function adoptStoredBank() {
     bankSource = "inline";
     return true;
   }
-  restoreWebhook();
   const items = readStoredBank();
   if (!items) return false;
   BANK = items;
@@ -1131,9 +1097,6 @@ async function adoptEncryptedBank(text, passphrase) {
   const items = await decryptEnvelope(env, passphrase);
   BANK = items;
   bankSource = "file";
-  /* After the tag verifies, never before: a wrong passphrase must not leave a
-     destination behind on the device. */
-  adoptWebhook(env.delivery);
   return { items: items.length, persisted: storeBank(items) };
 }
 /* __LOADER_END__ */
@@ -1863,13 +1826,6 @@ function renderResults() {
       ? "El examen completo se envía siempre al responsable de formación. Lleva el veredicto de preparación."
       : "Simulacro de 60 preguntas en modo práctica. Enviarlo es opcional y el informe no lleva veredicto: el veredicto es solo del examen completo.";
     $("report-msg").textContent = "";
-    /* One click, no mail client, and a confirmation the page can trust -- but only
-       when the bank carried a destination. Without one the manual paths are all
-       there is, so they stay primary. */
-    const direct = Boolean(deliveryWebhook);
-    $("report-send").classList.toggle("hidden", !direct);
-    $("report-mail").classList.toggle("btn-primary", !direct);
-    $("report-mail").classList.toggle("btn-ghost", direct);
     /* mailto: cannot name the sender -- RFC 6068 has no `from`, and every client uses
        its own default account. So the one thing that decides whether the mail arrives
        is a setting on the candidate's machine, and the only useful thing the page can
@@ -2640,140 +2596,6 @@ function downloadReport() {
   markReportTouched("Informe descargado. Ábrelo y adjúntalo, o pega la tabla en el correo.");
 }
 
-/* ---------- posting the report to the channel ----------
-   The only path where "sent" is a FACT rather than the candidate's word: Slack answers
-   the POST, so the page knows. Measured 2026-08-24: hooks.slack.com returns
-   `access-control-allow-origin: *`, so a browser may both post and read the reply.
-
-   Form-encoded ON PURPOSE. application/json makes this a non-simple request, which
-   triggers a CORS preflight that hooks.slack.com does not answer with the
-   allow-methods/allow-headers a preflight needs. `payload=<json>` is a simple request,
-   skips the preflight entirely, and is the form Slack has always accepted. */
-/* Slack wants exactly three characters escaped in message text -- & < > -- and
-   nothing else. esc() cannot be reused: it also turns quotes into &quot;, which
-   Slack renders literally, so a candidate called O'Brien would appear as O&#39;Brien
-   in the channel. Same job, different target syntax, so a different function. */
-function escSlack(v) {
-  return String(v).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
-}
-
-/* A ten-cell bar. Slack has no progress element, and these block characters render
-   the same on desktop, web and mobile. */
-function slackBar(pct) {
-  const filled = Math.max(0, Math.min(10, Math.round(pct / 10)));
-  return "█".repeat(filled) + "░".repeat(10 - filled);
-}
-
-/* The message the channel sees.
-   Blocks INSIDE an attachment, on purpose: Slack's own migration guide states that
-   `color` has no Block Kit equivalent and that wrapping blocks in an attachment is
-   how you keep the coloured bar. The bar is the whole point here -- a training lead
-   scrolling the channel reads green, amber or red before reading a single word -- so
-   it is worth the attachment's lower visual hierarchy.
-
-   The top-level `text` is not decoration either: it is what the push notification
-   and any client that cannot render blocks will show. */
-function buildSlackPayload(r) {
-  /* Local, not module-level: the verify harness slices FUNCTIONS out of the built
-     page, so anything this needs has to live inside it or arrive as an argument.
-     A const alongside would be invisible to the gate and blow up at run time. */
-  const SLACK_TONES = { pass: "#15803d", hold: "#8A6320", fail: "#A32319" };
-  const SLACK_MARKS = { pass: ":white_check_mark:", hold: ":warning:", fail: ":no_entry:" };
-
-  const v = readiness(r);
-  /* The header is plain_text and capped at 150 characters by Slack. A long name must
-     not be what makes the request fail. */
-  const who = escSlack(readCandidate() || "(sin nombre)").slice(0, 90);
-  const mark = v ? SLACK_MARKS[v.key] : ":memo:";
-  const state = v ? v.word : "Sin veredicto";
-  const day = new Date().toLocaleDateString("es-ES",
-    { day: "2-digit", month: "2-digit", year: "numeric" });
-
-  const fields = [
-    { type: "mrkdwn", text: `*Estado*\n${mark} ${state}` },
-    { type: "mrkdwn", text: `*Nota*\n${r.score} / 1000  (corte ${CUT_SCORE})` },
-    { type: "mrkdwn", text: `*Aciertos*\n${r.raw} de ${r.total}` },
-    { type: "mrkdwn", text: `*Precision ponderada*\n${r.accPct}%` },
-    { type: "mrkdwn", text: `*Modo*\n${escSlack(r.modeLabel)} · ${r.elapsed} min` },
-    { type: "mrkdwn", text: `*Fecha*\n${day}` }
-  ];
-
-  const domains = DOMAIN_IDS.filter((d) => r.byDomain[d]).map((d) => {
-    const row = r.byDomain[d];
-    const pct = Math.round((row.correct / row.total) * 100);
-    const dot = pct >= 72 ? ":large_green_circle:" : pct >= 55 ? ":large_yellow_circle:" : ":red_circle:";
-    /* No padding inside the bold span: Slack's mrkdwn needs the asterisk adjacent to
-       a non-space character, so `* 88%*` renders as literal asterisks instead of bold.
-       The bar already aligns the eye, which is what the padding was for. */
-    return `${dot} \`${d}\` \`${slackBar(pct)}\` *${pct}%* · ${row.correct}/${row.total} · ${escSlack(DOMAINS[d].name)}`;
-  }).join("\n");
-
-  const blocks = [
-    { type: "header", text: { type: "plain_text", text: `${who} · ${state}`.slice(0, 150), emoji: true } },
-    { type: "section", fields },
-    { type: "divider" },
-    { type: "section", text: { type: "mrkdwn", text: `*Por dominio*\n${domains}`.slice(0, 3000) } },
-    { type: "context", elements: [{ type: "mrkdwn",
-        text: v
-          ? `${v.line} La recomendacion se pone en ${READY_SCORE}, por encima del corte oficial de ${CUT_SCORE}. Nota estimada, no oficial.`
-          : "Sin veredicto: solo el examen completo reproduce la mezcla oficial de dominios." }] }
-  ];
-
-  return {
-    text: `Simulacro CCAR-F · ${who} · ${state} · ${r.score}`,
-    attachments: [{ color: v ? SLACK_TONES[v.key] : "#64748b", blocks }]
-  };
-}
-
-/* The only path where "sent" is a FACT rather than the candidate's word: Slack answers
-   the POST, so the page knows. Measured 2026-08-24: hooks.slack.com returns
-   `access-control-allow-origin: *`, so a browser may both post and read the reply.
-
-   Form-encoded ON PURPOSE. application/json makes this a non-simple request, which
-   triggers a CORS preflight that hooks.slack.com does not answer with the
-   allow-methods/allow-headers a preflight needs. `payload=<json>` is a simple request,
-   skips the preflight entirely, and is the form Slack has always accepted. */
-async function postReportToSlack() {
-  if (!lastResult || !deliveryWebhook) return false;
-  const body = "payload=" + encodeURIComponent(JSON.stringify(buildSlackPayload(lastResult)));
-  const res = await fetch(deliveryWebhook, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
-    body
-  });
-  /* Slack answers a bare "ok". Anything else is a failure worth showing verbatim. */
-  const text = (await res.text()).trim();
-  if (!res.ok || text !== "ok") throw new Error(text || `HTTP ${res.status}`);
-  return true;
-}
-
-async function deliverReport() {
-  const btn = $("report-send");
-  btn.disabled = true;
-  $("report-msg").textContent = "Enviando...";
-  try {
-    await postReportToSlack();
-    /* A real confirmation, so the acknowledgement stops being the candidate's word.
-       The checkbox is ticked, locked, and the exits open by themselves. */
-    reportTouched = true;
-    $("report-ack").checked = true;
-    $("report-ack").disabled = true;
-    $("report-ack-row").classList.add("done");
-    clearPending();
-    applyExitGate(reportPolicy(lastResult));
-    $("report-msg").textContent = "Enviado y confirmado por el canal. Ya puedes salir.";
-  } catch (err) {
-    /* Never swallow this. The candidate has to know the channel did not take it, and
-       the manual paths stay available precisely for that. */
-    $("report-msg").textContent =
-      `No se pudo enviar (${err.message}). Usa Enviar por correo o Descargar, y marca la casilla cuando lo hayas hecho.`;
-    $("report-ack").disabled = false;
-  } finally {
-    btn.disabled = false;
-  }
-}
-
-$("report-send").addEventListener("click", deliverReport);
 $("report-mail").addEventListener("click", sendReportByMail);
 $("report-download").addEventListener("click", downloadReport);
 
