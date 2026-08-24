@@ -580,6 +580,22 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .pill.ok { background: var(--good-soft); color: var(--good); border-color: var(--good); }
 
 .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+.actions .btn[disabled] { opacity: .45; cursor: not-allowed; }
+
+/* The acknowledgement row. It is a ritual, not a verification -- mailto: reports
+   nothing back -- so it is styled as a deliberate act rather than as a checkmark
+   the eye slides over. */
+.ack { display: flex; gap: 10px; align-items: flex-start; margin-top: 18px;
+       padding-top: 16px; border-top: 1px solid var(--line); }
+.ack input { margin-top: 3px; width: 17px; height: 17px; accent-color: var(--brass); flex: 0 0 auto; }
+.ack label { font-size: 14px; line-height: 1.5; }
+.ack label b { font-weight: 600; }
+.ack.done { color: var(--good); }
+
+.pending { border: 1px solid var(--brass); background: var(--brass-soft);
+           border-radius: var(--r); padding: 18px 20px; margin-bottom: 26px; }
+.pending h2 { font-size: 16px; margin: 0 0 4px; color: var(--brass); }
+.pending p { font-size: 14px; margin: 0 0 12px; }
 
 .rev-item {
   border: 1px solid var(--line);
@@ -679,7 +695,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
     <div class="wrap">
       <p class="eyebrow">Simulador de práctica no oficial &middot; Claude Certified Architect — Foundations</p>
       <h1>Sala de Examen CCAR-F</h1>
-      <p>Cien preguntas escritas contra los objetivos publicados del CCAR-F, con el mismo reparto por dominio, el mismo ritmo y la misma escala de nota que el examen real. Las preguntas están en inglés porque el examen lo está, y buena parte de la dificultad vive en el matiz de la redacción.</p>
+      <p>Preguntas escritas contra los objetivos publicados del CCAR-F, con el mismo reparto por dominio, el mismo ritmo y la misma escala de nota que el examen real. Las preguntas están en inglés porque el examen lo está, y buena parte de la dificultad vive en el matiz de la redacción.</p>
       <div class="facts">
         <div class="fact"><b class="num">60</b><span>preguntas por examen</span></div>
         <div class="fact"><b class="num">120</b><span>minutos</span></div>
@@ -694,6 +710,17 @@ button { font: inherit; color: inherit; cursor: pointer; }
   </header>
 
   <main class="wrap">
+    <!-- Survives a reload, so an exam closed by accident is not lost. -->
+    <div class="pending hidden" id="pending-panel">
+      <h2>Tienes un informe de examen sin enviar</h2>
+      <p id="pending-line"></p>
+      <div class="actions">
+        <button class="btn btn-primary" id="pending-mail">Enviar por correo</button>
+        <button class="btn" id="pending-download">Descargar</button>
+        <button class="btn btn-ghost" id="pending-discard">Descartar</button>
+      </div>
+    </div>
+
     <div class="modes">
       <section class="mode is-exam">
         <span class="mode-tag graded">Con nota y veredicto</span>
@@ -814,10 +841,29 @@ button { font: inherit; color: inherit; cursor: pointer; }
       <h2 id="report-title">Enviar el informe</h2>
       <p class="sub" id="report-sub"></p>
       <div class="actions">
+        <button class="btn btn-primary hidden" id="report-send">Enviar al responsable</button>
         <button class="btn btn-primary" id="report-mail">Enviar por correo</button>
         <button class="btn btn-ghost" id="report-download">Descargar</button>
       </div>
+      <p class="sub" id="report-from"></p>
       <p class="gate-msg" id="report-msg" role="status" aria-live="polite"></p>
+      <div class="ack hidden" id="report-ack-row">
+        <input type="checkbox" id="report-ack" disabled>
+        <label for="report-ack">Ya lo he enviado al responsable de formacion.
+          <b>Nadie puede comprobarlo por ti:</b> el correo se abre en tu cliente y la
+          pagina no recibe confirmacion, asi que marcarlo es tu palabra.</label>
+      </div>
+    </div>
+
+    <!-- Below the report panel ON PURPOSE. These used to be rendered inside
+         #results-body, which put every exit ABOVE the thing the candidate was
+         meant to do last -- so the flow ended before the report was ever seen. -->
+    <div class="actions" id="results-actions" style="margin-bottom:40px">
+      <button class="btn btn-primary" id="again-btn">Repetir en este modo</button>
+      <button class="btn hidden" id="weakest-btn">Practicar el dominio flojo</button>
+      <button class="btn hidden" id="results-mistakes-btn">Repasar fallos</button>
+      <button class="btn btn-ghost" id="home-btn">Volver al inicio</button>
+      <span class="sub" id="weakest-note" style="align-self:center"></span>
     </div>
   </main>
   <p class="footer-note">Simulador de práctica no oficial. Sin afiliación con Anthropic ni con Pearson VUE.</p>
@@ -900,6 +946,30 @@ const BANK_TAG_BYTES = 16;
    swapped, so only they show the control that clears them. */
 let bankSource = "none";
 
+/* Where the finished report is posted, when the bank carries a destination.
+   It arrives in the envelope rather than in the page because the page is public and
+   permanent and the envelope is not -- see the note in encrypt_bank.py. Validated to
+   the one host that can be meant: a bank file is internal, but "internal" is not
+   "trusted enough to name any URL the browser will POST a candidate's name to". */
+const WEBHOOK_PREFIX = "https://hooks.slack.com/";
+const WEBHOOK_KEY = "ccarf-delivery-v1";
+let deliveryWebhook = "";
+
+function adoptWebhook(url) {
+  deliveryWebhook = (typeof url === "string" && url.startsWith(WEBHOOK_PREFIX)) ? url : "";
+  try {
+    if (deliveryWebhook) window.localStorage.setItem(WEBHOOK_KEY, deliveryWebhook);
+    else window.localStorage.removeItem(WEBHOOK_KEY);
+  } catch (e) { /* blocked storage costs a reload, never a crash */ }
+}
+
+function restoreWebhook() {
+  try {
+    const v = window.localStorage.getItem(WEBHOOK_KEY);
+    if (v && v.startsWith(WEBHOOK_PREFIX)) deliveryWebhook = v;
+  } catch (e) { /* nothing to do */ }
+}
+
 const BANK_ERR_SHAPE = "Este archivo no es un banco válido.";
 const BANK_ERR_VERSION = "Versión de banco no compatible con esta versión del simulador.";
 const BANK_ERR_EXAM = "Este banco es de otro examen, no del CCAR-F.";
@@ -969,7 +1039,8 @@ function parseEnvelope(text) {
   if (ct.length <= BANK_TAG_BYTES) throw new BankError(BANK_ERR_SHAPE);
 
   return { v: env.v, exam: env.exam, items: env.items,
-           iterations: env.kdf.iterations, salt, iv, ct };
+           iterations: env.kdf.iterations, salt, iv, ct,
+           delivery: deliveryFromEnvelope(env) };
 }
 
 /** Native Web Crypto only — no libraries, no polyfills. The KDF and cipher
@@ -999,6 +1070,13 @@ async function decryptEnvelope(env, passphrase) {
      rather than decoration. */
   if (items.length !== env.items) throw new BankError(BANK_ERR_SHAPE);
   return items;
+}
+
+/* Read off the RAW envelope, before decryption: the loader needs the destination
+   whether or not the passphrase turns out to be right, and an unknown key in the
+   envelope was already tolerated, so this breaks no existing file. */
+function deliveryFromEnvelope(raw) {
+  return (raw && raw.delivery && typeof raw.delivery.slack === "string") ? raw.delivery.slack : "";
 }
 
 /* Storage is best effort, exactly like the mistakes store: a browser that
@@ -1036,6 +1114,7 @@ function adoptStoredBank() {
     bankSource = "inline";
     return true;
   }
+  restoreWebhook();
   const items = readStoredBank();
   if (!items) return false;
   BANK = items;
@@ -1051,6 +1130,9 @@ async function adoptEncryptedBank(text, passphrase) {
   const items = await decryptEnvelope(env, passphrase);
   BANK = items;
   bankSource = "file";
+  /* After the tag verifies, never before: a wrong passphrase must not leave a
+     destination behind on the device. */
+  adoptWebhook(env.delivery);
   return { items: items.length, persisted: storeBank(items) };
 }
 /* __LOADER_END__ */
@@ -1391,6 +1473,7 @@ function show(view) {
 /* ---------- home ---------- */
 function renderHome() {
   $("bank-size").textContent = String(BANK.length);
+  renderPending();
   /* A compiled-in bank cannot be swapped out; a loaded one can. */
   $("bank-clear").classList.toggle("hidden", bankSource !== "storage" && bankSource !== "file");
 
@@ -1730,18 +1813,6 @@ function renderResults() {
   }
   html += `</tbody></table></div>`;
 
-  /* Only worth offering when the test compared domains: in a single-domain
-     test the "weakest" is the only one, and the button would just restart it. */
-  if (weakest && Object.keys(byDomain).length > 1 && byDomain[weakest.d].total >= 2) {
-    html += `<div class="actions" style="margin-top:18px">
-      <button class="btn btn-primary" data-practice-domain="${weakest.d}">
-        Practicar ${weakest.d} — ${BANK.filter((q) => q.d === weakest.d).length} preguntas del banco
-      </button>
-      <span style="font-size:13px;color:var(--ink-3);align-self:center">
-        Es donde peor has ido en este test.
-      </span>
-    </div>`;
-  }
   html += `</div>`;
 
   /* --- by task statement --- */
@@ -1776,12 +1847,6 @@ function renderResults() {
     <div id="rev-list"></div>
   </div>`;
 
-  html += `<div class="actions" style="margin-bottom:40px">
-    <button class="btn btn-primary" data-restart="${S.mode}">Repetir en este modo</button>
-    ${mistakes.size ? `<button class="btn" data-start-mistakes="1">Repasar ${mistakes.size} ${mistakes.size === 1 ? "fallo" : "fallos"}</button>` : ""}
-    <button class="btn btn-ghost" data-home="1">Volver al inicio</button>
-  </div>`;
-
   $("results-body").innerHTML = html;
 
   /* The report panel is policy-driven, not always-on. Hiding it is the feedback: a
@@ -1791,13 +1856,67 @@ function renderResults() {
   $("report-panel").classList.toggle("hidden", !policy.show);
   if (policy.show) {
     $("report-title").textContent = policy.required
-      ? "Enviar el informe"
+      ? "Paso final · Enviar el informe"
       : "Enviar el informe (opcional)";
     $("report-sub").textContent = policy.required
       ? "El examen completo se envía siempre al responsable de formación. Lleva el veredicto de preparación."
       : "Simulacro de 60 preguntas en modo práctica. Enviarlo es opcional y el informe no lleva veredicto: el veredicto es solo del examen completo.";
     $("report-msg").textContent = "";
+    /* One click, no mail client, and a confirmation the page can trust -- but only
+       when the bank carried a destination. Without one the manual paths are all
+       there is, so they stay primary. */
+    const direct = Boolean(deliveryWebhook);
+    $("report-send").classList.toggle("hidden", !direct);
+    $("report-mail").classList.toggle("btn-primary", !direct);
+    $("report-mail").classList.toggle("btn-ghost", direct);
+    /* mailto: cannot name the sender -- RFC 6068 has no `from`, and every client uses
+       its own default account. So the one thing that decides whether the mail arrives
+       is a setting on the candidate's machine, and the only useful thing the page can
+       do is say so before they click. Sending from the corporate account means the
+       message leaves through the company tenant, signed, and lands normally; sending
+       from a personal account leaves it at the mercy of whatever SMTP that account
+       uses. */
+    $("report-from").textContent =
+      "Se abrirá tu cliente de correo con el mensaje ya escrito, y saldrá desde su cuenta por defecto. Comprueba que sea tu cuenta corporativa antes de enviar: desde otra cuenta el correo puede rebotar o quedar en cuarentena.";
   }
+
+  /* The acknowledgement gate exists only where the report is required. Everywhere
+     else the exits are live from the start: gating a practice run would be ceremony
+     with nothing behind it. */
+  reportTouched = false;
+  $("report-ack").checked = false;
+  $("report-ack").disabled = true;
+  $("report-ack-row").classList.toggle("hidden", !policy.required);
+  $("report-ack-row").classList.remove("done");
+
+  /* Stored BEFORE the candidate does anything, so closing the tab now still leaves a
+     trail. Cleared the moment they say they have sent it. */
+  if (policy.required) writePending(lastResult);
+
+  $("again-btn").dataset.restart = S.mode;
+
+  /* Only worth offering when the test compared domains: in a single-domain test the
+     "weakest" is the only one and the button would just restart it. Lives down here
+     with the other exits rather than inside the domain panel -- up there it was an
+     exit from the flow sitting ABOVE the report and outside the gate, which is the
+     same mistake the exit buttons themselves used to make. */
+  const offerWeakest = Boolean(weakest) && Object.keys(byDomain).length > 1
+                       && byDomain[weakest.d].total >= 2;
+  $("weakest-btn").classList.toggle("hidden", !offerWeakest);
+  $("weakest-note").classList.toggle("hidden", !offerWeakest);
+  if (offerWeakest) {
+    $("weakest-btn").textContent =
+      `Practicar ${weakest.d} — ${BANK.filter((q) => q.d === weakest.d).length} preguntas del banco`;
+    $("weakest-btn").dataset.practiceDomain = weakest.d;
+    $("weakest-note").textContent = "Es donde peor has ido en este test.";
+  }
+  $("results-mistakes-btn").classList.toggle("hidden", mistakes.size === 0);
+  if (mistakes.size) {
+    $("results-mistakes-btn").textContent = `Repasar ${mistakes.size} ${mistakes.size === 1 ? "fallo" : "fallos"}`;
+    $("results-mistakes-btn").dataset.startMistakes = "1";
+  }
+  $("home-btn").dataset.home = "1";
+  applyExitGate(policy);
 
   /* --- collapsible per-item review --- */
   const list = $("rev-list");
@@ -2073,30 +2192,58 @@ function storeCandidate(name) {
 function buildReport() {
   if (!lastResult) return "";
   const r = lastResult;
+  /* Reads readiness() like every other surface. It used to carry its own two-state
+     wording and drifted the moment the bands landed: the mail said "aun no llega"
+     while the HTML report said "No esta listo" for the same attempt. One source. */
+  const v = readiness(r);
   const who = readCandidate() || "(sin nombre)";
   const when = new Date().toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" });
+
+  /* No column padding anywhere. A mailto body is text/plain and every mail client
+     renders it in a PROPORTIONAL font, so spaces do not line up -- alignment tricks
+     read as ragged noise rather than as a table. Labelled lines survive that. */
   const out = [
-    "Informe de simulacro CCAR-F",
+    "INFORME DE SIMULACRO CCAR-F",
+    "===========================",
     "",
     `Candidato: ${who}`,
     `Fecha: ${when}`,
     `Modo: ${r.modeLabel} - ${r.total} preguntas - ${r.elapsed} min`,
-    "",
-    `Nota estimada: ${r.score} sobre 100-1000 (corte ${CUT_SCORE})`
+    ""
   ];
-  /* The verdict is exam-mode only, for the same reason it is on the page: no
-     other mode reproduces the official domain mix. */
-  if (r.mode === "exam") out.push(`Veredicto: ${r.passed ? "llega al corte" : "aun no llega"}`);
-  out.push(`Aciertos: ${r.raw} de ${r.total}`, `Precision ponderada: ${r.accPct}%`, "", "Por dominio");
+
+  if (v) {
+    out.push(`ESTADO: ${v.word.toUpperCase()}`, v.line, "");
+  } else {
+    out.push("ESTADO: sin veredicto de preparación",
+             "Solo el examen completo reproduce la mezcla oficial de dominios.", "");
+  }
+
+  out.push(
+    `Nota estimada: ${r.score} sobre 100-1000 (corte ${CUT_SCORE})`,
+    `Aciertos: ${r.raw} de ${r.total}`,
+    `Precisión ponderada: ${r.accPct}%`,
+    "",
+    "POR DOMINIO"
+  );
   for (const d of DOMAIN_IDS) {
     const row = r.byDomain[d];
     if (!row) continue;
-    out.push(`  ${d}  ${row.correct}/${row.total}  ${Math.round((row.correct / row.total) * 100)}%  ${DOMAINS[d].name}`);
+    const pct = Math.round((row.correct / row.total) * 100);
+    /* A word, not a bar: block characters are the one thing that does survive a
+       proportional font badly enough to look broken. */
+    const mark = pct >= 72 ? "bien" : pct >= 55 ? "flojo" : "debil";
+    out.push(`- ${d} ${DOMAINS[d].name}: ${row.correct}/${row.total} (${pct}%) - ${mark}`);
   }
+
   out.push("");
-  out.push(r.mode === "exam"
-    ? "Es una estimacion, no una nota oficial: el algoritmo real de Pearson VUE no es publico y equipara formas por dificultad."
-    : "Sin veredicto de preparacion: solo el examen completo reproduce la mezcla oficial de dominios.");
+  if (v) {
+    out.push(`La recomendación se pone en ${READY_SCORE}, por encima del corte oficial de ${CUT_SCORE}: entre esos dos números el examen se aprueba sin colchón.`);
+  }
+  out.push("Es una estimación, no una nota oficial: el algoritmo real de Pearson VUE no es público y equipara formas por dificultad.");
+  /* Says where the readable version is, because this body CANNOT carry it: a mailto
+     is text/plain with no attachments by specification (RFC 6068). */
+  out.push("", "El informe con tablas y colores se descarga desde la página con el botón Descargar, y se puede adjuntar a este correo.");
   return out.join("\n");
 }
 
@@ -2265,12 +2412,75 @@ function buildReportHtml() {
   ].join("\n");
 }
 
+/* ---------- the pending exam report ----------
+   A full exam is the attempt the company acts on, so losing it to a closed tab is
+   the one failure that costs two hours. The result is written to storage as soon as
+   it exists and cleared only when the candidate says it went out. */
+const PENDING_KEY = "ccarf-pending-exam-v1";
+let reportTouched = false;
+
+function writePending(r) {
+  try { window.localStorage.setItem(PENDING_KEY, JSON.stringify(r)); } catch (e) { /* blocked storage: nothing to do */ }
+}
+function readPending() {
+  try {
+    const raw = window.localStorage.getItem(PENDING_KEY);
+    if (!raw) return null;
+    const r = JSON.parse(raw);
+    /* Only trust a shape the report builders can actually consume. A partial object
+       would render an informe with holes in it, which is worse than none. */
+    return (r && typeof r.score === "number" && r.byDomain && r.mode) ? r : null;
+  } catch (e) { return null; }
+}
+function clearPending() {
+  try { window.localStorage.removeItem(PENDING_KEY); } catch (e) { /* nothing to do */ }
+}
+
+/* The exits stay shut until the candidate confirms. Disabled buttons do not fire, so
+   the delegated click handler needs no special case. */
+function applyExitGate(policy) {
+  const shut = policy.required && !$("report-ack").checked;
+  for (const id of ["again-btn", "weakest-btn", "results-mistakes-btn", "home-btn"]) $(id).disabled = shut;
+}
+
+/* Marks the report as acted on. Called from both delivery buttons, because a
+   downloaded file the candidate attaches by hand counts every bit as much as a
+   draft opened in their mail client -- neither is verifiable from here. */
+function markReportTouched(msg) {
+  reportTouched = true;
+  $("report-ack").disabled = false;
+  $("report-msg").textContent = msg;
+}
+
+$("report-ack").addEventListener("change", () => {
+  const done = $("report-ack").checked;
+  $("report-ack-row").classList.toggle("done", done);
+  if (done) clearPending();
+  else if (lastResult) writePending(lastResult);
+  applyExitGate(reportPolicy(lastResult));
+});
+
+/* ---------- the home banner ---------- */
+function renderPending() {
+  const r = readPending();
+  $("pending-panel").classList.toggle("hidden", !r);
+  if (!r) return;
+  $("pending-line").textContent =
+    `${r.modeLabel} de ${r.total} preguntas, nota ${r.score}. Se guardó sin confirmar que saliera.`;
+}
+
+$("pending-mail").addEventListener("click", () => { lastResult = readPending(); sendReportByMail(); });
+$("pending-download").addEventListener("click", () => { lastResult = readPending(); downloadReport(); });
+$("pending-discard").addEventListener("click", () => { clearPending(); renderPending(); });
+
 function reportSlug() {
   const who = readCandidate() || "candidato";
   return who.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w]+/g, "-").toLowerCase();
 }
 
-$("report-mail").addEventListener("click", () => {
+/* Named, not inline: the home banner calls the same two paths, so there is one
+   definition of what "send" and "download" mean. */
+function sendReportByMail() {
   const body = buildReport();
   if (!body) return;
   const subject = `CCAR-F - ${readCandidate() || "sin nombre"} - ${lastResult.score}`;
@@ -2278,14 +2488,14 @@ $("report-mail").addEventListener("click", () => {
     `mailto:${REPORT_TO}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   /* mailto: fails SILENTLY when no mail client is registered, which is the
      normal case for webmail users. Say so rather than leaving them staring. */
-  $("report-msg").textContent = "Si no se ha abierto tu correo, pulsa Descargar y pegalo en Slack.";
-});
+  markReportTouched("Si no se ha abierto tu correo, pulsa Descargar y envíalo a mano.");
+}
 
 /* Downloads HTML, not text. The mailto body CANNOT carry markup -- RFC 6068 makes it
    text/plain with no attachments -- so the plain report stays the notification and the
    presentation travels in the file. Attach it, or open it and paste into the message:
    Outlook keeps pasted table formatting, and Excel turns the summary table into cells. */
-$("report-download").addEventListener("click", () => {
+function downloadReport() {
   const doc = buildReportHtml();
   if (!doc) return;
   const url = URL.createObjectURL(new Blob([doc], { type: "text/html;charset=utf-8" }));
@@ -2294,8 +2504,145 @@ $("report-download").addEventListener("click", () => {
   a.download = `ccarf-${reportSlug()}-${lastResult.score}.html`;
   a.click();
   URL.revokeObjectURL(url);
-  $("report-msg").textContent = "Informe descargado. Abrelo y adjuntalo, o pega la tabla en el correo.";
-});
+  markReportTouched("Informe descargado. Ábrelo y adjúntalo, o pega la tabla en el correo.");
+}
+
+/* ---------- posting the report to the channel ----------
+   The only path where "sent" is a FACT rather than the candidate's word: Slack answers
+   the POST, so the page knows. Measured 2026-08-24: hooks.slack.com returns
+   `access-control-allow-origin: *`, so a browser may both post and read the reply.
+
+   Form-encoded ON PURPOSE. application/json makes this a non-simple request, which
+   triggers a CORS preflight that hooks.slack.com does not answer with the
+   allow-methods/allow-headers a preflight needs. `payload=<json>` is a simple request,
+   skips the preflight entirely, and is the form Slack has always accepted. */
+/* Slack wants exactly three characters escaped in message text -- & < > -- and
+   nothing else. esc() cannot be reused: it also turns quotes into &quot;, which
+   Slack renders literally, so a candidate called O'Brien would appear as O&#39;Brien
+   in the channel. Same job, different target syntax, so a different function. */
+function escSlack(v) {
+  return String(v).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
+}
+
+/* A ten-cell bar. Slack has no progress element, and these block characters render
+   the same on desktop, web and mobile. */
+function slackBar(pct) {
+  const filled = Math.max(0, Math.min(10, Math.round(pct / 10)));
+  return "█".repeat(filled) + "░".repeat(10 - filled);
+}
+
+/* The message the channel sees.
+   Blocks INSIDE an attachment, on purpose: Slack's own migration guide states that
+   `color` has no Block Kit equivalent and that wrapping blocks in an attachment is
+   how you keep the coloured bar. The bar is the whole point here -- a training lead
+   scrolling the channel reads green, amber or red before reading a single word -- so
+   it is worth the attachment's lower visual hierarchy.
+
+   The top-level `text` is not decoration either: it is what the push notification
+   and any client that cannot render blocks will show. */
+function buildSlackPayload(r) {
+  /* Local, not module-level: the verify harness slices FUNCTIONS out of the built
+     page, so anything this needs has to live inside it or arrive as an argument.
+     A const alongside would be invisible to the gate and blow up at run time. */
+  const SLACK_TONES = { pass: "#15803d", hold: "#8A6320", fail: "#A32319" };
+  const SLACK_MARKS = { pass: ":white_check_mark:", hold: ":warning:", fail: ":no_entry:" };
+
+  const v = readiness(r);
+  /* The header is plain_text and capped at 150 characters by Slack. A long name must
+     not be what makes the request fail. */
+  const who = escSlack(readCandidate() || "(sin nombre)").slice(0, 90);
+  const mark = v ? SLACK_MARKS[v.key] : ":memo:";
+  const state = v ? v.word : "Sin veredicto";
+  const day = new Date().toLocaleDateString("es-ES",
+    { day: "2-digit", month: "2-digit", year: "numeric" });
+
+  const fields = [
+    { type: "mrkdwn", text: `*Estado*\n${mark} ${state}` },
+    { type: "mrkdwn", text: `*Nota*\n${r.score} / 1000  (corte ${CUT_SCORE})` },
+    { type: "mrkdwn", text: `*Aciertos*\n${r.raw} de ${r.total}` },
+    { type: "mrkdwn", text: `*Precision ponderada*\n${r.accPct}%` },
+    { type: "mrkdwn", text: `*Modo*\n${escSlack(r.modeLabel)} · ${r.elapsed} min` },
+    { type: "mrkdwn", text: `*Fecha*\n${day}` }
+  ];
+
+  const domains = DOMAIN_IDS.filter((d) => r.byDomain[d]).map((d) => {
+    const row = r.byDomain[d];
+    const pct = Math.round((row.correct / row.total) * 100);
+    const dot = pct >= 72 ? ":large_green_circle:" : pct >= 55 ? ":large_yellow_circle:" : ":red_circle:";
+    /* No padding inside the bold span: Slack's mrkdwn needs the asterisk adjacent to
+       a non-space character, so `* 88%*` renders as literal asterisks instead of bold.
+       The bar already aligns the eye, which is what the padding was for. */
+    return `${dot} \`${d}\` \`${slackBar(pct)}\` *${pct}%* · ${row.correct}/${row.total} · ${escSlack(DOMAINS[d].name)}`;
+  }).join("\n");
+
+  const blocks = [
+    { type: "header", text: { type: "plain_text", text: `${who} · ${state}`.slice(0, 150), emoji: true } },
+    { type: "section", fields },
+    { type: "divider" },
+    { type: "section", text: { type: "mrkdwn", text: `*Por dominio*\n${domains}`.slice(0, 3000) } },
+    { type: "context", elements: [{ type: "mrkdwn",
+        text: v
+          ? `${v.line} La recomendacion se pone en ${READY_SCORE}, por encima del corte oficial de ${CUT_SCORE}. Nota estimada, no oficial.`
+          : "Sin veredicto: solo el examen completo reproduce la mezcla oficial de dominios." }] }
+  ];
+
+  return {
+    text: `Simulacro CCAR-F · ${who} · ${state} · ${r.score}`,
+    attachments: [{ color: v ? SLACK_TONES[v.key] : "#64748b", blocks }]
+  };
+}
+
+/* The only path where "sent" is a FACT rather than the candidate's word: Slack answers
+   the POST, so the page knows. Measured 2026-08-24: hooks.slack.com returns
+   `access-control-allow-origin: *`, so a browser may both post and read the reply.
+
+   Form-encoded ON PURPOSE. application/json makes this a non-simple request, which
+   triggers a CORS preflight that hooks.slack.com does not answer with the
+   allow-methods/allow-headers a preflight needs. `payload=<json>` is a simple request,
+   skips the preflight entirely, and is the form Slack has always accepted. */
+async function postReportToSlack() {
+  if (!lastResult || !deliveryWebhook) return false;
+  const body = "payload=" + encodeURIComponent(JSON.stringify(buildSlackPayload(lastResult)));
+  const res = await fetch(deliveryWebhook, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+    body
+  });
+  /* Slack answers a bare "ok". Anything else is a failure worth showing verbatim. */
+  const text = (await res.text()).trim();
+  if (!res.ok || text !== "ok") throw new Error(text || `HTTP ${res.status}`);
+  return true;
+}
+
+async function deliverReport() {
+  const btn = $("report-send");
+  btn.disabled = true;
+  $("report-msg").textContent = "Enviando...";
+  try {
+    await postReportToSlack();
+    /* A real confirmation, so the acknowledgement stops being the candidate's word.
+       The checkbox is ticked, locked, and the exits open by themselves. */
+    reportTouched = true;
+    $("report-ack").checked = true;
+    $("report-ack").disabled = true;
+    $("report-ack-row").classList.add("done");
+    clearPending();
+    applyExitGate(reportPolicy(lastResult));
+    $("report-msg").textContent = "Enviado y confirmado por el canal. Ya puedes salir.";
+  } catch (err) {
+    /* Never swallow this. The candidate has to know the channel did not take it, and
+       the manual paths stay available precisely for that. */
+    $("report-msg").textContent =
+      `No se pudo enviar (${err.message}). Usa Enviar por correo o Descargar, y marca la casilla cuando lo hayas hecho.`;
+    $("report-ack").disabled = false;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+$("report-send").addEventListener("click", deliverReport);
+$("report-mail").addEventListener("click", sendReportByMail);
+$("report-download").addEventListener("click", downloadReport);
 
 $("bank-clear").addEventListener("click", () => {
   clearStoredBank();
