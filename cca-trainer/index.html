@@ -843,6 +843,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
       <div class="actions">
         <button class="btn btn-primary hidden" id="report-send">Enviar al responsable</button>
         <button class="btn btn-primary" id="report-mail">Enviar por correo</button>
+        <button class="btn btn-ghost" id="report-copy">Copiar informe</button>
         <button class="btn btn-ghost" id="report-download">Descargar</button>
       </div>
       <p class="sub" id="report-from"></p>
@@ -1877,7 +1878,7 @@ function renderResults() {
        from a personal account leaves it at the mercy of whatever SMTP that account
        uses. */
     $("report-from").textContent =
-      "Se abrirá tu cliente de correo con el mensaje ya escrito, y saldrá desde su cuenta por defecto. Comprueba que sea tu cuenta corporativa antes de enviar: desde otra cuenta el correo puede rebotar o quedar en cuarentena.";
+      "Al pulsar Enviar por correo el informe se copia al portapapeles y se abre tu cliente: pega con Cmd+V (Ctrl+V en Windows) y envía. Saldrá desde la cuenta por defecto de ese cliente, así que comprueba que sea la corporativa: desde otra cuenta el correo puede rebotar o quedar en cuarentena.";
   }
 
   /* The acknowledgement gate exists only where the report is required. Everywhere
@@ -2241,9 +2242,10 @@ function buildReport() {
     out.push(`La recomendación se pone en ${READY_SCORE}, por encima del corte oficial de ${CUT_SCORE}: entre esos dos números el examen se aprueba sin colchón.`);
   }
   out.push("Es una estimación, no una nota oficial: el algoritmo real de Pearson VUE no es público y equipara formas por dificultad.");
-  /* Says where the readable version is, because this body CANNOT carry it: a mailto
-     is text/plain with no attachments by specification (RFC 6068). */
-  out.push("", "El informe con tablas y colores se descarga desde la página con el botón Descargar, y se puede adjuntar a este correo.");
+  /* And nothing after that. This text is what the lead reads when the clipboard copy
+     failed, and a line telling them to press a button on a page they do not have is an
+     instruction aimed at the candidate landing in someone else's inbox. Every figure is
+     already above; the lead does with it whatever they already do. */
   return out.join("\n");
 }
 
@@ -2278,14 +2280,18 @@ function reportPolicy(r) {
   return { show: false, required: false };
 }
 
-/* The report as a standalone HTML document.
-   Two audiences, one artifact. A training lead reads it, so it is a light-theme
-   printable page with no dependencies. And the summary is a real <table> with one
-   header row and one data row, because copying an HTML table into Excel pastes it
-   as CELLS -- which is how this feeds the per-candidate tracking sheet without a
-   separate CSV. Inline styles only, tables for layout, no flexbox: that is the
-   subset Outlook renders when the file is pasted into a message. */
-function buildReportHtml() {
+/* The report itself, as a bare <table> tree with no document around it.
+   Two audiences, one artifact: a training lead reads it in a mail client, and the same
+   markup is wrapped into a file by downloadReport. The summary is a real <table> with
+   one header row and one data row, so it pastes into a spreadsheet as CELLS. Inline
+   styles only, tables for layout, no flexbox: that is the subset Outlook renders when
+   the markup is pasted into a message.
+
+   A FRAGMENT and not a document, because it has two consumers: downloadReport wraps
+   it in <html>, and the clipboard hands it to a mail composer as text/html. What a
+   composer expects to receive is a table tree; a whole nested document is at the
+   mercy of whatever the receiving editor decides to do with it. */
+function buildReportFragment() {
   if (!lastResult) return "";
   const r = lastResult;
   const who = esc(readCandidate() || "(sin nombre)");
@@ -2294,9 +2300,14 @@ function buildReportHtml() {
   const when = now.toLocaleString("es-ES", { dateStyle: "long", timeStyle: "short" });
   const v = readiness(r);
   /* The same three bands the screen uses, in literal hex because an email carries no
-     custom properties. Amber is the app's brass token, hand-copied for that reason. */
-  const TONES = { pass: ["#15803d", "#ecfdf3"], hold: ["#8A6320", "#F4EAD6"],
-                  fail: ["#A32319", "#FAE2E0"] };
+     custom properties. Amber is the app's brass token, hand-copied for that reason.
+
+     SOLID, with white text on top, and not a tint behind coloured ink. Outlook's dark
+     mode inverts a pale tint into a dark one and then leaves the mid-tone ink where it
+     was, so a badge built as "#15803d on #ecfdf3" arrives as green on dark green. A
+     saturated fill is dark enough that Outlook leaves it alone, and white on it reads
+     the same in either theme. */
+  const TONES = { pass: "#15803d", hold: "#8A6320", fail: "#A32319" };
 
   /* Single quotes around the font name, NOT double. The whole style attribute is
      delimited by double quotes, so a double quote inside it closes the attribute
@@ -2305,15 +2316,43 @@ function buildReportHtml() {
      balance and duplicate-id checks cannot see this: to a parser the attribute
      simply ended, which is valid. */
   const F = "font-family:'Segoe UI',Arial,Helvetica,sans-serif";
-  const INK = "#0f172a", MUTED = "#64748b", LINE = "#d7dee8", BAND = "#0f172a";
-  const [tone, toneBg] = v ? TONES[v.key] : ["#475569", "#f1f5f9"];
 
-  const TH = `style="${F};font-size:11px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;` +
-             `text-align:left;padding:9px 11px;background:${BAND};color:#f8fafc;border:1px solid ${BAND}"`;
+  /* THE REPORT CARRIES NO THEME. Not one text colour, not one background, anywhere
+     below except the two accents called out further down.
+
+     This was arrived at by measurement, on 2026-08-24, after two wrong theories cost a
+     round each. First the report was built light -- white paper, near-black ink -- and
+     Outlook's dark mode inverted the backgrounds without inverting all of the ink, so
+     the domain markers arrived dark on dark. Then every colour was paired with an
+     explicit background on the same element, on the theory that Outlook flips a pair
+     together. That made it WORSE: the heuristic got more aggressive, the dark header
+     band came through pale lavender, and the inline backgrounds on <b> and <span> drew
+     visible artefacts across the domain names.
+
+     What survived both themes, pasted into a real Outlook, was the version with nothing
+     to invert. Text with no colour is painted by the mail client in whatever ink its own
+     theme uses, which is legible by construction and needs no cooperation from us.
+
+     So the rule for anyone editing below: DO NOT add a colour or a background. The gate
+     rejects one. Structure carries the design instead -- borders, weight, size, spacing.
+
+     LINE is a mid grey ON PURPOSE, not the old near-white: a border has to stay visible
+     against both a white composer and a dark one, and it is now the only thing drawing
+     the tables. */
+  const LINE = "#8892a4";
+  const tone = v ? TONES[v.key] : "#475569";
+
+  /* No band behind the header cells -- a filled header is a background, and a background
+     is what gets inverted. The rule underneath does the same job in both themes. */
+  const TH = `style="${F};font-size:11px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;` +
+             `text-align:left;padding:9px 11px;border:1px solid ${LINE};border-bottom:2px solid ${LINE}"`;
   const td = (extra) => `style="${F};font-size:13px;padding:9px 11px;border:1px solid ${LINE};` +
-                        `color:${INK};background:#ffffff;${extra || ""}"`;
+                        `${extra || ""}"`;
 
-  /* A percentage bar as a two-cell table: the only bar Outlook renders reliably. */
+  /* ACCENT ONE of two. A percentage bar as a two-cell table: the only bar Outlook
+     renders reliably. It is a background with no text on it, so there is no ink that can
+     fall out of step with it, and a saturated fill is dark enough that Outlook leaves it
+     where it is. This is why the no-colour rule above has exactly two exceptions. */
   const bar = (pct, color) =>
     `<table cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:110px;table-layout:fixed">` +
     `<tr><td style="height:7px;width:${pct}%;background:${color};font-size:0;line-height:0">&nbsp;</td>` +
@@ -2325,7 +2364,9 @@ function buildReportHtml() {
     ["Candidato", who],
     /* No verdict outside the full exam, so the cell carries a dash rather than a
        neutral word: "sin evaluar" in a status column still reads as a status. */
-    ["Estado", v ? `<b style="color:${tone}">${v.word}</b>` : "&mdash;"],
+    /* Solid like the badge, and for the same reason. It also lands in the tracking
+       sheet as a filled cell, so the lead sorts by colour without a formula. */
+    ["Estado", v ? `<b style="color:#ffffff;background:${tone};padding:0 6px">${v.word}</b>` : "&mdash;"],
     ["Nota", `<b>${r.score}</b>`],
     ["Corte", String(CUT_SCORE)],
     ["Aciertos", `${r.raw}/${r.total}`],
@@ -2338,13 +2379,12 @@ function buildReportHtml() {
   const domains = DOMAIN_IDS.filter(d => r.byDomain[d]).map((d, n) => {
     const row = r.byDomain[d];
     const pct = Math.round((row.correct / row.total) * 100);
-    const zebra = n % 2 ? "background:#f8fafc;" : "";
+    /* No zebra. Striping is a background, and the borders separate the rows anyway. */
     const col = pct >= 72 ? "#15803d" : pct >= 55 ? "#b45309" : "#b91c1c";
-    return `<tr><td ${td(zebra)}><b style="color:${INK}">${d}</b> ` +
-           `<span style="color:${MUTED}">${esc(DOMAINS[d].name)}</span></td>` +
-           `<td ${td(zebra + "text-align:right;white-space:nowrap")}>${row.correct}/${row.total}</td>` +
-           `<td ${td(zebra + "text-align:right;font-weight:600")}>${pct}%</td>` +
-           `<td ${td(zebra + "width:120px")}>${bar(pct, col)}</td></tr>`;
+    return `<tr><td ${td()}><b>${d}</b> ${esc(DOMAINS[d].name)}</td>` +
+           `<td ${td("text-align:right;white-space:nowrap")}>${row.correct}/${row.total}</td>` +
+           `<td ${td("text-align:right;font-weight:600")}>${pct}%</td>` +
+           `<td ${td("width:120px")}>${bar(pct, col)}</td></tr>`;
   }).join("");
 
   const note = v
@@ -2352,44 +2392,44 @@ function buildReportHtml() {
     : "Sin veredicto de preparación: solo el examen completo reproduce la mezcla oficial de dominios, así que este informe es una referencia de progreso y no una recomendación.";
 
   return [
-    "<!doctype html>",
-    '<html lang="es"><head><meta charset="utf-8">',
-    '<meta name="viewport" content="width=device-width,initial-scale=1">',
-    `<title>Simulacro CCAR-F - ${who}</title></head>`,
-    `<body style="margin:0;padding:28px 20px;background:#eef2f7">`,
-    `<table cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:100%;max-width:760px;margin:0 auto;background:#ffffff;border:1px solid ${LINE}">`,
+    `<table cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:100%;max-width:760px;margin:0 auto;border:1px solid ${LINE}">`,
 
     /* Band */
-    `<tr><td style="padding:22px 26px;background:${BAND}">`,
-    `<div style="${F};font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#94a3b8">Simulacro CCAR-F</div>`,
+    `<tr><td style="padding:22px 26px">`,
+    `<div style="${F};font-size:11px;letter-spacing:.12em;text-transform:uppercase">Simulacro CCAR-F</div>`,
     /* The mode, stated in the band and not only in a table cell. A lead reading two
        reports side by side has to see at a glance which one was the full exam. */
+    /* ACCENT TWO of two, with the badge. A chip is a solid fill with its own ink on
+       top, both declared here, and it is small enough that if a client does invert it
+       the pair still reads. Everything OUTSIDE these two accents stays unpainted. */
     `<div style="padding-top:9px"><span style="${F};display:inline-block;font-size:11px;` +
-      `font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#0f172a;` +
+      `font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0f172a;` +
       `background:#e2e8f0;padding:4px 10px">${esc(r.modeLabel)} &middot; ${r.total} preguntas</span></div>`,
-    `<div style="${F};font-size:23px;font-weight:600;color:#ffffff;padding-top:3px">${who}</div>`,
-    `<div style="${F};font-size:12px;color:#94a3b8;padding-top:5px">${when}</div>`,
+    `<div style="${F};font-size:23px;font-weight:600;padding-top:3px">${who}</div>`,
+    `<div style="${F};font-size:12px;padding-top:5px">${when}</div>`,
     "</td></tr>",
 
     /* Verdict */
     `<tr><td style="padding:22px 26px 6px">`,
     `<table cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:100%">`,
     `<tr><td style="${F};vertical-align:middle">`,
-    `<div style="${F};font-size:44px;font-weight:700;color:${INK};line-height:1">${r.score}</div>`,
-    `<div style="${F};font-size:12px;color:${MUTED};padding-top:4px">sobre 100-1000 &middot; corte ${CUT_SCORE}</div>`,
+    `<div style="${F};font-size:44px;font-weight:700;line-height:1">${r.score}</div>`,
+    `<div style="${F};font-size:12px;padding-top:4px">sobre 100-1000 &middot; corte ${CUT_SCORE}</div>`,
     `</td><td style="${F};text-align:right;vertical-align:middle">`,
-    v ? `<span style="${F};display:inline-block;font-size:14px;font-weight:600;color:${tone};` +
-        `background:${toneBg};border:1px solid ${tone};padding:7px 16px">${v.word}</span>`
-      : `<span style="${F};font-size:12px;color:${MUTED}">Sin veredicto de preparación</span>`,
-    `<div style="${F};font-size:12px;color:${MUTED};padding-top:7px">${r.raw} de ${r.total} aciertos &middot; ${r.accPct}%</div>`,
+    v ? `<span style="${F};display:inline-block;font-size:14px;font-weight:600;color:#ffffff;` +
+        `background:${tone};border:1px solid ${tone};padding:7px 16px">${v.word}</span>`
+      : `<span style="${F};font-size:12px">Sin veredicto de preparación</span>`,
+    `<div style="${F};font-size:12px;padding-top:7px">${r.raw} de ${r.total} aciertos &middot; ${r.accPct}%</div>`,
     "</td></tr></table>",
     `<div style="padding-top:16px">${bar(scorePct, tone).replace("width:110px", "width:100%")}</div>`,
     "</td></tr>",
 
-    /* Excel row */
+    /* The attempt as data. Still ONE header row and ONE data row, because that shape
+       pastes into a spreadsheet as cells -- but the report no longer says so. The lead
+       records the result in whatever way they already work; our job is to hand over the
+       figures, not to prescribe what happens to them. */
     `<tr><td style="padding:22px 26px 4px">`,
-    `<div style="${F};font-size:13px;font-weight:600;color:${INK};padding-bottom:3px">Fila para la hoja de seguimiento</div>`,
-    `<div style="${F};font-size:12px;color:${MUTED};padding-bottom:10px">Selecciona la tabla y pégala en Excel: entra como celdas, una fila por candidato.</div>`,
+    `<div style="${F};font-size:13px;font-weight:700;padding-bottom:10px">Datos del intento</div>`,
     '<table cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:100%">',
     "<tr>" + summary.map(([k]) => `<th ${TH}>${k}</th>`).join("") + "</tr>",
     "<tr>" + summary.map(([, v]) => `<td ${td("white-space:nowrap")}>${v}</td>`).join("") + "</tr>",
@@ -2397,18 +2437,42 @@ function buildReportHtml() {
 
     /* Domains */
     `<tr><td style="padding:22px 26px 4px">`,
-    `<div style="${F};font-size:13px;font-weight:600;color:${INK};padding-bottom:10px">Por dominio</div>`,
+    `<div style="${F};font-size:13px;font-weight:700;padding-bottom:10px">Por dominio</div>`,
     '<table cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:100%">',
     `<tr><th ${TH}>Dominio</th><th ${TH} align="right">Aciertos</th>` +
-      `<th ${TH} align="right">%</th><th ${TH}></th></tr>`,
+      `<th ${TH} align="right">%</th><th ${TH}>Nivel</th></tr>`,
     domains,
     "</table></td></tr>",
 
     /* Footer */
     `<tr><td style="padding:18px 26px 24px">`,
-    `<div style="${F};font-size:12px;color:${MUTED};line-height:1.55;border-top:1px solid ${LINE};padding-top:14px">${note}</div>`,
+    `<div style="${F};font-size:12px;line-height:1.55;border-top:1px solid ${LINE};padding-top:14px">${note}</div>`,
     "</td></tr>",
-    "</table></body></html>"
+    "</table>"
+  ].join("\n");
+}
+
+/* The same report wrapped in a document, which is what the download needs and what
+   the clipboard must NOT be given.
+
+   The theme lives HERE and only here. The fragment carries none, so on its own it would
+   open as dark text on whatever ground the browser supplies -- and since the card no
+   longer paints itself white, the file would be grey on grey. A document is opened, not
+   pasted, so nothing inverts it and it may state its colours outright. That is the whole
+   split: the wrapper decides how the file looks, the fragment lets the mail client
+   decide how the message looks. */
+function buildReportHtml() {
+  const inner = buildReportFragment();
+  if (!inner) return "";
+  const who = esc(readCandidate() || "(sin nombre)");
+  return [
+    "<!doctype html>",
+    '<html lang="es"><head><meta charset="utf-8">',
+    '<meta name="viewport" content="width=device-width,initial-scale=1">',
+    `<title>Simulacro CCAR-F - ${who}</title></head>`,
+    '<body style="margin:0;padding:28px 20px;background:#ffffff;color:#0f172a">',
+    inner,
+    "</body></html>"
   ].join("\n");
 }
 
@@ -2469,6 +2533,15 @@ function renderPending() {
     `${r.modeLabel} de ${r.total} preguntas, nota ${r.score}. Se guardó sin confirmar que saliera.`;
 }
 
+/* A first-class button and not merely a fallback: the whole path ends in a paste, so
+   the candidate whose mail client did not open, or who writes from webmail, needs the
+   copy on its own without going through the mailto at all. */
+$("report-copy").addEventListener("click", async () => {
+  markReportTouched(await copyReportRich()
+    ? "Informe copiado. Pégalo en el correo con Cmd+V (Ctrl+V en Windows)."
+    : "Tu navegador no ha dejado copiar. Pulsa Descargar y adjunta el fichero.");
+});
+
 $("pending-mail").addEventListener("click", () => { lastResult = readPending(); sendReportByMail(); });
 $("pending-download").addEventListener("click", () => { lastResult = readPending(); downloadReport(); });
 $("pending-discard").addEventListener("click", () => { clearPending(); renderPending(); });
@@ -2478,23 +2551,83 @@ function reportSlug() {
   return who.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w]+/g, "-").toLowerCase();
 }
 
+/* ---------- the clipboard, which is what carries the presentation ----------
+   A mailto: body is text/plain by RFC 6068 and always will be, so the rich report
+   cannot travel in the URL. It travels on the CLIPBOARD instead: the page writes the
+   rendered table as text/html, the composer opens, and one paste puts the real thing
+   in the message. Nothing is installed, nobody grants anything, no secret moves.
+
+   Two flavours on purpose. text/html is what Outlook reads; text/plain is what
+   everything else falls back to, so a paste never lands empty.
+
+   Returns false instead of throwing. The write needs a secure context and a live user
+   gesture, and Safari and Firefox are stricter than Chromium about both -- failure is
+   an ordinary outcome here, not an exception, and every caller has a path without it. */
+async function copyReportRich() {
+  const html = buildReportFragment();
+  if (!html) return false;
+  if (!navigator.clipboard || typeof window.ClipboardItem !== "function") return false;
+  try {
+    await navigator.clipboard.write([new window.ClipboardItem({
+      "text/html": new Blob([html], { type: "text/html" }),
+      "text/plain": new Blob([buildReport()], { type: "text/plain" })
+    })]);
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
+/* What goes in the mailto body once the clipboard holds the real report: an
+   instruction, and a one-line summary under it.
+
+   The instruction is there instead of an empty body because a candidate who forgets
+   to paste then sends a message that SAYS it is missing its report -- a lead can act
+   on that. An empty message says nothing. The summary line is there so that same
+   message still carries the number, and it is one line rather than the full plain
+   report: pasting the table above a full text duplicate is the ugly outcome this
+   change exists to remove. */
+function mailPlaceholder() {
+  const r = lastResult;
+  if (!r) return "";
+  const v = readiness(r);
+  return [
+    "[Pega aquí el informe: Cmd+V en Mac, Ctrl+V en Windows]",
+    "",
+    `Resumen: ${readCandidate() || "sin nombre"} · ${r.score}/1000 · ` +
+      `${v ? v.word : "sin veredicto"} · ${r.raw}/${r.total} aciertos · ${r.modeLabel}`
+  ].join("\n");
+}
+
 /* Named, not inline: the home banner calls the same two paths, so there is one
-   definition of what "send" and "download" mean. */
-function sendReportByMail() {
-  const body = buildReport();
-  if (!body) return;
+   definition of what "send" and "download" mean.
+
+   Async, and the await is deliberate: the clipboard write has to finish before the
+   navigation, or the mail client steals the gesture and the copy never lands. */
+async function sendReportByMail() {
+  if (!lastResult) return;
   const subject = `CCAR-F - ${readCandidate() || "sin nombre"} - ${lastResult.score}`;
+  const copied = await copyReportRich();
+  /* When the copy fails, the old behaviour is exactly what is left: the whole plain
+     report in the body. Degraded, never empty. */
+  const body = copied ? mailPlaceholder() : buildReport();
+  if (!body) return;
   window.location.href =
     `mailto:${REPORT_TO}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   /* mailto: fails SILENTLY when no mail client is registered, which is the
      normal case for webmail users. Say so rather than leaving them staring. */
-  markReportTouched("Si no se ha abierto tu correo, pulsa Descargar y envíalo a mano.");
+  markReportTouched(copied
+    ? "Informe copiado. Pégalo en el correo con Cmd+V (Ctrl+V en Windows) y envía. Si no se ha abierto tu cliente, abre el correo tú y pega igual."
+    : "Tu navegador no ha dejado copiar el informe con formato, así que el correo lleva la versión en texto. Pulsa Descargar si lo quieres con tablas.");
 }
 
-/* Downloads HTML, not text. The mailto body CANNOT carry markup -- RFC 6068 makes it
-   text/plain with no attachments -- so the plain report stays the notification and the
-   presentation travels in the file. Attach it, or open it and paste into the message:
-   Outlook keeps pasted table formatting, and Excel turns the summary table into cells. */
+/* Downloads HTML, not text: the same report the clipboard carries, wrapped in a
+   document so it stands alone as a file.
+
+   No longer the primary way the presentation reaches the lead -- the clipboard is --
+   but it is the one path that survives a browser refusing to write the clipboard, a
+   candidate who wants a copy on disk, and Excel: the summary is a real table with one
+   header row and one data row, so it pastes into a sheet as CELLS. */
 function downloadReport() {
   const doc = buildReportHtml();
   if (!doc) return;
