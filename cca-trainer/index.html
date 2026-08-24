@@ -2093,60 +2093,114 @@ function buildReportHtml() {
   const who = escHtml(readCandidate() || "(sin nombre)");
   const now = new Date();
   const day = now.toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" });
-  const when = now.toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" });
+  const when = now.toLocaleString("es-ES", { dateStyle: "long", timeStyle: "short" });
   const state = readinessLabel(r);
-  const accent = r.mode !== "exam" ? "#64748b" : (r.passed ? "#15803d" : "#b45309");
 
-  const F = 'font-family:"Segoe UI",Arial,Helvetica,sans-serif';
-  const TH = `style="${F};font-size:12px;text-align:left;padding:8px 10px;background:#1e293b;color:#f8fafc;border:1px solid #334155;white-space:nowrap"`;
-  const TD = `style="${F};font-size:13px;padding:8px 10px;border:1px solid #cbd5e1;color:#0f172a"`;
+  /* Single quotes around the font name, NOT double. The whole style attribute is
+     delimited by double quotes, so a double quote inside it closes the attribute
+     early and the browser drops every declaration after it -- the report renders
+     in Times with no borders and reads like the plain text it replaced. The tag
+     balance and duplicate-id checks cannot see this: to a parser the attribute
+     simply ended, which is valid. */
+  const F = "font-family:'Segoe UI',Arial,Helvetica,sans-serif";
+  const INK = "#0f172a", MUTED = "#64748b", LINE = "#d7dee8", BAND = "#0f172a";
+  const tone = r.mode !== "exam" ? "#475569" : (r.passed ? "#15803d" : "#b45309");
+  const toneBg = r.mode !== "exam" ? "#f1f5f9" : (r.passed ? "#ecfdf3" : "#fffbeb");
+
+  const TH = `style="${F};font-size:11px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;` +
+             `text-align:left;padding:9px 11px;background:${BAND};color:#f8fafc;border:1px solid ${BAND}"`;
+  const td = (extra) => `style="${F};font-size:13px;padding:9px 11px;border:1px solid ${LINE};` +
+                        `color:${INK};background:#ffffff;${extra || ""}"`;
+
+  /* A percentage bar as a two-cell table: the only bar Outlook renders reliably. */
+  const bar = (pct, color) =>
+    `<table cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:110px;table-layout:fixed">` +
+    `<tr><td style="height:7px;width:${pct}%;background:${color};font-size:0;line-height:0">&nbsp;</td>` +
+    `<td style="height:7px;background:#e6ebf2;font-size:0;line-height:0">&nbsp;</td></tr></table>`;
+
+  const scorePct = Math.max(0, Math.min(100, Math.round(((r.score - 100) / 900) * 100)));
 
   const summary = [
     ["Candidato", who],
-    ["Estado", `<b style="color:${accent}">${state}</b>`],
-    ["Nota estimada", String(r.score)],
+    ["Estado", `<b style="color:${tone}">${state}</b>`],
+    ["Nota", `<b>${r.score}</b>`],
     ["Corte", String(CUT_SCORE)],
-    ["Aciertos", `${r.raw} de ${r.total}`],
-    ["Precision ponderada", `${r.accPct}%`],
-    ["Modo", `${escHtml(r.modeLabel)} (${r.elapsed} min)`],
-    ["Fecha del intento", day]
+    ["Aciertos", `${r.raw}/${r.total}`],
+    ["Precision", `${r.accPct}%`],
+    ["Modo", escHtml(r.modeLabel)],
+    ["Minutos", String(r.elapsed)],
+    ["Fecha", day]
   ];
 
-  const domains = DOMAIN_IDS.filter(d => r.byDomain[d]).map(d => {
+  const domains = DOMAIN_IDS.filter(d => r.byDomain[d]).map((d, n) => {
     const row = r.byDomain[d];
     const pct = Math.round((row.correct / row.total) * 100);
-    return `<tr><td ${TD}><b>${d}</b> ${escHtml(DOMAINS[d].name)}</td>`
-         + `<td ${TD} align="right">${row.correct}/${row.total}</td>`
-         + `<td ${TD} align="right">${pct}%</td></tr>`;
+    const zebra = n % 2 ? "background:#f8fafc;" : "";
+    const col = pct >= 72 ? "#15803d" : pct >= 55 ? "#b45309" : "#b91c1c";
+    return `<tr><td ${td(zebra)}><b style="color:${INK}">${d}</b> ` +
+           `<span style="color:${MUTED}">${escHtml(DOMAINS[d].name)}</span></td>` +
+           `<td ${td(zebra + "text-align:right;white-space:nowrap")}>${row.correct}/${row.total}</td>` +
+           `<td ${td(zebra + "text-align:right;font-weight:600")}>${pct}%</td>` +
+           `<td ${td(zebra + "width:120px")}>${bar(pct, col)}</td></tr>`;
   }).join("");
 
   const note = r.mode === "exam"
     ? "Es una estimacion, no una nota oficial: el algoritmo real de Pearson VUE no es publico y equipara formas por dificultad."
     : "Sin veredicto de preparacion: solo el examen completo reproduce la mezcla oficial de dominios.";
 
-  const parts = [
+  return [
     "<!doctype html>",
     '<html lang="es"><head><meta charset="utf-8">',
     '<meta name="viewport" content="width=device-width,initial-scale=1">',
     `<title>Simulacro CCAR-F - ${who}</title></head>`,
-    '<body style="margin:0;padding:24px;background:#ffffff">',
-    `<div style="${F};max-width:720px;margin:0 auto;color:#0f172a">`,
-    `<h1 style="${F};font-size:20px;margin:0 0 4px">Informe de simulacro CCAR-F</h1>`,
-    `<p style="${F};font-size:13px;color:#475569;margin:0 0 20px">Generado el ${when}</p>`,
-    '<table cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:100%;margin-bottom:8px">',
-    "<tr>" + summary.map(([k]) => `<th ${TH}>${k}</th>`).join("") + "</tr>",
-    "<tr>" + summary.map(([, v]) => `<td ${TD}>${v}</td>`).join("") + "</tr>",
-    "</table>",
-    `<p style="${F};font-size:11px;color:#64748b;margin:0 0 24px">Selecciona la tabla de arriba y pegala en Excel: entra como celdas, una fila por candidato.</p>`,
-    `<h2 style="${F};font-size:15px;margin:0 0 8px">Por dominio</h2>`,
+    `<body style="margin:0;padding:28px 20px;background:#eef2f7">`,
+    `<table cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:100%;max-width:760px;margin:0 auto;background:#ffffff;border:1px solid ${LINE}">`,
+
+    /* Band */
+    `<tr><td style="padding:22px 26px;background:${BAND}">`,
+    `<div style="${F};font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#94a3b8">Simulacro CCAR-F</div>`,
+    `<div style="${F};font-size:23px;font-weight:600;color:#ffffff;padding-top:3px">${who}</div>`,
+    `<div style="${F};font-size:12px;color:#94a3b8;padding-top:5px">${when}</div>`,
+    "</td></tr>",
+
+    /* Verdict */
+    `<tr><td style="padding:22px 26px 6px">`,
+    `<table cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:100%">`,
+    `<tr><td style="${F};vertical-align:middle">`,
+    `<div style="${F};font-size:44px;font-weight:700;color:${INK};line-height:1">${r.score}</div>`,
+    `<div style="${F};font-size:12px;color:${MUTED};padding-top:4px">sobre 100-1000 &middot; corte ${CUT_SCORE}</div>`,
+    `</td><td style="${F};text-align:right;vertical-align:middle">`,
+    `<span style="${F};display:inline-block;font-size:14px;font-weight:600;color:${tone};` +
+      `background:${toneBg};border:1px solid ${tone};padding:7px 16px">${state}</span>`,
+    `<div style="${F};font-size:12px;color:${MUTED};padding-top:7px">${r.raw} de ${r.total} aciertos &middot; ${r.accPct}%</div>`,
+    "</td></tr></table>",
+    `<div style="padding-top:16px">${bar(scorePct, tone).replace("width:110px", "width:100%")}</div>`,
+    "</td></tr>",
+
+    /* Excel row */
+    `<tr><td style="padding:22px 26px 4px">`,
+    `<div style="${F};font-size:13px;font-weight:600;color:${INK};padding-bottom:3px">Fila para la hoja de seguimiento</div>`,
+    `<div style="${F};font-size:12px;color:${MUTED};padding-bottom:10px">Selecciona la tabla y pegala en Excel: entra como celdas, una fila por candidato.</div>`,
     '<table cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:100%">',
-    `<tr><th ${TH}>Dominio</th><th ${TH} align="right">Aciertos</th><th ${TH} align="right">%</th></tr>`,
+    "<tr>" + summary.map(([k]) => `<th ${TH}>${k}</th>`).join("") + "</tr>",
+    "<tr>" + summary.map(([, v]) => `<td ${td("white-space:nowrap")}>${v}</td>`).join("") + "</tr>",
+    "</table></td></tr>",
+
+    /* Domains */
+    `<tr><td style="padding:22px 26px 4px">`,
+    `<div style="${F};font-size:13px;font-weight:600;color:${INK};padding-bottom:10px">Por dominio</div>`,
+    '<table cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:100%">',
+    `<tr><th ${TH}>Dominio</th><th ${TH} align="right">Aciertos</th>` +
+      `<th ${TH} align="right">%</th><th ${TH}></th></tr>`,
     domains,
-    "</table>",
-    `<p style="${F};font-size:12px;color:#475569;margin:20px 0 0;line-height:1.5">${note}</p>`,
-    "</div></body></html>"
-  ];
-  return parts.join("\n");
+    "</table></td></tr>",
+
+    /* Footer */
+    `<tr><td style="padding:18px 26px 24px">`,
+    `<div style="${F};font-size:12px;color:${MUTED};line-height:1.55;border-top:1px solid ${LINE};padding-top:14px">${note}</div>`,
+    "</td></tr>",
+    "</table></body></html>"
+  ].join("\n");
 }
 
 function reportSlug() {
