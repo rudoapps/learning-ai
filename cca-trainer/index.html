@@ -1,0 +1,2103 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Sala de Examen CCAR-F</title>
+</head>
+<body>
+
+<style>
+/* ============================================================
+   TOKENS — the complete light palette lives on bare :root, so
+   the un-stamped (system-default) document always resolves.
+   ============================================================ */
+:root {
+  --ground: #F2F4F7;
+  --surface: #FFFFFF;
+  --surface-2: #E9EDF2;
+  --surface-3: #DFE5EC;
+  --line: #D2DAE4;
+  --line-strong: #AEBBCA;
+  --ink: #141A22;
+  --ink-2: #47535F;
+  --ink-3: #6C7A88;
+  --accent: #27456E;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #E3EAF4;
+  --brass: #8A6320;
+  --brass-soft: #F4EAD6;
+  --good: #1B6E45;
+  --good-soft: #DEF0E6;
+  --bad: #A32319;
+  --bad-soft: #FAE2E0;
+  --shadow: 0 1px 2px rgba(20, 26, 34, .06), 0 8px 24px -12px rgba(20, 26, 34, .18);
+  --shadow-sm: 0 1px 2px rgba(20, 26, 34, .07);
+
+  --display: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  --r-sm: 4px;
+  --r: 8px;
+  --r-lg: 14px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #10141A;
+    --surface: #171C24;
+    --surface-2: #1F2630;
+    --surface-3: #262F3B;
+    --line: #2A333F;
+    --line-strong: #3E4B5B;
+    --ink: #E7ECF2;
+    --ink-2: #A9B5C2;
+    --ink-3: #7A8797;
+    --accent: #8FB4E6;
+    --accent-ink: #0E1620;
+    --accent-soft: #1B2839;
+    --brass: #D9A441;
+    --brass-soft: #2C2415;
+    --good: #5FCB92;
+    --good-soft: #142A20;
+    --bad: #F0897F;
+    --bad-soft: #2E1917;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -12px rgba(0, 0, 0, .7);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, .35);
+  }
+}
+
+:root[data-theme="dark"] {
+  --ground: #10141A;
+  --surface: #171C24;
+  --surface-2: #1F2630;
+  --surface-3: #262F3B;
+  --line: #2A333F;
+  --line-strong: #3E4B5B;
+  --ink: #E7ECF2;
+  --ink-2: #A9B5C2;
+  --ink-3: #7A8797;
+  --accent: #8FB4E6;
+  --accent-ink: #0E1620;
+  --accent-soft: #1B2839;
+  --brass: #D9A441;
+  --brass-soft: #2C2415;
+  --good: #5FCB92;
+  --good-soft: #142A20;
+  --bad: #F0897F;
+  --bad-soft: #2E1917;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -12px rgba(0, 0, 0, .7);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .35);
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+code, .mono { font-family: var(--mono); font-size: .92em; }
+
+code {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: .05em .3em;
+  white-space: nowrap;
+}
+
+h1, h2, h3 { font-family: var(--display); font-weight: 600; text-wrap: balance; margin: 0; letter-spacing: -.01em; }
+
+a { color: var(--accent); }
+
+button { font: inherit; color: inherit; cursor: pointer; }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.num { font-variant-numeric: tabular-nums; }
+
+.hidden { display: none !important; }
+
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+.col { max-width: 72ch; margin: 0 auto; }
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r);
+  padding: 9px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background .12s ease, border-color .12s ease;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--ink-3); }
+.btn:disabled { opacity: .42; cursor: not-allowed; }
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+}
+.btn-primary:hover:not(:disabled) { background: var(--accent); border-color: var(--accent); filter: brightness(1.1); }
+
+.btn-ghost { background: transparent; border-color: transparent; color: var(--ink-2); }
+.btn-ghost:hover:not(:disabled) { background: var(--surface-2); border-color: transparent; }
+
+.btn-danger { background: var(--bad-soft); color: var(--bad); border-color: var(--bad); }
+.btn-danger:hover:not(:disabled) { background: var(--bad-soft); border-color: var(--bad); }
+
+.btn-sm { padding: 6px 11px; font-size: 13px; }
+
+/* ============================================================
+   HOME
+   ============================================================ */
+.masthead {
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  padding: 40px 0 30px;
+}
+.masthead .wrap { display: grid; gap: 14px; }
+.masthead h1 { font-size: clamp(30px, 5vw, 42px); line-height: 1.1; }
+.masthead p { margin: 0; color: var(--ink-2); max-width: 62ch; font-size: 16px; }
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  margin-top: 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.fact { padding: 10px 16px; border-right: 1px solid var(--line); flex: 1 1 auto; min-width: 118px; }
+.fact:last-child { border-right: 0; }
+.fact b { display: block; font-family: var(--mono); font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.fact span { font-size: 12px; color: var(--ink-3); }
+
+.modes { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(268px, 1fr)); margin: 28px 0 0; }
+
+.mode {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: var(--shadow-sm);
+}
+.mode.is-exam { border-color: var(--brass); }
+.mode h3 { font-size: 19px; }
+.mode > p { margin: 0; font-size: 14px; color: var(--ink-2); flex: 1; }
+
+.mode-tag {
+  display: inline-flex;
+  align-self: flex-start;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  color: var(--ink-3);
+  border: 1px solid var(--line);
+}
+.mode-tag.graded { background: var(--brass-soft); color: var(--brass); border-color: var(--brass); }
+.mode-tag.taught { background: var(--good-soft); color: var(--good); border-color: var(--good); }
+
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.chip {
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 100px;
+  padding: 5px 13px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  transition: background .12s ease, color .12s ease, border-color .12s ease;
+}
+.chip:hover { border-color: var(--accent); color: var(--accent); }
+.chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.chip:disabled { opacity: .38; cursor: not-allowed; }
+.chip:disabled:hover { border-color: var(--line-strong); color: var(--ink); }
+
+.note {
+  margin-top: 30px;
+  padding: 14px 16px;
+  border-left: 3px solid var(--brass);
+  background: var(--brass-soft);
+  border-radius: 0 var(--r) var(--r) 0;
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+.note b { color: var(--ink); }
+
+/* ============================================================
+   TEST CHROME
+   ============================================================ */
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  box-shadow: var(--shadow-sm);
+}
+.bar-in {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.bar-meta { display: flex; align-items: baseline; gap: 10px; flex: 1; min-width: 190px; }
+.bar-meta .qid { font-family: var(--mono); font-size: 12px; color: var(--ink-3); }
+.bar-meta .qpos { font-family: var(--mono); font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.clock {
+  font-family: var(--mono);
+  font-size: 19px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  padding: 2px 11px;
+  border-radius: var(--r);
+  background: var(--brass-soft);
+  color: var(--brass);
+  border: 1px solid var(--brass);
+}
+.clock.warn { animation: pulse 1.6s ease-in-out infinite; }
+.clock.danger { background: var(--bad-soft); color: var(--bad); border-color: var(--bad); animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .5; } }
+@media (prefers-reduced-motion: reduce) { .clock.warn, .clock.danger { animation: none; } }
+
+.progress { height: 3px; background: var(--surface-3); }
+.progress i { display: block; height: 100%; background: var(--accent); transition: width .2s ease; }
+@media (prefers-reduced-motion: reduce) { .progress i { transition: none; } }
+
+/* ============================================================
+   QUESTION
+   ============================================================ */
+.qwrap { padding: 34px 24px 130px; }
+
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+.tag {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .04em;
+  padding: 3px 8px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--ink-2);
+}
+.tag.accent { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+
+.stem {
+  font-size: 18px;
+  line-height: 1.62;
+  margin: 0 0 8px;
+  color: var(--ink);
+}
+
+.ask { font-size: 13px; color: var(--ink-3); margin: 0 0 22px; }
+
+.options { display: grid; gap: 10px; }
+
+.opt {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  gap: 12px;
+  align-items: start;
+  width: 100%;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r);
+  padding: 14px 16px;
+  font-size: 15.5px;
+  line-height: 1.5;
+  transition: border-color .12s ease, background .12s ease;
+}
+.opt:hover:not(:disabled) { border-color: var(--accent); }
+.opt .letter {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--ink-2);
+  margin-top: 1px;
+}
+.opt[aria-checked="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.opt[aria-checked="true"] .letter { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+.opt.right { border-color: var(--good); background: var(--good-soft); }
+.opt.right .letter { background: var(--good); color: var(--surface); border-color: var(--good); }
+.opt.wrong { border-color: var(--bad); background: var(--bad-soft); }
+.opt.wrong .letter { background: var(--bad); color: var(--surface); border-color: var(--bad); }
+.opt:disabled { cursor: default; }
+.opt.muted { opacity: .72; }
+
+.why {
+  display: block;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+.why .why-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 3px;
+}
+.opt.right .why-tag { color: var(--good); }
+.opt.wrong .why-tag, .opt.muted .why-tag { color: var(--bad); }
+
+.keyconcept {
+  margin-top: 18px;
+  padding: 14px 16px;
+  background: var(--accent-soft);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--r) var(--r) 0;
+  font-size: 14.5px;
+}
+.keyconcept .eyebrow { color: var(--accent); margin-bottom: 3px; display: block; }
+
+/* ============================================================
+   FOOTER NAV
+   ============================================================ */
+.nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+}
+.nav-in {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.nav .spacer { flex: 1; }
+.keys { font-size: 11.5px; color: var(--ink-3); font-family: var(--mono); }
+@media (max-width: 720px) { .keys { display: none; } }
+
+/* ============================================================
+   REVIEW GRID
+   ============================================================ */
+.grid-legend { display: flex; flex-wrap: wrap; gap: 16px; margin: 20px 0 22px; font-size: 13px; color: var(--ink-2); }
+.grid-legend span { display: inline-flex; align-items: center; gap: 7px; }
+.swatch { width: 15px; height: 15px; border-radius: var(--r-sm); border: 1px solid var(--line-strong); display: inline-block; }
+.swatch.done { background: var(--accent); border-color: var(--accent); }
+.swatch.todo { background: var(--surface); }
+.swatch.flag { background: var(--brass-soft); border-color: var(--brass); }
+
+.qgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 8px; }
+.qcell {
+  aspect-ratio: 1;
+  border-radius: var(--r);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  font-family: var(--mono);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+.qcell:hover { border-color: var(--accent); }
+.qcell.done { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.qcell.flagged { border-color: var(--brass); border-width: 2px; }
+.qcell.flagged::after {
+  content: "";
+  position: absolute;
+  top: 3px; right: 3px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--brass);
+}
+
+/* ============================================================
+   RESULTS
+   ============================================================ */
+.scoreboard {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 28px;
+  box-shadow: var(--shadow);
+  margin-bottom: 26px;
+}
+.score-top { display: flex; align-items: flex-end; gap: 26px; flex-wrap: wrap; }
+.score-big {
+  font-family: var(--display);
+  font-size: 68px;
+  line-height: .95;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.03em;
+}
+.score-side { display: grid; gap: 3px; padding-bottom: 5px; }
+.score-side .eyebrow { display: block; }
+.score-side b { font-family: var(--mono); font-size: 20px; font-variant-numeric: tabular-nums; font-weight: 600; }
+
+.verdict {
+  margin-left: auto;
+  padding: 9px 16px;
+  border-radius: var(--r);
+  font-weight: 600;
+  font-size: 15px;
+  border: 1px solid;
+}
+.verdict.pass { background: var(--good-soft); color: var(--good); border-color: var(--good); }
+.verdict.fail { background: var(--bad-soft); color: var(--bad); border-color: var(--bad); }
+
+.gauge { margin-top: 26px; }
+.gauge-track {
+  position: relative;
+  height: 12px;
+  background: var(--surface-3);
+  border-radius: 100px;
+  overflow: visible;
+}
+.gauge-fill { position: absolute; inset: 0 auto 0 0; background: var(--accent); border-radius: 100px; }
+.gauge-fill.pass { background: var(--good); }
+.gauge-cut { position: absolute; top: -6px; bottom: -6px; width: 2px; background: var(--brass); }
+.gauge-cut::after {
+  content: "720";
+  position: absolute;
+  top: -19px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--brass);
+}
+.gauge-ends { display: flex; justify-content: space-between; margin-top: 8px; font-family: var(--mono); font-size: 11px; color: var(--ink-3); }
+
+.disclaimer { margin-top: 20px; font-size: 12.5px; color: var(--ink-3); line-height: 1.5; }
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 22px 24px;
+  margin-bottom: 20px;
+}
+.panel > h2 { font-size: 21px; margin-bottom: 4px; }
+.panel > .sub { font-size: 13.5px; color: var(--ink-3); margin: 0 0 18px; }
+
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tbl th {
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+  padding: 0 10px 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+.tbl td { padding: 11px 10px 11px 0; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.tbl tr:last-child td { border-bottom: 0; }
+.tbl .r { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.tbl .dname { font-weight: 500; }
+.tbl .dname small { display: block; font-weight: 400; color: var(--ink-3); font-size: 12px; }
+
+.meter { width: 100%; min-width: 90px; height: 8px; background: var(--surface-3); border-radius: 100px; overflow: hidden; }
+.meter i { display: block; height: 100%; border-radius: 100px; background: var(--accent); }
+.meter i.weak { background: var(--bad); }
+.meter i.ok { background: var(--good); }
+
+.pill {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 100px;
+  border: 1px solid;
+  white-space: nowrap;
+}
+.pill.weak { background: var(--bad-soft); color: var(--bad); border-color: var(--bad); }
+.pill.mid { background: var(--brass-soft); color: var(--brass); border-color: var(--brass); }
+.pill.ok { background: var(--good-soft); color: var(--good); border-color: var(--good); }
+
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+
+.rev-item {
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  margin-bottom: 10px;
+  overflow: hidden;
+  background: var(--surface);
+}
+.rev-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 12px 15px;
+  background: transparent;
+  border: 0;
+  font-size: 14px;
+}
+.rev-head:hover { background: var(--surface-2); }
+.rev-mark {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 13px; font-weight: 700;
+  flex-shrink: 0;
+  font-family: var(--mono);
+}
+.rev-mark.right { background: var(--good-soft); color: var(--good); border: 1px solid var(--good); }
+.rev-mark.wrong { background: var(--bad-soft); color: var(--bad); border: 1px solid var(--bad); }
+.rev-mark.blank { background: var(--surface-2); color: var(--ink-3); border: 1px solid var(--line-strong); }
+.rev-id { font-family: var(--mono); font-size: 12px; color: var(--ink-3); flex-shrink: 0; }
+.rev-stem { flex: 1; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rev-caret { color: var(--ink-3); font-size: 12px; flex-shrink: 0; }
+.rev-body { padding: 4px 15px 18px; border-top: 1px solid var(--line); }
+@media (max-width: 720px) { .rev-stem { display: none; } }
+
+.footer-note {
+  text-align: center;
+  padding: 30px 24px 46px;
+  font-size: 12.5px;
+  color: var(--ink-3);
+  line-height: 1.6;
+}
+
+.toast {
+  position: fixed;
+  bottom: 78px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  background: var(--ink);
+  color: var(--ground);
+  padding: 9px 17px;
+  border-radius: 100px;
+  font-size: 13.5px;
+  box-shadow: var(--shadow);
+  pointer-events: none;
+}
+
+/* ============================================================
+   BANK GATE — the published page holds no questions (DEC-013),
+   so this is where a candidate hands it the encrypted file.
+   No new tokens: every colour below is already on bare :root.
+   ============================================================ */
+.gate-card {
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  display: grid;
+  gap: 16px;
+  margin-top: 22px;
+}
+.gate-field { display: grid; gap: 6px; }
+.gate-field label { font-size: 13px; color: var(--ink-2); }
+.gate-input {
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--surface-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r);
+  padding: 9px 11px;
+  width: 100%;
+}
+.gate-input[type="file"] { padding: 8px 10px; color: var(--ink-2); }
+.gate-msg { margin: 0; font-size: 13.5px; min-height: 1.3em; color: var(--ink-3); }
+.gate-msg.bad { color: var(--bad); }
+
+</style>
+
+<!-- ============================== HOME ============================== -->
+<div id="home">
+  <header class="masthead">
+    <div class="wrap">
+      <p class="eyebrow">Simulador de práctica no oficial &middot; Claude Certified Architect — Foundations</p>
+      <h1>Sala de Examen CCAR-F</h1>
+      <p>Cien preguntas escritas contra los objetivos publicados del CCAR-F, con el mismo reparto por dominio, el mismo ritmo y la misma escala de nota que el examen real. Las preguntas están en inglés porque el examen lo está, y buena parte de la dificultad vive en el matiz de la redacción.</p>
+      <div class="facts">
+        <div class="fact"><b class="num">60</b><span>preguntas por examen</span></div>
+        <div class="fact"><b class="num">120</b><span>minutos</span></div>
+        <div class="fact"><b class="num">720</b><span>corte sobre 100–1000</span></div>
+        <div class="fact"><b class="num">5</b><span>dominios ponderados</span></div>
+        <div class="fact"><b class="num" id="bank-size">100</b><span>preguntas en el banco</span></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="modes">
+      <section class="mode is-exam">
+        <span class="mode-tag graded">Con nota y veredicto</span>
+        <h3>Examen completo</h3>
+        <p>60 preguntas en 120 minutos con el reparto oficial por dominio. Sin explicaciones hasta entregar. Al cerrar obtienes la nota en la escala 100–1000, el desglose por dominio y por objetivo, y una estimación de si llegas al corte.</p>
+        <div class="opts">
+          <button class="btn btn-primary" data-start="exam">Empezar examen</button>
+        </div>
+      </section>
+
+      <section class="mode">
+        <span class="mode-tag taught">Explicación al instante</span>
+        <h3>Práctica</h3>
+        <p>Mismo reparto por dominio que el examen, pero ves por qué la respuesta correcta lo es y qué error concreto captura cada distractor en cuanto contestas. Elige cuántas preguntas quieres.</p>
+        <div class="opts" id="practice-sizes"></div>
+      </section>
+
+      <section class="mode">
+        <span class="mode-tag taught">Explicación al instante</span>
+        <h3>Un dominio suelto</h3>
+        <p>Cuando ya sabes cuál te falla. Todas las preguntas del banco de ese dominio, barajadas, con explicación inmediata. El desglose de cualquier resultado te dice cuál elegir.</p>
+        <div class="opts" id="domain-picker"></div>
+      </section>
+
+      <section class="mode">
+        <span class="mode-tag taught">Explicación al instante</span>
+        <h3>Tus fallos</h3>
+        <p id="mistakes-desc">Repasa solo las preguntas que has fallado en esta sesión. Cuando aciertas una, sale de la lista.</p>
+        <div class="opts">
+          <button class="btn" data-start="mistakes" id="mistakes-btn" disabled>Aún no hay fallos guardados</button>
+          <button class="btn btn-ghost btn-sm hidden" id="mistakes-clear">Vaciar lista</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="note">
+      <b>Sobre la nota.</b> El algoritmo real de Pearson VUE no es público y equipara formas por dificultad, así que cualquier puntuación que veas aquí es una <b>estimación</b>. El cálculo sí replica exactamente la especificación de este proyecto: precisión ponderada por los pesos oficiales renormalizados sobre los dominios presentes, mapeo lineal a trozos continuo en 720, en aritmética racional exacta y con un único redondeo final. El veredicto de preparación solo aparece en modo examen, porque es el único que reproduce la mezcla oficial de dominios.
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-ghost btn-sm hidden" id="bank-clear">Cargar otro banco de preguntas</button>
+      <!-- Relative on purpose: the page is self-contained and lint_html refuses any
+           absolute host. This is the only way back to learning-ai, because the site
+           nav is deliberately NOT mounted here -- a timed exam screen must not carry
+           fourteen links a candidate can hit by accident. -->
+      <a class="btn btn-ghost btn-sm" href="../index.html">Volver a learning-ai</a>
+    </div>
+
+    <p class="footer-note">Contenido original escrito contra los objetivos públicos del examen. No reproduce preguntas reales ni está afiliado a Anthropic ni a Pearson VUE.</p>
+  </main>
+</div>
+
+<!-- ============================== TEST ============================== -->
+<div id="test" class="hidden">
+  <div class="bar">
+    <div class="bar-in">
+      <div class="bar-meta">
+        <span class="qpos num" id="q-pos">1 / 60</span>
+        <span class="qid" id="q-id">—</span>
+      </div>
+      <span class="clock mono hidden" id="clock">120:00</span>
+      <button class="btn btn-sm" id="flag-btn">Marcar</button>
+      <button class="btn btn-ghost btn-sm" id="quit-btn">Salir</button>
+    </div>
+    <div class="progress"><i id="progress-fill" style="width:0%"></i></div>
+  </div>
+
+  <main class="qwrap">
+    <div class="col">
+      <div class="tags" id="q-tags"></div>
+      <p class="stem" id="q-stem"></p>
+      <div class="options" id="q-options" role="radiogroup" aria-label="Opciones de respuesta"></div>
+      <div id="q-keyconcept"></div>
+    </div>
+  </main>
+
+  <div class="nav">
+    <div class="nav-in">
+      <button class="btn" id="prev-btn">← Anterior</button>
+      <button class="btn btn-primary" id="next-btn">Siguiente →</button>
+      <span class="spacer"></span>
+      <span class="keys">1–4 responder &middot; ← → navegar &middot; M marcar</span>
+      <button class="btn" id="review-btn">Revisar y entregar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== REVIEW ============================== -->
+<div id="review" class="hidden">
+  <main class="wrap" style="padding-top:38px; padding-bottom:130px;">
+    <p class="eyebrow">Antes de entregar</p>
+    <h1 style="font-size:30px; margin:6px 0 10px;">Repaso de respuestas</h1>
+    <p style="color:var(--ink-2); margin:0; max-width:62ch;" id="review-summary"></p>
+
+    <div class="grid-legend">
+      <span><i class="swatch done"></i> Respondida</span>
+      <span><i class="swatch todo"></i> Sin responder</span>
+      <span><i class="swatch flag"></i> Marcada para revisar</span>
+    </div>
+
+    <div class="qgrid" id="review-grid"></div>
+  </main>
+
+  <div class="nav">
+    <div class="nav-in">
+      <button class="btn" id="back-to-test">← Volver al examen</button>
+      <span class="spacer"></span>
+      <button class="btn btn-primary" id="submit-btn">Entregar y ver la nota</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== RESULTS ============================== -->
+<div id="results" class="hidden">
+  <main class="wrap" style="padding-top:38px;">
+    <div id="results-body"></div>
+    <div class="panel" id="report-panel">
+      <h2>Enviar el informe</h2>
+      <div class="actions">
+        <button class="btn btn-primary" id="report-mail">Enviar por correo</button>
+        <button class="btn btn-ghost" id="report-download">Descargar</button>
+      </div>
+      <p class="gate-msg" id="report-msg" role="status" aria-live="polite"></p>
+    </div>
+  </main>
+  <p class="footer-note">Simulador de práctica no oficial. Sin afiliación con Anthropic ni con Pearson VUE.</p>
+</div>
+
+<!-- ============================== GATE ============================== -->
+<!-- Shown only when no bank is loaded. Every id here is static markup on
+     purpose: verify.mjs check 11 resolves every element the script reaches for
+     against this region, and fails when one is built at runtime instead. -->
+<div id="gate" class="hidden">
+  <main class="wrap" style="padding-top:64px; padding-bottom:90px; max-width:660px;">
+    <h1 style="font-size:30px; margin:6px 0 10px;">Carga tu banco de preguntas</h1>
+    <p style="color:var(--ink-2); margin:0;">Solo la primera vez en este dispositivo.</p>
+
+    <form class="gate-card" id="gate-form">
+      <div class="gate-field">
+        <label for="gate-name">Tu nombre</label>
+        <input class="gate-input" type="text" id="gate-name" autocomplete="name" spellcheck="false">
+      </div>
+      <div class="gate-field">
+        <label for="gate-file">Archivo del banco</label>
+        <input class="gate-input" type="file" id="gate-file" accept=".json,application/json">
+      </div>
+      <div class="gate-field">
+        <label for="gate-pass">Contraseña</label>
+        <input class="gate-input" type="password" id="gate-pass" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="gate-go" type="submit">Descifrar y empezar</button>
+      </div>
+      <p class="gate-msg" id="gate-msg" role="status" aria-live="polite"></p>
+    </form>
+
+    <p class="footer-note" style="text-align:left; padding:22px 0 0;">Nada sale de tu navegador.</p>
+  </main>
+</div>
+
+<script>
+"use strict";
+
+/* ==================================================================
+   THE BANK — empty in the published page. DEC-013: the questions never
+   enter the public repo, so they arrive as an encrypted file the
+   candidate loads once per device. The local dev build fills the marker
+   with authoring/questions/*.yaml and skips the gate entirely.
+   ================================================================== */
+let BANK = [];
+
+/* __LOADER_START__ */
+/* ==================================================================
+   THE LOADER — sliced out of the built page and run headless by
+   delivery/tools/verify_loader.mjs. That runner exists because verify.mjs
+   injects its own BANK as a function parameter and therefore cannot
+   see a single line of this block: a completely broken loader still
+   scores 2344/0 there. It cannot see a syntax error outside these markers
+   either, which is why verify_loader.mjs compiles the whole page script.
+
+   Keep this region DOM-free. The gate's event wiring lives in
+   initBankGate() down in BOOT, where $() exists.
+   ================================================================== */
+const BANK_STORE_KEY = "ccarf-bank-v1";
+const BANK_ENVELOPE_VERSION = 1;
+const BANK_KDF = "PBKDF2-SHA256";
+const BANK_CIPHER = "AES-256-GCM";
+/* Which exam this page IS. DEC-013 parameterizes distribution by exam code, so a
+   CCA-Developer envelope must not load silently into the CCAR-F trainer. */
+const BANK_EXAM = "ccar-f";
+/* Bounds on a value taken from an untrusted file. The floor keeps a hostile envelope from
+   handing us a cheap KDF; the ceiling keeps one from parking the browser in PBKDF2 for
+   minutes, which was the likeliest practical failure the audit named. Not pinned to the
+   exact 600000 so raising it later does not need a new envelope version. */
+const BANK_KDF_MIN_ITERATIONS = 100000;
+const BANK_KDF_MAX_ITERATIONS = 5000000;
+const BANK_SALT_BYTES = 16;
+const BANK_IV_BYTES = 12;
+const BANK_TAG_BYTES = 16;
+
+/* Where the questions in memory came from: "inline" is the local dev build,
+   "storage" a repeat visit, "file" a fresh decrypt. Only the last two can be
+   swapped, so only they show the control that clears them. */
+let bankSource = "none";
+
+const BANK_ERR_SHAPE = "Este archivo no es un banco válido.";
+const BANK_ERR_VERSION = "Versión de banco no compatible con esta versión del simulador.";
+const BANK_ERR_EXAM = "Este banco es de otro examen, no del CCAR-F.";
+/* AES-GCM cannot distinguish a wrong key from a tampered ciphertext — tag
+   verification failure is defined to be indistinguishable, and both surface as
+   the same OperationError — so one message names both causes. */
+const BANK_ERR_AUTH = "Contraseña incorrecta, o el archivo está dañado.";
+
+class BankError extends Error {}
+
+/** Decodes, or throws a BankError. A regex is NOT a base64 validator: "A" matches
+ *  /^[A-Za-z0-9+/]+={0,2}$/ while atob("A") throws InvalidCharacterError, because a
+ *  4-character group cannot encode from one character. The old code checked the regex
+ *  here and decoded later OUTSIDE the try, so a malformed salt escaped as a raw
+ *  DOMException and a malformed ciphertext was misreported as a wrong passphrase. */
+function fromB64(value, expectedBytes) {
+  if (typeof value !== "string" || value.length === 0) throw new BankError(BANK_ERR_SHAPE);
+  let raw;
+  try {
+    raw = atob(value);
+  } catch (err) {
+    throw new BankError(BANK_ERR_SHAPE);
+  }
+  if (expectedBytes !== undefined && raw.length !== expectedBytes) {
+    throw new BankError(BANK_ERR_SHAPE);
+  }
+  const out = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+  return out;
+}
+
+/** Validates the envelope COMPLETELY before deriving anything, so no malformed or
+ *  future-version file can cost PBKDF2 work, and every rejection carries a readable
+ *  cause instead of a raw DOMException.
+ *
+ *  Returns the envelope with its binary fields already decoded, so decryptEnvelope
+ *  never decodes outside a try block. An earlier version validated the shape loosely
+ *  here and decoded later: `iterations: 1`, a one-byte salt and a one-byte IV all
+ *  reached deriveKey. Found by audit 2026-08-19. */
+function parseEnvelope(text) {
+  let env;
+  try {
+    env = JSON.parse(text);
+  } catch (err) {
+    throw new BankError(BANK_ERR_SHAPE);
+  }
+  if (!env || typeof env !== "object" || Array.isArray(env)) throw new BankError(BANK_ERR_SHAPE);
+  if (typeof env.v !== "number" || !env.kdf || typeof env.kdf !== "object") throw new BankError(BANK_ERR_SHAPE);
+
+  if (env.v !== BANK_ENVELOPE_VERSION) throw new BankError(BANK_ERR_VERSION);
+  if (env.kdf.name !== BANK_KDF || env.cipher !== BANK_CIPHER) throw new BankError(BANK_ERR_VERSION);
+
+  if (typeof env.exam !== "string" || env.exam.length === 0) throw new BankError(BANK_ERR_SHAPE);
+  if (env.exam !== BANK_EXAM) throw new BankError(BANK_ERR_EXAM);
+
+  if (!Number.isInteger(env.kdf.iterations)
+      || env.kdf.iterations < BANK_KDF_MIN_ITERATIONS
+      || env.kdf.iterations > BANK_KDF_MAX_ITERATIONS) {
+    throw new BankError(BANK_ERR_SHAPE);
+  }
+  if (!Number.isInteger(env.items) || env.items < 1) throw new BankError(BANK_ERR_SHAPE);
+
+  /* Decoded here, with their lengths checked, so nothing malformed survives this point. */
+  const salt = fromB64(env.kdf.salt, BANK_SALT_BYTES);
+  const iv = fromB64(env.iv, BANK_IV_BYTES);
+  const ct = fromB64(env.ct);
+  if (ct.length <= BANK_TAG_BYTES) throw new BankError(BANK_ERR_SHAPE);
+
+  return { v: env.v, exam: env.exam, items: env.items,
+           iterations: env.kdf.iterations, salt, iv, ct };
+}
+
+/** Native Web Crypto only — no libraries, no polyfills. The KDF and cipher
+ *  parameters come out of the envelope so the client never guesses them. */
+async function decryptEnvelope(env, passphrase) {
+  const base = await crypto.subtle.importKey(
+    "raw", new TextEncoder().encode(passphrase), "PBKDF2", false, ["deriveKey"]);
+  const key = await crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt: env.salt, iterations: env.iterations, hash: "SHA-256" },
+    base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+  let plain;
+  try {
+    plain = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: env.iv, tagLength: 128 }, key, env.ct);
+  } catch (err) {
+    throw new BankError(BANK_ERR_AUTH);
+  }
+  let items;
+  try {
+    items = JSON.parse(new TextDecoder().decode(plain));
+  } catch (err) {
+    throw new BankError(BANK_ERR_SHAPE);
+  }
+  if (!Array.isArray(items) || items.length === 0) throw new BankError(BANK_ERR_SHAPE);
+  /* The envelope declares its own count; if the ciphertext disagrees, the file is not
+     what it says it is. Cheap integrity cross-check, and it makes `items` load-bearing
+     rather than decoration. */
+  if (items.length !== env.items) throw new BankError(BANK_ERR_SHAPE);
+  return items;
+}
+
+/* Storage is best effort, exactly like the mistakes store: a browser that
+   refuses it costs the candidate a reload, never a crash. */
+function readStoredBank() {
+  try {
+    const raw = window.localStorage.getItem(BANK_STORE_KEY);
+    if (!raw) return null;
+    const items = JSON.parse(raw);
+    return Array.isArray(items) && items.length ? items : null;
+  } catch (err) {
+    return null;
+  }
+}
+function storeBank(items) {
+  try {
+    window.localStorage.setItem(BANK_STORE_KEY, JSON.stringify(items));
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+function clearStoredBank() {
+  try {
+    window.localStorage.removeItem(BANK_STORE_KEY);
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
+/** True when the app can boot without asking the candidate for anything. */
+function adoptStoredBank() {
+  if (BANK.length) {
+    bankSource = "inline";
+    return true;
+  }
+  const items = readStoredBank();
+  if (!items) return false;
+  BANK = items;
+  bankSource = "storage";
+  return true;
+}
+
+/** Decrypt, then adopt, then persist — in that order. Persisting before the
+ *  tag verifies would write whatever a wrong passphrase produced onto the
+ *  device, and the next visit would boot from garbage. */
+async function adoptEncryptedBank(text, passphrase) {
+  const env = parseEnvelope(text);
+  const items = await decryptEnvelope(env, passphrase);
+  BANK = items;
+  bankSource = "file";
+  return { items: items.length, persisted: storeBank(items) };
+}
+/* __LOADER_END__ */
+
+const DOMAINS = {
+  D1: { name: "Agentic Architecture & Orchestration", w: [27n, 100n] },
+  D2: { name: "Tool Design & MCP Integration",        w: [18n, 100n] },
+  D3: { name: "Claude Code Configuration & Workflows", w: [20n, 100n] },
+  D4: { name: "Prompt Engineering & Structured Output", w: [20n, 100n] },
+  D5: { name: "Context Management & Reliability",     w: [15n, 100n] }
+};
+const DOMAIN_IDS = ["D1", "D2", "D3", "D4", "D5"];
+
+const SCENARIOS = {
+  S1: "Customer Support Resolution Agent",
+  S2: "Code Generation with Claude Code",
+  S3: "Multi-Agent Research System",
+  S4: "Developer Productivity with Claude",
+  S5: "Claude Code for Continuous Integration",
+  S6: "Structured Data Extraction"
+};
+
+const TASKS = {
+  "1.1": "Design and implement agentic loops for autonomous task execution",
+  "1.2": "Orchestrate multi-agent systems with coordinator-subagent patterns",
+  "1.3": "Configure subagent invocation, context passing, and spawning",
+  "1.4": "Implement multi-step workflows with enforcement and handoff patterns",
+  "1.5": "Apply Agent SDK hooks for tool call interception and data normalization",
+  "1.6": "Design task decomposition strategies for complex workflows",
+  "1.7": "Manage session state, resumption, and forking",
+  "2.1": "Design effective tool interfaces with clear descriptions and boundaries",
+  "2.2": "Implement structured error responses for MCP tools",
+  "2.3": "Distribute tools appropriately across agents and configure tool choice",
+  "2.4": "Integrate MCP servers into Claude Code and agent workflows",
+  "2.5": "Select and apply built-in tools (Read, Write, Edit, Bash, Grep, Glob) effectively",
+  "3.1": "Configure CLAUDE.md files with appropriate hierarchy, scoping, and modular organization",
+  "3.2": "Create and configure custom slash commands and skills",
+  "3.3": "Apply path-specific rules for conditional convention loading",
+  "3.4": "Determine when to use plan mode vs direct execution",
+  "3.5": "Apply iterative refinement techniques for progressive improvement",
+  "3.6": "Integrate Claude Code into CI/CD pipelines",
+  "4.1": "Design prompts with explicit criteria to improve precision and reduce false positives",
+  "4.2": "Apply few-shot prompting to improve output consistency and quality",
+  "4.3": "Enforce structured output using tool use and JSON schemas",
+  "4.4": "Implement validation, retry, and feedback loops for extraction quality",
+  "4.5": "Design efficient batch processing strategies",
+  "4.6": "Design multi-instance and multi-pass review architectures",
+  "5.1": "Manage conversation context to preserve critical information across long interactions",
+  "5.2": "Design effective escalation and ambiguity resolution patterns",
+  "5.3": "Implement error propagation strategies across multi-agent systems",
+  "5.4": "Manage context effectively in large codebase exploration",
+  "5.5": "Design human review workflows and confidence calibration",
+  "5.6": "Preserve information provenance and handle uncertainty in multi-source synthesis"
+};
+
+const EXAM_ITEM_COUNT = 60;
+const SECONDS_PER_ITEM = 120;
+const PRACTICE_SIZES = [10, 30, 60];
+const CUT_SCORE = 720;
+
+/* ==================================================================
+   EXACT RATIONAL ARITHMETIC
+   The scoring spec forbids float and Decimal: a midpoint destroyed
+   before rounding can flip the verdict at the cut. BigInt fractions
+   with an integer-only half-up are exact by construction.
+   ================================================================== */
+function bgcd(a, b) {
+  if (a < 0n) a = -a;
+  if (b < 0n) b = -b;
+  while (b) { const t = a % b; a = b; b = t; }
+  return a;
+}
+function fr(n, d = 1n) {
+  n = BigInt(n); d = BigInt(d);
+  if (d === 0n) throw new Error("denominador cero");
+  if (d < 0n) { n = -n; d = -d; }
+  const g = bgcd(n, d) || 1n;
+  return { n: n / g, d: d / g };
+}
+const frAdd = (a, b) => fr(a.n * b.d + b.n * a.d, a.d * b.d);
+const frSub = (a, b) => fr(a.n * b.d - b.n * a.d, a.d * b.d);
+const frMul = (a, b) => fr(a.n * b.n, a.d * b.d);
+const frDiv = (a, b) => {
+  if (b.n === 0n) throw new Error("división por cero");
+  return fr(a.n * b.d, a.d * b.n);
+};
+const frCmp = (a, b) => {
+  const l = a.n * b.d, r = b.n * a.d;
+  return l < r ? -1 : l > r ? 1 : 0;
+};
+function halfUp(f) {
+  if (f.n < 0n) throw new Error("half_up exige un valor no negativo");
+  const q = f.n / f.d, r = f.n % f.d;
+  return Number(2n * r >= f.d ? q + 1n : q);
+}
+const frToPct = (f) => Number(f.n * 10000n / f.d) / 100;
+
+const BREAKPOINT = fr(72n, 100n);
+const UPPER_WIDTH = fr(28n, 100n);
+
+/** Domain-weighted accuracy, renormalized over the domains PRESENT.
+ *  An absent domain is excluded, never counted as zero. */
+function weightedAccuracy(graded) {
+  if (!graded.length) throw new Error("no se puede puntuar un intento vacío");
+  const correct = {}, total = {};
+  for (const g of graded) {
+    correct[g.domain] = (correct[g.domain] || 0) + g.score;
+    total[g.domain] = (total[g.domain] || 0) + 1;
+  }
+  const present = DOMAIN_IDS.filter((d) => total[d]);
+  let divisor = fr(0n);
+  for (const d of present) divisor = frAdd(divisor, fr(...DOMAINS[d].w));
+  let acc = fr(0n);
+  for (const d of present) {
+    const share = frDiv(fr(...DOMAINS[d].w), divisor);
+    acc = frAdd(acc, frMul(share, fr(BigInt(correct[d]), BigInt(total[d]))));
+  }
+  return acc;
+}
+
+/** Piecewise linear, continuous at 0.72. Only the final score rounds. */
+function scaledScore(acc) {
+  if (frCmp(acc, fr(0n)) < 0 || frCmp(acc, fr(1n)) > 0) {
+    throw new Error("la precisión ponderada debe estar en [0, 1]");
+  }
+  let exact;
+  if (frCmp(acc, BREAKPOINT) <= 0) {
+    exact = frAdd(fr(100n), frMul(frDiv(acc, BREAKPOINT), fr(620n)));
+  } else {
+    exact = frAdd(fr(720n), frMul(frDiv(frSub(acc, BREAKPOINT), UPPER_WIDTH), fr(280n)));
+  }
+  return halfUp(exact);
+}
+
+/** Largest-remainder (Hamilton) apportionment. Sums to exactly `count`.
+ *  60 -> D1:16 D2:11 D3:12 D4:12 D5:9, the official exam mix. */
+function apportion(count) {
+  if (count < 0) throw new Error("no se puede repartir un número negativo");
+  const exact = {}, allocated = {};
+  let sum = 0;
+  for (const d of DOMAIN_IDS) {
+    exact[d] = frMul(fr(...DOMAINS[d].w), fr(BigInt(count)));
+    allocated[d] = Number(exact[d].n / exact[d].d);
+    sum += allocated[d];
+  }
+  const leftover = count - sum;
+  const byRemainder = DOMAIN_IDS.slice().sort((a, b) => {
+    const ra = frSub(exact[a], fr(BigInt(allocated[a])));
+    const rb = frSub(exact[b], fr(BigInt(allocated[b])));
+    const c = frCmp(rb, ra);
+    return c !== 0 ? c : a.localeCompare(b);
+  });
+  for (let i = 0; i < leftover; i++) allocated[byRemainder[i]] += 1;
+  return allocated;
+}
+
+/* ==================================================================
+   SEEDED SELECTION
+   Every pool is sorted by id immediately before it is shuffled — a
+   seeded shuffle over unordered input is not reproducible.
+   ================================================================== */
+function mulberry32(seed) {
+  let a = seed >>> 0;
+  return function () {
+    a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const canonical = (qs) => qs.slice().sort((a, b) => a.id.localeCompare(b.id));
+
+/** Unbiased Fisher-Yates. Not sorted-by-random-key, which is biased. */
+function fisherYates(items, rand) {
+  const out = items.slice();
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+/** Take `quota` items per domain, or throw naming the shortfall. */
+function draw(pool, quota, rand) {
+  const buckets = {};
+  for (const d of DOMAIN_IDS) buckets[d] = [];
+  for (const q of canonical(pool)) buckets[q.d].push(q);
+  const selected = [];
+  for (const d of DOMAIN_IDS) {
+    const wanted = quota[d] || 0;
+    if (buckets[d].length < wanted) {
+      throw new Error(`el banco solo tiene ${buckets[d].length} preguntas de ${d}, hacen falta ${wanted}`);
+    }
+    selected.push(...fisherYates(buckets[d], rand).slice(0, wanted));
+  }
+  return fisherYates(canonical(selected), rand);
+}
+
+/** Options rendered in a seeded order. `correct` is untouched: grading
+ *  compares option ids, so the shuffle cannot change what is right. */
+const shuffleOptions = (q, rand) =>
+  fisherYates(q.o.slice().sort((a, b) => a.id.localeCompare(b.id)), rand);
+
+/* ==================================================================
+   PERSISTENCE — best effort. If the browser refuses storage we say so
+   rather than pretending the list survives a reload.
+   ================================================================== */
+const STORE_KEY = "ccarf-sala-examen-v1";
+let storageWorks = true;
+let mistakes = new Set();
+
+function loadMistakes() {
+  try {
+    const raw = window.localStorage.getItem(STORE_KEY);
+    if (raw) {
+      const ids = JSON.parse(raw);
+      const known = new Set(BANK.map((q) => q.id));
+      mistakes = new Set(ids.filter((id) => known.has(id)));
+    }
+  } catch (err) {
+    storageWorks = false;
+  }
+}
+function saveMistakes() {
+  if (!storageWorks) return;
+  try {
+    window.localStorage.setItem(STORE_KEY, JSON.stringify([...mistakes]));
+  } catch (err) {
+    storageWorks = false;
+    renderMistakesCard();
+  }
+}
+
+/* ==================================================================
+   TEXT RENDERING
+   ================================================================== */
+const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+/* Technical identifiers set in mono so they're findable at a glance —
+   the whole point of reading an item in 20 seconds. */
+const IDENT = /(--[a-z][a-z0-9-]*|\b[a-z][a-z0-9]*(?:_[a-z0-9]+)+\b|\bPreToolUse\b|\bPostToolUse\b|\bPreToolCall\b|\bCLAUDE\.md\b|\bSKILL\.md\b|\bisError\b|\bisRetryable\b|\berrorCategory\b|\ballowedTools\b|\bstopReason\b)/g;
+const mark = (s) => esc(s).replace(IDENT, "<code>$1</code>");
+
+const $ = (id) => document.getElementById(id);
+
+function toast(msg) {
+  const el = document.createElement("div");
+  el.className = "toast";
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2200);
+}
+
+/* ==================================================================
+   STATE
+   ================================================================== */
+let S = null;
+
+function buildForm(mode, opts = {}) {
+  const seed = (Math.random() * 4294967296) >>> 0;
+  const rand = mulberry32(seed);
+  let picked;
+
+  if (mode === "exam") {
+    picked = draw(BANK, apportion(EXAM_ITEM_COUNT), rand);
+  } else if (mode === "practice") {
+    if (!PRACTICE_SIZES.includes(opts.size)) {
+      throw new Error(`tamaño de práctica no admitido: ${opts.size}`);
+    }
+    picked = draw(BANK, apportion(opts.size), rand);
+  } else if (mode === "domain") {
+    const matching = BANK.filter((q) => q.d === opts.domain);
+    if (!matching.length) throw new Error(`el banco no tiene preguntas de ${opts.domain}`);
+    picked = fisherYates(canonical(matching), rand);
+  } else if (mode === "mistakes") {
+    const ids = [...mistakes].sort();
+    if (!ids.length) throw new Error("no hay fallos guardados que repasar");
+    const index = new Map(BANK.map((q) => [q.id, q]));
+    picked = fisherYates(canonical(ids.map((id) => index.get(id))), rand);
+  } else {
+    throw new Error(`modo desconocido: ${mode}`);
+  }
+
+  S = {
+    mode,
+    seed,
+    graded: mode === "exam",
+    items: picked.map((q) => ({
+      q,
+      opts: shuffleOptions(q, rand),
+      chosen: null,
+      flagged: false,
+      revealed: false
+    })),
+    index: 0,
+    submitted: false,
+    deadline: mode === "exam" ? Date.now() + picked.length * SECONDS_PER_ITEM * 1000 : null,
+    startedAt: Date.now()
+  };
+}
+
+const cur = () => S.items[S.index];
+const answeredCount = () => S.items.filter((it) => it.chosen !== null).length;
+const isRight = (it) => it.chosen !== null && it.q.c.length === 1 && it.chosen === it.q.c[0];
+
+/* Buttons that need a second click to fire register a reset here, so an
+   armed button never carries its warning into the next screen. */
+const confirmResets = [];
+const resetConfirms = () => confirmResets.forEach((fn) => fn());
+
+/* ==================================================================
+   VIEWS
+   ================================================================== */
+function show(view) {
+  resetConfirms();
+  for (const id of ["gate", "home", "test", "review", "results"]) {
+    $(id).classList.toggle("hidden", id !== view);
+  }
+  window.scrollTo(0, 0);
+}
+
+/* ---------- home ---------- */
+function renderHome() {
+  $("bank-size").textContent = String(BANK.length);
+  /* A compiled-in bank cannot be swapped out; a loaded one can. */
+  $("bank-clear").classList.toggle("hidden", bankSource !== "storage" && bankSource !== "file");
+
+  const sizes = $("practice-sizes");
+  sizes.innerHTML = "";
+  for (const n of PRACTICE_SIZES) {
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.textContent = `${n} preguntas`;
+    b.disabled = n > BANK.length;
+    b.addEventListener("click", () => start("practice", { size: n }));
+    sizes.appendChild(b);
+  }
+
+  const picker = $("domain-picker");
+  picker.innerHTML = "";
+  for (const d of DOMAIN_IDS) {
+    const n = BANK.filter((q) => q.d === d).length;
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.innerHTML = `${d} <span style="opacity:.65">· ${n}</span>`;
+    b.title = DOMAINS[d].name;
+    b.disabled = n === 0;
+    b.addEventListener("click", () => start("domain", { domain: d }));
+    picker.appendChild(b);
+  }
+
+  renderMistakesCard();
+}
+
+function renderMistakesCard() {
+  const btn = $("mistakes-btn");
+  const clear = $("mistakes-clear");
+  const desc = $("mistakes-desc");
+  const n = mistakes.size;
+
+  btn.disabled = n === 0;
+  btn.textContent = n === 0 ? "Aún no hay fallos guardados" : `Repasar ${n} ${n === 1 ? "fallo" : "fallos"}`;
+  clear.classList.toggle("hidden", n === 0);
+
+  desc.textContent = storageWorks
+    ? "Repasa solo las preguntas que has fallado. Cuando aciertas una, sale de la lista. Se guarda en este navegador."
+    : "Repasa solo las preguntas que has fallado. Cuando aciertas una, sale de la lista. Este navegador bloquea el almacenamiento local, así que la lista se pierde al recargar.";
+}
+
+/* ---------- test ---------- */
+function start(mode, opts) {
+  try {
+    buildForm(mode, opts);
+  } catch (err) {
+    toast(err.message);
+    return;
+  }
+  $("review-btn").textContent = S.graded ? "Revisar y entregar" : "Ver resultados";
+  $("clock").classList.toggle("hidden", !S.deadline);
+  renderQuestion();
+  show("test");
+  tick();
+}
+
+function renderQuestion() {
+  const it = cur();
+  const q = it.q;
+
+  $("q-pos").textContent = `${S.index + 1} / ${S.items.length}`;
+  $("q-id").textContent = q.id;
+  $("progress-fill").style.width = `${((S.index + 1) / S.items.length) * 100}%`;
+  $("flag-btn").textContent = it.flagged ? "✓ Marcada" : "Marcar";
+  $("flag-btn").classList.toggle("btn-primary", it.flagged);
+
+  $("q-tags").innerHTML = [
+    `<span class="tag accent" title="${esc(DOMAINS[q.d].name)}">${q.d}</span>`,
+    `<span class="tag" title="${esc(TASKS[q.t] || "")}">Objetivo ${q.t}</span>`,
+    `<span class="tag" title="${esc(SCENARIOS[q.s] || "")}">${q.s} · ${esc(SCENARIOS[q.s] || "")}</span>`
+  ].join("");
+
+  $("q-stem").innerHTML = mark(q.stem);
+
+  const box = $("q-options");
+  box.innerHTML = "";
+  const reveal = it.revealed;
+
+  it.opts.forEach((opt, i) => {
+    const letter = String.fromCharCode(65 + i);
+    const correct = q.c.includes(opt.id);
+    const chosen = it.chosen === opt.id;
+
+    const b = document.createElement("button");
+    b.className = "opt";
+    b.setAttribute("role", "radio");
+    b.setAttribute("aria-checked", chosen ? "true" : "false");
+    b.disabled = reveal;
+
+    if (reveal) {
+      if (correct) b.classList.add("right");
+      else if (chosen) b.classList.add("wrong");
+      else b.classList.add("muted");
+    }
+
+    let html = `<span class="letter">${letter}</span><span>${mark(opt.t)}`;
+    if (reveal) {
+      const why = correct ? q.ec : q.ed[opt.id];
+      const tag = correct ? "Por qué es la correcta" : "Por qué falla";
+      if (why) html += `<span class="why"><span class="why-tag">${tag}</span>${mark(why)}</span>`;
+    }
+    html += "</span>";
+    b.innerHTML = html;
+
+    b.addEventListener("click", () => choose(opt.id));
+    box.appendChild(b);
+  });
+
+  $("q-keyconcept").innerHTML = reveal && q.kc
+    ? `<div class="keyconcept"><span class="eyebrow">Idea que se transfiere</span>${mark(q.kc)}</div>`
+    : "";
+
+  $("prev-btn").disabled = S.index === 0;
+  $("next-btn").disabled = S.index === S.items.length - 1;
+}
+
+function choose(optId) {
+  const it = cur();
+  if (it.revealed) return;
+  it.chosen = optId;
+
+  if (!S.graded) {
+    it.revealed = true;
+    const right = isRight(it);
+    if (right) {
+      if (mistakes.delete(it.q.id)) saveMistakes();
+    } else {
+      mistakes.add(it.q.id);
+      saveMistakes();
+    }
+  }
+  renderQuestion();
+}
+
+function go(delta) {
+  const next = S.index + delta;
+  if (next < 0 || next >= S.items.length) return;
+  S.index = next;
+  renderQuestion();
+}
+
+/* ---------- clock ---------- */
+let clockTimer = null;
+function tick() {
+  if (clockTimer) clearInterval(clockTimer);
+  if (!S || !S.deadline) return;
+  const paint = () => {
+    if (!S || !S.deadline || S.submitted) return;
+    const left = Math.max(0, S.deadline - Date.now());
+    const total = Math.floor(left / 1000);
+    const m = String(Math.floor(total / 60)).padStart(2, "0");
+    const s = String(total % 60).padStart(2, "0");
+    const el = $("clock");
+    el.textContent = `${m}:${s}`;
+    el.classList.toggle("warn", total <= 600 && total > 60);
+    el.classList.toggle("danger", total <= 60);
+    if (left === 0) {
+      clearInterval(clockTimer);
+      toast("Se acabó el tiempo. Entregado automáticamente.");
+      submit();
+    }
+  };
+  paint();
+  clockTimer = setInterval(paint, 1000);
+}
+
+/* ---------- review grid ---------- */
+function renderReview() {
+  const answered = answeredCount();
+  const flagged = S.items.filter((it) => it.flagged).length;
+  const blank = S.items.length - answered;
+
+  const parts = [`Has respondido ${answered} de ${S.items.length}.`];
+  if (blank > 0) parts.push(`Quedan ${blank} sin responder — no hay penalización por fallar, así que conviene marcar algo en todas.`);
+  if (flagged > 0) parts.push(`Tienes ${flagged} ${flagged === 1 ? "marcada" : "marcadas"} para revisar.`);
+  $("review-summary").textContent = parts.join(" ");
+
+  const grid = $("review-grid");
+  grid.innerHTML = "";
+  S.items.forEach((it, i) => {
+    const c = document.createElement("button");
+    c.className = "qcell";
+    if (it.chosen !== null) c.classList.add("done");
+    if (it.flagged) c.classList.add("flagged");
+    c.textContent = String(i + 1);
+    c.title = it.q.id;
+    c.addEventListener("click", () => {
+      S.index = i;
+      renderQuestion();
+      show("test");
+    });
+    grid.appendChild(c);
+  });
+
+  show("review");
+}
+
+/* ---------- results ---------- */
+function submit() {
+  S.submitted = true;
+  if (clockTimer) clearInterval(clockTimer);
+
+  if (S.graded) {
+    for (const it of S.items) {
+      if (isRight(it)) {
+        if (mistakes.delete(it.q.id)) saveMistakes();
+      } else {
+        mistakes.add(it.q.id);
+        saveMistakes();
+      }
+    }
+  }
+  for (const it of S.items) it.revealed = true;
+
+  renderResults();
+  show("results");
+  renderMistakesCard();
+}
+
+function tally(items, keyFn) {
+  const rows = {};
+  for (const it of items) {
+    const k = keyFn(it);
+    if (!rows[k]) rows[k] = { correct: 0, total: 0 };
+    rows[k].total += 1;
+    rows[k].correct += isRight(it) ? 1 : 0;
+  }
+  return rows;
+}
+
+function band(pct) {
+  if (pct >= 80) return "ok";
+  if (pct >= 60) return "mid";
+  return "weak";
+}
+
+function renderResults() {
+  const graded = S.items.map((it) => ({ domain: it.q.d, score: isRight(it) ? 1 : 0 }));
+  const acc = weightedAccuracy(graded);
+  const score = scaledScore(acc);
+  const raw = graded.filter((g) => g.score === 1).length;
+  const passed = score >= CUT_SCORE;
+
+  const byDomain = tally(S.items, (it) => it.q.d);
+  const byTask = tally(S.items, (it) => it.q.t);
+  const scenarios = new Set(S.items.map((it) => it.q.s));
+
+  const modeLabel = {
+    exam: "Examen completo",
+    practice: "Práctica",
+    domain: "Dominio suelto",
+    mistakes: "Repaso de fallos"
+  }[S.mode];
+
+  const elapsed = Math.round((Date.now() - S.startedAt) / 60000);
+  const gaugePct = Math.max(0, Math.min(100, ((score - 100) / 900) * 100));
+
+  /* The report is composed from THIS object, never recomputed: a second
+     derivation of the score is a second thing that can disagree with the page. */
+  lastResult = { score, passed, raw, total: S.items.length, mode: S.mode,
+                 modeLabel, elapsed, byDomain, accPct: frToPct(acc).toFixed(1) };
+
+  let html = "";
+
+  /* --- scoreboard --- */
+  html += `<div class="scoreboard">
+    <p class="eyebrow">${modeLabel} · ${S.items.length} preguntas · ${elapsed} min</p>
+    <div class="score-top">
+      <div>
+        <div class="score-big num">${score}</div>
+        <span class="eyebrow">Nota estimada sobre 100–1000</span>
+      </div>
+      <div class="score-side">
+        <span class="eyebrow">Aciertos</span>
+        <b class="num">${raw} / ${S.items.length}</b>
+      </div>
+      <div class="score-side">
+        <span class="eyebrow">Precisión ponderada</span>
+        <b class="num">${frToPct(acc).toFixed(1)}%</b>
+      </div>`;
+
+  /* The verdict exists only in exam mode: it is the only mode that
+     reproduces the official domain mix. */
+  if (S.mode === "exam") {
+    html += `<div class="verdict ${passed ? "pass" : "fail"}">
+      ${passed ? "Estimación: llegas al corte" : "Estimación: aún no llegas"}
+    </div>`;
+  }
+
+  html += `</div>
+    <div class="gauge">
+      <div class="gauge-track">
+        <div class="gauge-fill ${passed ? "pass" : ""}" style="width:${gaugePct}%"></div>
+        <div class="gauge-cut" style="left:${((CUT_SCORE - 100) / 900) * 100}%"></div>
+      </div>
+      <div class="gauge-ends"><span>100</span><span>1000</span></div>
+    </div>`;
+
+  if (S.mode === "exam") {
+    html += `<p class="disclaimer"><b>Es una estimación, no tu nota.</b> El algoritmo real de Pearson VUE no es público y equipara formas por dificultad. El cálculo replica la especificación de este proyecto: precisión ponderada por los pesos oficiales renormalizados sobre los dominios presentes, mapeo lineal a trozos continuo en 720, aritmética racional exacta y un único redondeo final al alza. Un 720 exacto aprueba: el corte es inclusivo.</p>`;
+  } else {
+    html += `<p class="disclaimer"><b>Sin veredicto de preparación, a propósito.</b> Solo el examen completo reproduce la mezcla oficial de dominios, así que un 720 en un test de un solo dominio no dice nada sobre si estás listo. La nota está aquí como referencia comparable entre sesiones.</p>`;
+  }
+  html += `</div>`;
+
+  /* --- by domain --- */
+  const weakest = DOMAIN_IDS
+    .filter((d) => byDomain[d])
+    .map((d) => ({ d, pct: (byDomain[d].correct / byDomain[d].total) * 100 }))
+    .sort((a, b) => a.pct - b.pct)[0];
+
+  html += `<div class="panel">
+    <h2>Por dominio</h2>
+    <p class="sub">Los dominios que este test no preguntó no aparecen: una fila al 0% se leería como debilidad medida cuando es ausencia de evidencia.</p>
+    <div style="overflow-x:auto"><table class="tbl">
+      <thead><tr>
+        <th>Dominio</th><th class="r">Peso</th><th class="r">Aciertos</th>
+        <th class="r">%</th><th style="width:130px"></th><th></th>
+      </tr></thead><tbody>`;
+
+  for (const d of DOMAIN_IDS) {
+    const row = byDomain[d];
+    if (!row) continue;
+    const pct = (row.correct / row.total) * 100;
+    const b = band(pct);
+    html += `<tr>
+      <td class="dname">${d}<small>${esc(DOMAINS[d].name)}</small></td>
+      <td class="r">${Number(DOMAINS[d].w[0])}%</td>
+      <td class="r">${row.correct}/${row.total}</td>
+      <td class="r">${pct.toFixed(0)}%</td>
+      <td><div class="meter"><i class="${b === "ok" ? "ok" : b === "weak" ? "weak" : ""}" style="width:${pct}%"></i></div></td>
+      <td><span class="pill ${b}">${b === "ok" ? "sólido" : b === "mid" ? "justo" : "flojo"}</span></td>
+    </tr>`;
+  }
+  html += `</tbody></table></div>`;
+
+  /* Only worth offering when the test compared domains: in a single-domain
+     test the "weakest" is the only one, and the button would just restart it. */
+  if (weakest && Object.keys(byDomain).length > 1 && byDomain[weakest.d].total >= 2) {
+    html += `<div class="actions" style="margin-top:18px">
+      <button class="btn btn-primary" data-practice-domain="${weakest.d}">
+        Practicar ${weakest.d} — ${BANK.filter((q) => q.d === weakest.d).length} preguntas del banco
+      </button>
+      <span style="font-size:13px;color:var(--ink-3);align-self:center">
+        Es donde peor has ido en este test.
+      </span>
+    </div>`;
+  }
+  html += `</div>`;
+
+  /* --- by task statement --- */
+  const taskKeys = Object.keys(byTask).sort();
+  const failedTasks = taskKeys.filter((t) => byTask[t].correct < byTask[t].total);
+  html += `<div class="panel">
+    <h2>Por objetivo</h2>
+    <p class="sub">Los 30 objetivos son el nivel al que se puede actuar: el dominio dice dónde duele, el objetivo dice qué leer. Solo se listan los ${taskKeys.length} que este test preguntó${failedTasks.length ? `, y los ${failedTasks.length} con algún fallo van primero` : ""}.</p>
+    <div style="overflow-x:auto"><table class="tbl">
+      <thead><tr><th>Objetivo</th><th class="r">Aciertos</th><th style="width:110px"></th></tr></thead><tbody>`;
+
+  const ordered = [
+    ...failedTasks.sort((a, b) => (byTask[a].correct / byTask[a].total) - (byTask[b].correct / byTask[b].total)),
+    ...taskKeys.filter((t) => byTask[t].correct === byTask[t].total)
+  ];
+  for (const t of ordered) {
+    const row = byTask[t];
+    const pct = (row.correct / row.total) * 100;
+    const b = band(pct);
+    html += `<tr>
+      <td class="dname"><span class="mono">${t}</span><small>${esc(TASKS[t] || "")}</small></td>
+      <td class="r">${row.correct}/${row.total}</td>
+      <td><div class="meter"><i class="${b === "ok" ? "ok" : b === "weak" ? "weak" : ""}" style="width:${pct}%"></i></div></td>
+    </tr>`;
+  }
+  html += `</tbody></table></div></div>`;
+
+  /* --- item review --- */
+  html += `<div class="panel">
+    <h2>Pregunta a pregunta</h2>
+    <p class="sub">Cobertura de escenarios en este test: ${scenarios.size} de 6. El examen real monta 4 escenarios, y aquí se informa, no se garantiza.</p>
+    <div id="rev-list"></div>
+  </div>`;
+
+  html += `<div class="actions" style="margin-bottom:40px">
+    <button class="btn btn-primary" data-restart="${S.mode}">Repetir en este modo</button>
+    ${mistakes.size ? `<button class="btn" data-start-mistakes="1">Repasar ${mistakes.size} ${mistakes.size === 1 ? "fallo" : "fallos"}</button>` : ""}
+    <button class="btn btn-ghost" data-home="1">Volver al inicio</button>
+  </div>`;
+
+  $("results-body").innerHTML = html;
+
+  /* --- collapsible per-item review --- */
+  const list = $("rev-list");
+  S.items.forEach((it, i) => {
+    const q = it.q;
+    const right = isRight(it);
+    const blank = it.chosen === null;
+
+    const wrap = document.createElement("div");
+    wrap.className = "rev-item";
+
+    const head = document.createElement("button");
+    head.className = "rev-head";
+    head.setAttribute("aria-expanded", "false");
+    head.innerHTML = `
+      <span class="rev-mark ${blank ? "blank" : right ? "right" : "wrong"}">${blank ? "–" : right ? "✓" : "✗"}</span>
+      <span class="rev-id">${i + 1}. ${q.id}</span>
+      <span class="rev-stem">${esc(q.stem.slice(0, 120))}…</span>
+      <span class="rev-caret">▾</span>`;
+
+    const body = document.createElement("div");
+    body.className = "rev-body hidden";
+
+    head.addEventListener("click", () => {
+      const open = body.classList.toggle("hidden") === false;
+      head.setAttribute("aria-expanded", open ? "true" : "false");
+      head.querySelector(".rev-caret").textContent = open ? "▴" : "▾";
+      if (open && !body.dataset.filled) {
+        body.dataset.filled = "1";
+        body.innerHTML = renderItemDetail(it);
+      }
+    });
+
+    wrap.appendChild(head);
+    wrap.appendChild(body);
+    list.appendChild(wrap);
+  });
+}
+
+function renderItemDetail(it) {
+  const q = it.q;
+  let html = `<div class="tags" style="margin:14px 0 12px">
+    <span class="tag accent">${q.d}</span>
+    <span class="tag">Objetivo ${q.t}</span>
+    <span class="tag">${q.s} · ${esc(SCENARIOS[q.s] || "")}</span>
+  </div>`;
+  html += `<p class="stem" style="font-size:16px">${mark(q.stem)}</p><div class="options">`;
+
+  it.opts.forEach((opt, i) => {
+    const letter = String.fromCharCode(65 + i);
+    const correct = q.c.includes(opt.id);
+    const chosen = it.chosen === opt.id;
+    const cls = correct ? "right" : chosen ? "wrong" : "muted";
+    const why = correct ? q.ec : q.ed[opt.id];
+    const tag = correct ? "Por qué es la correcta" : "Por qué falla";
+    const yours = chosen ? ' <span class="pill mid" style="margin-left:6px">tu respuesta</span>' : "";
+
+    html += `<div class="opt ${cls}" style="cursor:default">
+      <span class="letter">${letter}</span>
+      <span>${mark(opt.t)}${yours}
+        ${why ? `<span class="why"><span class="why-tag">${tag}</span>${mark(why)}</span>` : ""}
+      </span>
+    </div>`;
+  });
+
+  html += `</div>`;
+  if (q.kc) {
+    html += `<div class="keyconcept"><span class="eyebrow">Idea que se transfiere</span>${mark(q.kc)}</div>`;
+  }
+  return html;
+}
+
+/* ==================================================================
+   WIRING
+   ================================================================== */
+document.querySelectorAll("[data-start]").forEach((b) => {
+  b.addEventListener("click", () => start(b.dataset.start, {}));
+});
+
+$("mistakes-clear").addEventListener("click", () => {
+  mistakes.clear();
+  saveMistakes();
+  renderMistakesCard();
+  toast("Lista de fallos vaciada.");
+});
+
+$("prev-btn").addEventListener("click", () => go(-1));
+$("next-btn").addEventListener("click", () => go(1));
+$("flag-btn").addEventListener("click", () => {
+  cur().flagged = !cur().flagged;
+  renderQuestion();
+});
+$("review-btn").addEventListener("click", () => {
+  if (S.graded) renderReview();
+  else submit();
+});
+/* Confirmations are a second click on the button itself, never window.confirm:
+   the artifact frame can suppress modals, and a suppressed dialog would make
+   "Entregar" silently do nothing. */
+function armConfirm(btn, warning, onConfirm) {
+  const idle = btn.textContent;
+  let armed = false;
+  let timer = null;
+  const disarm = () => {
+    armed = false;
+    btn.textContent = idle;
+    btn.classList.remove("btn-danger");
+    if (timer) clearTimeout(timer);
+  };
+  btn.addEventListener("click", () => {
+    const w = warning();
+    if (w === null || armed) { disarm(); onConfirm(); return; }
+    armed = true;
+    btn.textContent = w;
+    btn.classList.add("btn-danger");
+    timer = setTimeout(disarm, 6000);
+  });
+  confirmResets.push(disarm);
+}
+
+armConfirm(
+  $("quit-btn"),
+  () => (answeredCount() > 0 ? "Se pierden las respuestas — pulsa otra vez" : null),
+  () => {
+    if (clockTimer) clearInterval(clockTimer);
+    S = null;
+    show("home");
+  }
+);
+
+$("back-to-test").addEventListener("click", () => show("test"));
+
+armConfirm(
+  $("submit-btn"),
+  () => {
+    const blank = S.items.length - answeredCount();
+    return blank > 0
+      ? `Quedan ${blank} sin responder — pulsa otra vez para entregar`
+      : null;
+  },
+  () => submit()
+);
+
+$("results-body").addEventListener("click", (e) => {
+  const t = e.target.closest("button");
+  if (!t) return;
+  if (t.dataset.practiceDomain) start("domain", { domain: t.dataset.practiceDomain });
+  else if (t.dataset.startMistakes) start("mistakes", {});
+  else if (t.dataset.home) { S = null; show("home"); }
+  else if (t.dataset.restart) {
+    const m = t.dataset.restart;
+    if (m === "practice") start("practice", { size: S.items.length });
+    else if (m === "domain") start("domain", { domain: S.items[0].q.d });
+    else if (m === "mistakes") start("mistakes", {});
+    else start("exam", {});
+  }
+});
+
+document.addEventListener("keydown", (e) => {
+  if ($("test").classList.contains("hidden") || !S) return;
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const it = cur();
+
+  if (e.key >= "1" && e.key <= "4") {
+    const i = Number(e.key) - 1;
+    if (i < it.opts.length) { choose(it.opts[i].id); e.preventDefault(); }
+  } else if (e.key === "ArrowRight") {
+    go(1); e.preventDefault();
+  } else if (e.key === "ArrowLeft") {
+    go(-1); e.preventDefault();
+  } else if (e.key.toLowerCase() === "m") {
+    it.flagged = !it.flagged; renderQuestion(); e.preventDefault();
+  }
+});
+
+window.addEventListener("beforeunload", (e) => {
+  if (S && !S.submitted && answeredCount() > 0) {
+    e.preventDefault();
+    e.returnValue = "";
+  }
+});
+
+/* ==================================================================
+   BOOT
+   ================================================================== */
+
+/** Everything the app needs once BANK is populated, from either source. */
+function startApp() {
+  loadMistakes();
+  renderHome();
+  show("home");
+}
+
+/** Wires the gate. Deliberately outside the __LOADER__ markers: that region is
+ *  sliced out and run headless, so it stays DOM-free and this does not. */
+function initBankGate() {
+  const form = $("gate-form");
+  $("gate-name").value = readCandidate();
+  const file = $("gate-file");
+  const pass = $("gate-pass");
+  const go = $("gate-go");
+  const msg = $("gate-msg");
+
+  const say = (text, bad) => {
+    msg.textContent = text;
+    msg.classList.toggle("bad", Boolean(bad));
+  };
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const picked = file.files && file.files[0];
+    const who = $("gate-name").value.trim();
+    if (!who) { say("Escribe tu nombre.", true); return; }
+    if (!picked) { say("Elige el archivo del banco.", true); return; }
+    if (!pass.value) { say("Escribe la contraseña.", true); return; }
+    storeCandidate(who);
+
+    const idle = go.textContent;
+    go.disabled = true;
+    /* 600000 PBKDF2 iterations is real work and how long it takes depends
+       entirely on the device, so this is an indeterminate busy state rather
+       than a promised wait. */
+    go.textContent = "Descifrando…";
+    say("Descifrando el banco…");
+    try {
+      const text = await picked.text();
+      const { items, persisted } = await adoptEncryptedBank(text, pass.value);
+      pass.value = "";
+      startApp();
+      toast(persisted
+        ? `${items} preguntas cargadas en este dispositivo.`
+        : `${items} preguntas cargadas. Este navegador bloquea el almacenamiento, así que habrá que repetirlo al recargar.`);
+    } catch (err) {
+      say(err instanceof BankError ? err.message : BANK_ERR_SHAPE, true);
+    } finally {
+      go.disabled = false;
+      go.textContent = idle;
+    }
+  });
+}
+
+/* ==================================================================
+   INFORME — deliberately after renderResults, so it sits outside every
+   region verify.mjs slices out of the page.
+   ================================================================== */
+
+/* Se compone en tiempo de ejecucion en lugar de escribirse literal: el repo
+   destino es publico y permanente, y una direccion en texto plano la cosecha
+   cualquier scraper de regex. No es un secreto -- quien abra DevTools la ve --
+   simplemente deja de ser recolectable en masa. */
+const REPORT_TO = ["aprieto", "@", "laberit", ".com"].join("");
+const CANDIDATE_KEY = "ccarf-candidate-v1";
+
+let lastResult = null;
+
+function readCandidate() {
+  try {
+    return window.localStorage.getItem(CANDIDATE_KEY) || "";
+  } catch (err) {
+    return "";
+  }
+}
+
+function storeCandidate(name) {
+  try {
+    window.localStorage.setItem(CANDIDATE_KEY, name);
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
+function buildReport() {
+  if (!lastResult) return "";
+  const r = lastResult;
+  const who = readCandidate() || "(sin nombre)";
+  const when = new Date().toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" });
+  const out = [
+    "Informe de simulacro CCAR-F",
+    "",
+    `Candidato: ${who}`,
+    `Fecha: ${when}`,
+    `Modo: ${r.modeLabel} - ${r.total} preguntas - ${r.elapsed} min`,
+    "",
+    `Nota estimada: ${r.score} sobre 100-1000 (corte ${CUT_SCORE})`
+  ];
+  /* The verdict is exam-mode only, for the same reason it is on the page: no
+     other mode reproduces the official domain mix. */
+  if (r.mode === "exam") out.push(`Veredicto: ${r.passed ? "llega al corte" : "aun no llega"}`);
+  out.push(`Aciertos: ${r.raw} de ${r.total}`, `Precision ponderada: ${r.accPct}%`, "", "Por dominio");
+  for (const d of DOMAIN_IDS) {
+    const row = r.byDomain[d];
+    if (!row) continue;
+    out.push(`  ${d}  ${row.correct}/${row.total}  ${Math.round((row.correct / row.total) * 100)}%  ${DOMAINS[d].name}`);
+  }
+  out.push("");
+  out.push(r.mode === "exam"
+    ? "Es una estimacion, no una nota oficial: el algoritmo real de Pearson VUE no es publico y equipara formas por dificultad."
+    : "Sin veredicto de preparacion: solo el examen completo reproduce la mezcla oficial de dominios.");
+  return out.join("\n");
+}
+
+function reportSlug() {
+  const who = readCandidate() || "candidato";
+  return who.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w]+/g, "-").toLowerCase();
+}
+
+$("report-mail").addEventListener("click", () => {
+  const body = buildReport();
+  if (!body) return;
+  const subject = `CCAR-F - ${readCandidate() || "sin nombre"} - ${lastResult.score}`;
+  window.location.href =
+    `mailto:${REPORT_TO}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  /* mailto: fails SILENTLY when no mail client is registered, which is the
+     normal case for webmail users. Say so rather than leaving them staring. */
+  $("report-msg").textContent = "Si no se ha abierto tu correo, pulsa Descargar y pegalo en Slack.";
+});
+
+$("report-download").addEventListener("click", () => {
+  const body = buildReport();
+  if (!body) return;
+  const url = URL.createObjectURL(new Blob([body], { type: "text/plain;charset=utf-8" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `ccarf-${reportSlug()}-${lastResult.score}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+  $("report-msg").textContent = "Informe descargado.";
+});
+
+$("bank-clear").addEventListener("click", () => {
+  clearStoredBank();
+  window.location.reload();
+});
+
+initBankGate();
+if (adoptStoredBank()) startApp();
+else show("gate");
+</script>
+</body>
+</html>
