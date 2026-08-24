@@ -681,7 +681,10 @@ button { font: inherit; color: inherit; cursor: pointer; }
         <div class="fact"><b class="num">120</b><span>minutos</span></div>
         <div class="fact"><b class="num">720</b><span>corte sobre 100–1000</span></div>
         <div class="fact"><b class="num">5</b><span>dominios ponderados</span></div>
-        <div class="fact"><b class="num" id="bank-size">100</b><span>preguntas en el banco</span></div>
+        <!-- Filled from BANK.length at boot. Ships as a dash, never a number: the other four
+             facts are exam constants, this one is data, and a stale literal would assert
+             a bank size the loaded file may not have. -->
+        <div class="fact"><b class="num" id="bank-size">&ndash;</b><span>preguntas en el banco</span></div>
       </div>
     </div>
   </header>
@@ -2062,6 +2065,90 @@ function buildReport() {
   return out.join("\n");
 }
 
+/* The candidate name is the only free text in the report, and here it lands in
+   markup rather than through textContent. Escaped at the single point it is
+   interpolated: a name with an angle bracket must not become an element. */
+function escHtml(v) {
+  return String(v).replace(/[&<>"']/g, c =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+}
+
+/* Readiness wording, kept to the same scope rule the screen obeys: only the full
+   exam reproduces the official domain mix, so no other mode may return a verdict. */
+function readinessLabel(r) {
+  if (r.mode !== "exam") return "Sin veredicto";
+  return r.passed ? "Listo" : "Preparando";
+}
+
+/* The report as a standalone HTML document.
+   Two audiences, one artifact. A training lead reads it, so it is a light-theme
+   printable page with no dependencies. And the summary is a real <table> with one
+   header row and one data row, because copying an HTML table into Excel pastes it
+   as CELLS -- which is how this feeds the per-candidate tracking sheet without a
+   separate CSV. Inline styles only, tables for layout, no flexbox: that is the
+   subset Outlook renders when the file is pasted into a message. */
+function buildReportHtml() {
+  if (!lastResult) return "";
+  const r = lastResult;
+  const who = escHtml(readCandidate() || "(sin nombre)");
+  const now = new Date();
+  const day = now.toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" });
+  const when = now.toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" });
+  const state = readinessLabel(r);
+  const accent = r.mode !== "exam" ? "#64748b" : (r.passed ? "#15803d" : "#b45309");
+
+  const F = 'font-family:"Segoe UI",Arial,Helvetica,sans-serif';
+  const TH = `style="${F};font-size:12px;text-align:left;padding:8px 10px;background:#1e293b;color:#f8fafc;border:1px solid #334155;white-space:nowrap"`;
+  const TD = `style="${F};font-size:13px;padding:8px 10px;border:1px solid #cbd5e1;color:#0f172a"`;
+
+  const summary = [
+    ["Candidato", who],
+    ["Estado", `<b style="color:${accent}">${state}</b>`],
+    ["Nota estimada", String(r.score)],
+    ["Corte", String(CUT_SCORE)],
+    ["Aciertos", `${r.raw} de ${r.total}`],
+    ["Precision ponderada", `${r.accPct}%`],
+    ["Modo", `${escHtml(r.modeLabel)} (${r.elapsed} min)`],
+    ["Fecha del intento", day]
+  ];
+
+  const domains = DOMAIN_IDS.filter(d => r.byDomain[d]).map(d => {
+    const row = r.byDomain[d];
+    const pct = Math.round((row.correct / row.total) * 100);
+    return `<tr><td ${TD}><b>${d}</b> ${escHtml(DOMAINS[d].name)}</td>`
+         + `<td ${TD} align="right">${row.correct}/${row.total}</td>`
+         + `<td ${TD} align="right">${pct}%</td></tr>`;
+  }).join("");
+
+  const note = r.mode === "exam"
+    ? "Es una estimacion, no una nota oficial: el algoritmo real de Pearson VUE no es publico y equipara formas por dificultad."
+    : "Sin veredicto de preparacion: solo el examen completo reproduce la mezcla oficial de dominios.";
+
+  const parts = [
+    "<!doctype html>",
+    '<html lang="es"><head><meta charset="utf-8">',
+    '<meta name="viewport" content="width=device-width,initial-scale=1">',
+    `<title>Simulacro CCAR-F - ${who}</title></head>`,
+    '<body style="margin:0;padding:24px;background:#ffffff">',
+    `<div style="${F};max-width:720px;margin:0 auto;color:#0f172a">`,
+    `<h1 style="${F};font-size:20px;margin:0 0 4px">Informe de simulacro CCAR-F</h1>`,
+    `<p style="${F};font-size:13px;color:#475569;margin:0 0 20px">Generado el ${when}</p>`,
+    '<table cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:100%;margin-bottom:8px">',
+    "<tr>" + summary.map(([k]) => `<th ${TH}>${k}</th>`).join("") + "</tr>",
+    "<tr>" + summary.map(([, v]) => `<td ${TD}>${v}</td>`).join("") + "</tr>",
+    "</table>",
+    `<p style="${F};font-size:11px;color:#64748b;margin:0 0 24px">Selecciona la tabla de arriba y pegala en Excel: entra como celdas, una fila por candidato.</p>`,
+    `<h2 style="${F};font-size:15px;margin:0 0 8px">Por dominio</h2>`,
+    '<table cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:100%">',
+    `<tr><th ${TH}>Dominio</th><th ${TH} align="right">Aciertos</th><th ${TH} align="right">%</th></tr>`,
+    domains,
+    "</table>",
+    `<p style="${F};font-size:12px;color:#475569;margin:20px 0 0;line-height:1.5">${note}</p>`,
+    "</div></body></html>"
+  ];
+  return parts.join("\n");
+}
+
 function reportSlug() {
   const who = readCandidate() || "candidato";
   return who.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w]+/g, "-").toLowerCase();
@@ -2078,16 +2165,20 @@ $("report-mail").addEventListener("click", () => {
   $("report-msg").textContent = "Si no se ha abierto tu correo, pulsa Descargar y pegalo en Slack.";
 });
 
+/* Downloads HTML, not text. The mailto body CANNOT carry markup -- RFC 6068 makes it
+   text/plain with no attachments -- so the plain report stays the notification and the
+   presentation travels in the file. Attach it, or open it and paste into the message:
+   Outlook keeps pasted table formatting, and Excel turns the summary table into cells. */
 $("report-download").addEventListener("click", () => {
-  const body = buildReport();
-  if (!body) return;
-  const url = URL.createObjectURL(new Blob([body], { type: "text/plain;charset=utf-8" }));
+  const doc = buildReportHtml();
+  if (!doc) return;
+  const url = URL.createObjectURL(new Blob([doc], { type: "text/html;charset=utf-8" }));
   const a = document.createElement("a");
   a.href = url;
-  a.download = `ccarf-${reportSlug()}-${lastResult.score}.txt`;
+  a.download = `ccarf-${reportSlug()}-${lastResult.score}.html`;
   a.click();
   URL.revokeObjectURL(url);
-  $("report-msg").textContent = "Informe descargado.";
+  $("report-msg").textContent = "Informe descargado. Abrelo y adjuntalo, o pega la tabla en el correo.";
 });
 
 $("bank-clear").addEventListener("click", () => {
