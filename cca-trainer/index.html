@@ -1983,15 +1983,13 @@ $("flag-btn").addEventListener("click", () => {
   cur().flagged = !cur().flagged;
   renderQuestion();
 });
-$("review-btn").addEventListener("click", () => {
-  if (S.graded) renderReview();
-  else submit();
-});
 /* Confirmations are a second click on the button itself, never window.confirm:
    the artifact frame can suppress modals, and a suppressed dialog would make
    "Entregar" silently do nothing. */
 function armConfirm(btn, warning, onConfirm) {
-  const idle = btn.textContent;
+  /* Captured on ARM, not here: #review-btn is relabelled per run ("Ver resultados"
+     vs "Revisar y entregar"), so a build-time capture would restore stale words. */
+  let idle = btn.textContent;
   let armed = false;
   let timer = null;
   const disarm = () => {
@@ -2003,6 +2001,7 @@ function armConfirm(btn, warning, onConfirm) {
   btn.addEventListener("click", () => {
     const w = warning();
     if (w === null || armed) { disarm(); onConfirm(); return; }
+    idle = btn.textContent;
     armed = true;
     btn.textContent = w;
     btn.classList.add("btn-danger");
@@ -2022,6 +2021,22 @@ armConfirm(
 );
 
 $("back-to-test").addEventListener("click", () => show("test"));
+
+/* Practice reaches the score through #review-btn, exam through #submit-btn. Both
+   grade the attempt, so both warn about blanks -- an unanswered item scores zero and
+   the run cannot be reopened. Nothing to warn about once graded: the button then only
+   reopens the review. */
+armConfirm(
+  $("review-btn"),
+  () => {
+    if (S.graded) return null;
+    const blank = S.items.length - answeredCount();
+    return blank > 0
+      ? `Quedan ${blank} sin responder — pulsa otra vez para ver la nota`
+      : null;
+  },
+  () => { if (S.graded) renderReview(); else submit(); }
+);
 
 armConfirm(
   $("submit-btn"),
